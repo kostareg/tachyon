@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <memory>
+#include <unordered_map>
 
 // fwd-decls of ast.hpp nodes.
 class ASTNode;
@@ -57,6 +58,7 @@ public:
 class OptimizationVisitor : public Visitor {
 public:
     std::unique_ptr<ASTNode> optimizedNode;
+    std::unordered_map<std::string, std::unique_ptr<ASTNode>> constants;
     void visit(NumberNode& node) override;
     void visit(BinaryOperatorNode& node) override;
     void visit(VariableDeclNode& node) override;

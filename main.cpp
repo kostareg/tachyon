@@ -36,6 +36,23 @@ int main(int argc, char *argv[]) {
               ),
               std::make_unique<VariableRefNode>("y")
         ));
+    stmts.push_back(std::make_unique<VariableDeclNode>(
+              "n",
+              std::make_unique<BinaryOperatorNode>(
+                  Op::Mul,
+                  std::make_unique<NumberNode>(7),
+                  std::make_unique<NumberNode>(7)
+              )
+        ));
+    stmts.push_back(std::make_unique<BinaryOperatorNode>(
+              Op::Mul,
+              std::make_unique<BinaryOperatorNode>(
+                  Op::Add,
+                  std::make_unique<NumberNode>(3),
+                  std::make_unique<VariableRefNode>("n")
+              ),
+              std::make_unique<VariableRefNode>("y")
+        ));
 
     auto expr = std::make_unique<SequenceNode>(std::move(stmts));
 

@@ -10,6 +10,7 @@
 class ASTNode {
 public:
     virtual void accept(Visitor& visitor) = 0;
+    virtual std::unique_ptr<ASTNode> clone() const = 0;
     virtual ~ASTNode() = default;
 };
 
@@ -19,8 +20,12 @@ public:
     int value;
     explicit NumberNode(int val) : value(val) {}
 
-    void accept(Visitor& visitor) {
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<NumberNode>(*this);
     }
 };
 
@@ -47,8 +52,17 @@ public:
     BinaryOperatorNode(Op op, std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right)
         : op(op), left(std::move(left)), right(std::move(right)) {}
 
-    void accept(Visitor& visitor) {
+    BinaryOperatorNode(const BinaryOperatorNode& other)
+        : op(other.op),
+          left(other.left ? other.left->clone() : nullptr),
+          right(other.right ? other.right->clone() : nullptr) {}
+
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<BinaryOperatorNode>(*this);
     }
 };
 
@@ -59,8 +73,16 @@ public:
 
     VariableDeclNode(std::string name, std::unique_ptr<ASTNode> decl) : name(std::move(name)), decl(std::move(decl)) {}
 
-    void accept(Visitor& visitor) {
+    VariableDeclNode(const VariableDeclNode& other)
+        : name(other.name),
+          decl(other.decl ? other.decl->clone() : nullptr) {}
+
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<VariableDeclNode>(*this);
     }
 };
 
@@ -70,8 +92,12 @@ public:
 
     VariableRefNode(std::string name) : name(std::move(name)) {}
 
-    void accept(Visitor& visitor) {
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<VariableRefNode>(*this);
     }
 };
 
@@ -83,8 +109,17 @@ public:
 
     FunctionDefNode(std::string name, std::vector<std::string> args, std::unique_ptr<ASTNode> body) : name(std::move(name)), args(std::move(args)), body(std::move(body)) {}
 
-    void accept(Visitor& visitor) {
+    FunctionDefNode(const FunctionDefNode& other)
+        : name(other.name),
+          args(other.args),
+          body(other.body ? other.body->clone() : nullptr) {}
+
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<FunctionDefNode>(*this);
     }
 };
 
@@ -95,8 +130,19 @@ public:
 
     FunctionCallNode(std::string name, std::vector<std::unique_ptr<ASTNode>>&& args) : name(std::move(name)), args(std::move(args)) {}
 
-    void accept(Visitor& visitor) {
+    FunctionCallNode(const FunctionCallNode& other)
+        : name(other.name) {
+        for (const auto& arg : other.args) {
+            args.push_back(arg ? arg->clone() : nullptr);
+        }
+    }
+
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<FunctionCallNode>(*this);
     }
 };
 
@@ -106,8 +152,18 @@ public:
 
     SequenceNode(std::vector<std::unique_ptr<ASTNode>>&& stmts) : stmts(std::move(stmts)) {}
 
-    void accept(Visitor& visitor) {
+    SequenceNode(const SequenceNode& other) {
+        for (const auto& stmt : other.stmts) {
+            stmts.push_back(stmt ? stmt->clone() : nullptr);
+        }
+    }
+
+    void accept(Visitor& visitor) override {
         visitor.visit(*this);
+    }
+
+    std::unique_ptr<ASTNode> clone() const override {
+        return std::make_unique<SequenceNode>(*this);
     }
 };
 

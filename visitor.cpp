@@ -6,6 +6,11 @@
 #include <iostream>
 #include <cstdlib>
 
+template <typename T>
+std::unique_ptr<T> clone_unique(const std::unique_ptr<T>& ptr) {
+    return ptr ? ptr->clone() : nullptr;
+}
+
 void PrintVisitor::visit(NumberNode& node) {
     std::cout << node.value;
 }
@@ -171,13 +176,24 @@ void OptimizationVisitor::visit(BinaryOperatorNode& node) {
 }
 
 void OptimizationVisitor::visit(VariableDeclNode& node) {
-    // optimize the contents.
     node.decl->accept(*this);
     auto decl = std::move(optimizedNode);
+
+    // if the declaration is constant, add it to the list.
+    if (dynamic_cast<NumberNode*>(decl.get())) {
+        constants[node.name] = clone_unique(decl); // is this the best method?
+    }
+
     optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(decl));
 }
 
 void OptimizationVisitor::visit(VariableRefNode& node) {
+    // if the referenced var is in the constant list, replace it.
+    if (constants.find(node.name) != constants.end()) {
+        optimizedNode = clone_unique(constants[node.name]); // is this the best method?
+        return;
+    }
+
     optimizedNode = std::make_unique<VariableRefNode>(node.name);
 }
 
