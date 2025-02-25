@@ -51,3 +51,33 @@ void TreeVisitor::render() {
     std::cout.flush();
     std::system("feh ./build/ast.png");
 }
+
+void OptimizationVisitor::visit(NumberNode& node) {
+    optimizedNode = std::make_unique<NumberNode>(node.value);
+}
+
+void OptimizationVisitor::visit(BinaryOperatorNode& node) {
+    node.left->accept(*this);
+    auto left = std::move(optimizedNode);
+    node.right->accept(*this);
+    auto right = std::move(optimizedNode);
+
+    // apply constant folding if both hands are NumberNodes.
+    if (auto leftNum = dynamic_cast<NumberNode*>(left.get())) {
+        if (auto rightNum = dynamic_cast<NumberNode*>(right.get())) {
+            double result = computeBinaryOp(node.op, leftNum->value, rightNum->value);
+            optimizedNode = std::make_unique<NumberNode>(result);
+        }
+    }
+}
+
+int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {
+    switch (op) {
+        case Op::Add: return left + right;
+        case Op::Sub: return left - right;
+        case Op::Mul: return left * right;
+        case Op::Div: return left / right;
+        default: throw std::runtime_error("unknown operator");
+    }
+}
+

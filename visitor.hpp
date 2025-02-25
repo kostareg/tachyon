@@ -1,10 +1,13 @@
 #pragma once
 
 #include <fstream>
+#include <memory>
 
 // fwd-decls of ast.hpp nodes.
+class ASTNode;
 class NumberNode;
 class BinaryOperatorNode;
+enum class Op;
 
 class Visitor {
 public:
@@ -29,4 +32,12 @@ public:
     void visit(NumberNode& node) override;
     void visit(BinaryOperatorNode& node) override;
     void render();
+};
+
+class OptimizationVisitor : public Visitor {
+public:
+    std::unique_ptr<ASTNode> optimizedNode;
+    void visit(NumberNode& node) override;
+    void visit(BinaryOperatorNode& node) override;
+    int computeBinaryOp(Op op, int left, int right);
 };

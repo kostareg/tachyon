@@ -53,4 +53,3 @@ public:
 
 // Function to evaluate the AST
 int evaluateAST(const ASTNode* node);
-
