@@ -169,11 +169,17 @@ void OptimizationVisitor::visit(VariableRefNode& node) {
 }
 
 void OptimizationVisitor::visit(FunctionDefNode& node) {
-    optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(node.body));
+    node.body->accept(*this);
+    optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(optimizedNode));
 }
 
 void OptimizationVisitor::visit(FunctionCallNode& node) {
-    optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(node.args));
+    std::vector<std::unique_ptr<ASTNode>> args;
+    std::for_each(node.args.begin(), node.args.end(), [this, &args](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+        args.push_back(std::move(optimizedNode));
+    });
+    optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(args));
 }
 
 int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {
