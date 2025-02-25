@@ -153,7 +153,8 @@ void TreeVisitor::render() {
 
     std::cout << std::endl << "Viewing with feh. Press ESC to exit." << std::endl;
     std::cout.flush();
-    std::system("feh ./build/ast.png");
+    int r = std::system("feh ./build/ast.png");
+    if (r != 0) std::cerr << "Error viewing with feh" << std::endl;
 }
 
 void OptimizationVisitor::visit(NumberNode& node) {
