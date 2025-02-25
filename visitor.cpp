@@ -2,6 +2,7 @@
 #include "ast.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <cstdlib>
 
@@ -181,6 +182,7 @@ int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {
         case Op::Sub: return left - right;
         case Op::Mul: return left * right;
         case Op::Div: return left / right;
+        case Op::Pow: return pow(left, right);
         default: throw std::runtime_error("unknown operator");
     }
 }
