@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "visitor.hpp"
 
@@ -56,7 +57,7 @@ public:
     std::string name;
     std::unique_ptr<ASTNode> decl;
 
-    VariableDeclNode(std::string name, std::unique_ptr<ASTNode> decl) : name(name), decl(std::move(decl)) {}
+    VariableDeclNode(std::string name, std::unique_ptr<ASTNode> decl) : name(std::move(name)), decl(std::move(decl)) {}
 
     void accept(Visitor& visitor) {
         visitor.visit(*this);
@@ -68,6 +69,31 @@ public:
     std::string name;
 
     VariableRefNode(std::string name) : name(std::move(name)) {}
+
+    void accept(Visitor& visitor) {
+        visitor.visit(*this);
+    }
+};
+
+class FunctionDefNode : public ASTNode {
+public:
+    std::string name;
+    std::vector<std::string> args;
+    std::unique_ptr<ASTNode> body;
+
+    FunctionDefNode(std::string name, std::vector<std::string> args, std::unique_ptr<ASTNode> body) : name(std::move(name)), args(std::move(args)), body(std::move(body)) {}
+
+    void accept(Visitor& visitor) {
+        visitor.visit(*this);
+    }
+};
+
+class FunctionCallNode : public ASTNode {
+public:
+    std::string name;
+    std::vector<std::unique_ptr<ASTNode>> args;
+
+    FunctionCallNode(std::string name, std::vector<std::unique_ptr<ASTNode>>&& args) : name(std::move(name)), args(std::move(args)) {}
 
     void accept(Visitor& visitor) {
         visitor.visit(*this);

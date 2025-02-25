@@ -1,6 +1,7 @@
 #include "visitor.hpp"
 #include "ast.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <cstdlib>
 
@@ -24,6 +25,24 @@ void PrintVisitor::visit(VariableDeclNode& node) {
 
 void PrintVisitor::visit(VariableRefNode& node) {
     std::cout << node.name;
+}
+
+void PrintVisitor::visit(FunctionDefNode& node) {
+    std::cout << "def " << node.name << "(";
+    std::for_each(node.args.begin(), node.args.end(), [](std::string& arg) {
+        std::cout << arg << ",";
+    });
+    std::cout << ") {";
+    node.body->accept(*this);
+    std::cout << "}";
+}
+
+void PrintVisitor::visit(FunctionCallNode& node) {
+    std::cout << node.name << "(";
+    std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+    });
+    std::cout << ")";
 }
 
 void TreeVisitor::visit(NumberNode& node) {
@@ -64,6 +83,39 @@ void TreeVisitor::visit(VariableRefNode& node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "\"];\n";
     file << root << " -> " << ident << ";\n";
+}
+
+void TreeVisitor::visit(FunctionDefNode& node) {
+    auto rootO = root;
+    auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
+    file << ident << " [label=\"" << node.name << "(";
+    std::for_each(node.args.begin(), node.args.end(), [this](std::string& arg) {
+        file << arg << ",";
+    });
+    file << ")\"];\n";
+    file << root << " -> " << ident << ";\n";
+
+    root = ident;
+
+    node.body->accept(*this);
+
+    root = rootO;
+}
+
+void TreeVisitor::visit(FunctionCallNode& node) {
+    auto rootO = root;
+    auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
+    file << ident << " [label=\"" << node.name << "()\"];\n";
+    file << root << " -> " << ident << ";\n";
+
+    root = ident;
+
+    std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+        std::cout << ",";
+    });
+
+    root = rootO;
 }
 
 void TreeVisitor::render() {
@@ -113,6 +165,14 @@ void OptimizationVisitor::visit(VariableDeclNode& node) {
 
 void OptimizationVisitor::visit(VariableRefNode& node) {
     optimizedNode = std::make_unique<VariableRefNode>(node.name);
+}
+
+void OptimizationVisitor::visit(FunctionDefNode& node) {
+    optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(node.body));
+}
+
+void OptimizationVisitor::visit(FunctionCallNode& node) {
+    optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(node.args));
 }
 
 int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {
