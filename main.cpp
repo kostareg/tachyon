@@ -1,11 +1,13 @@
 #include "parser.hpp"
 #include "ast.hpp"
+#include "vm.hpp"
 #include <iostream>
 
 //
 // main is where all program execution starts
 //
 int main(int argc, char *argv[]) {
+    /*
     std::vector<std::unique_ptr<ASTNode>> exampleArgs;
     exampleArgs.push_back(std::make_unique<BinaryOperatorNode>(Op::Add,
           std::make_unique<NumberNode>(2),
@@ -87,7 +89,22 @@ int main(int argc, char *argv[]) {
 
     TreeVisitor tree1;
     opt2.optimizedNode->accept(tree1);
-    tree1.render();
+    tree1.render();*/
+
+    VM vm;
+    uint16_t memory[0xFFFF] = {};
+    memory[8] = 1;
+    memory[9] = 2;
+    memory[10] = 0;
+    memory[11] = 1000;
+    memory[12] = 3;
+    memory[13] = 1;
+    memory[14] = 0;
+    memory[15] = 0;
+    vm.load(memory);
+    vm.run();
+    std::cout << vm.registers[0] << std::endl;
+    std::cout << vm.registers[1] << std::endl;
 
     return 0;
 }

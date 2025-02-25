@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 // fwd-decls of ast.hpp nodes.
