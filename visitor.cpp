@@ -26,7 +26,6 @@ void PrintVisitor::visit(BinaryOperatorNode& node) {
 void PrintVisitor::visit(VariableDeclNode& node) {
     std::cout << node.name << " = ";
     node.decl->accept(*this);
-    std::cout << ";";
 }
 
 void PrintVisitor::visit(VariableRefNode& node) {
@@ -47,6 +46,7 @@ void PrintVisitor::visit(FunctionCallNode& node) {
     std::cout << node.name << "(";
     std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode>& arg) {
         arg->accept(*this);
+        std::cout << ",";
     });
     std::cout << ")";
 }
@@ -54,8 +54,8 @@ void PrintVisitor::visit(FunctionCallNode& node) {
 void PrintVisitor::visit(SequenceNode& node) {
     std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& arg) {
         arg->accept(*this);
+        std::cout << ";" << std::endl;
     });
-    std::cout << ";" << std::endl;
 }
 
 void TreeVisitor::visit(NumberNode& node) {
