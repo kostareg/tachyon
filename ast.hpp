@@ -3,18 +3,7 @@
 #include <memory>
 #include <string>
 
-class Visitor {
-public:
-    virtual void visit(class NumberNode& node) = 0;
-    virtual void visit(class BinaryOperatorNode& node) = 0;
-    virtual ~Visitor() = default;
-};
-
-class PrintVisitor : public Visitor {
-public:
-    void visit(class NumberNode& node) override;
-    void visit(class BinaryOperatorNode& node) override;
-};
+#include "visitor.hpp"
 
 /// Base class for AST Nodes.
 class ASTNode {

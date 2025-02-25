@@ -34,6 +34,8 @@
                   packages = with pkgs; [
                     meson
                     ninja
+                    graphviz
+                    feh
                   ];
 
                   languages.cplusplus.enable = true;
