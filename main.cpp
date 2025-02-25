@@ -37,6 +37,22 @@ int main(int argc, char *argv[]) {
               std::make_unique<VariableRefNode>("y")
         ));
     stmts.push_back(std::make_unique<VariableDeclNode>(
+              "l",
+              std::make_unique<BinaryOperatorNode>(
+                  Op::Mul,
+                  std::make_unique<NumberNode>(7),
+                  std::make_unique<NumberNode>(7)
+              )
+        ));
+    stmts.push_back(std::make_unique<VariableDeclNode>(
+              "y",
+              std::make_unique<BinaryOperatorNode>(
+                  Op::Mul,
+                  std::make_unique<VariableRefNode>("l"),
+                  std::make_unique<NumberNode>(7)
+              )
+        ));
+    stmts.push_back(std::make_unique<VariableDeclNode>(
               "n",
               std::make_unique<BinaryOperatorNode>(
                   Op::Mul,
@@ -60,14 +76,17 @@ int main(int argc, char *argv[]) {
     expr->accept(tree0);
     tree0.render();
 
-    OptimizationVisitor opt;
-    expr->accept(opt);
+    OptimizationVisitor1 opt1;
+    expr->accept(opt1);
+
+    OptimizationVisitor2 opt2(opt1.varsReferenced);
+    opt1.optimizedNode->accept(opt2);
 
     PrintVisitor printer;
-    opt.optimizedNode->accept(printer);
+    opt2.optimizedNode->accept(printer);
 
     TreeVisitor tree1;
-    opt.optimizedNode->accept(tree1);
+    opt2.optimizedNode->accept(tree1);
     tree1.render();
 
     return 0;

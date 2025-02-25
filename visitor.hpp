@@ -3,6 +3,7 @@
 #include <fstream>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 // fwd-decls of ast.hpp nodes.
 class ASTNode;
@@ -55,10 +56,24 @@ public:
     void render();
 };
 
-class OptimizationVisitor : public Visitor {
+/// The first pass of AST optimization applies the following optimizations:
+///   1. Constant folding
+///   2. Dead code optimization
+///     i. TODO: logically unreachable statements
+/// 
+/// This pass is NOT responsible for:
+///   1. Constant propagation (JIT)
+///   2. Dead code optimization (2nd pass)
+///     i. Statically unused variables
+///
+/// This pass also collects information on which static variables are used.
+/// This data will be used by the second pass for dead code optimization of
+/// unused variables.
+class OptimizationVisitor1 : public Visitor {
 public:
     std::unique_ptr<ASTNode> optimizedNode;
-    std::unordered_map<std::string, std::unique_ptr<ASTNode>> constants;
+    std::vector<std::string> varsReferenced;
+    bool root = true;
     void visit(NumberNode& node) override;
     void visit(BinaryOperatorNode& node) override;
     void visit(VariableDeclNode& node) override;
@@ -67,5 +82,24 @@ public:
     void visit(FunctionCallNode& node) override;
     void visit(SequenceNode& node) override;
     int computeBinaryOp(Op op, int left, int right);
+};
+
+/// Second pass.
+///   1. Dead code optimization
+///     i. Statically unused variables
+class OptimizationVisitor2 : public Visitor {
+public:
+    std::unique_ptr<ASTNode> optimizedNode;
+    std::vector<std::string> varsReferenced;
+
+    OptimizationVisitor2(std::vector<std::string> varsReferenced) : varsReferenced(varsReferenced) {}
+
+    void visit(NumberNode& node) override;
+    void visit(BinaryOperatorNode& node) override;
+    void visit(VariableDeclNode& node) override;
+    void visit(VariableRefNode& node) override;
+    void visit(FunctionDefNode& node) override;
+    void visit(FunctionCallNode& node) override;
+    void visit(SequenceNode& node) override;
 };
 

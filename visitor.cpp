@@ -45,7 +45,7 @@ void PrintVisitor::visit(FunctionDefNode& node) {
 void PrintVisitor::visit(FunctionCallNode& node) {
     std::cout << node.name << "(";
     std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode>& arg) {
-        arg->accept(*this);
+        if (arg) arg->accept(*this);
         std::cout << ",";
     });
     std::cout << ")";
@@ -53,7 +53,7 @@ void PrintVisitor::visit(FunctionCallNode& node) {
 
 void PrintVisitor::visit(SequenceNode& node) {
     std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& arg) {
-        arg->accept(*this);
+        if (arg) arg->accept(*this);
         std::cout << ";" << std::endl;
     });
 }
@@ -157,11 +157,14 @@ void TreeVisitor::render() {
     if (r != 0) std::cerr << "Error viewing with feh" << std::endl;
 }
 
-void OptimizationVisitor::visit(NumberNode& node) {
+void OptimizationVisitor1::visit(NumberNode& node) {
+    if (root) return;
     optimizedNode = std::make_unique<NumberNode>(node.value);
 }
 
-void OptimizationVisitor::visit(BinaryOperatorNode& node) {
+void OptimizationVisitor1::visit(BinaryOperatorNode& node) {
+    if (root) return;
+    root = false;
     node.left->accept(*this);
     auto left = std::move(optimizedNode);
     node.right->accept(*this);
@@ -180,34 +183,26 @@ void OptimizationVisitor::visit(BinaryOperatorNode& node) {
     optimizedNode = std::make_unique<BinaryOperatorNode>(node.op, std::move(left), std::move(right));
 }
 
-void OptimizationVisitor::visit(VariableDeclNode& node) {
+void OptimizationVisitor1::visit(VariableDeclNode& node) {
+    root = false;
     node.decl->accept(*this);
-    auto decl = std::move(optimizedNode);
-
-    // if the declaration is constant, add it to the list.
-    if (dynamic_cast<NumberNode*>(decl.get())) {
-        constants[node.name] = clone_unique(decl); // is this the best method?
-    }
-
-    optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(decl));
+    optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(optimizedNode));
 }
 
-void OptimizationVisitor::visit(VariableRefNode& node) {
-    // if the referenced var is in the constant list, replace it.
-    if (constants.find(node.name) != constants.end()) {
-        optimizedNode = clone_unique(constants[node.name]); // is this the best method?
-        return;
-    }
-
+void OptimizationVisitor1::visit(VariableRefNode& node) {
+    root = false;
+    varsReferenced.push_back(node.name);
     optimizedNode = std::make_unique<VariableRefNode>(node.name);
 }
 
-void OptimizationVisitor::visit(FunctionDefNode& node) {
+void OptimizationVisitor1::visit(FunctionDefNode& node) {
+    root = false;
     node.body->accept(*this);
     optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(optimizedNode));
 }
 
-void OptimizationVisitor::visit(FunctionCallNode& node) {
+void OptimizationVisitor1::visit(FunctionCallNode& node) {
+    root = false;
     std::vector<std::unique_ptr<ASTNode>> args;
     std::for_each(node.args.begin(), node.args.end(), [this, &args](std::unique_ptr<ASTNode>& arg) {
         arg->accept(*this);
@@ -216,16 +211,17 @@ void OptimizationVisitor::visit(FunctionCallNode& node) {
     optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(args));
 }
 
-void OptimizationVisitor::visit(SequenceNode& node) {
+void OptimizationVisitor1::visit(SequenceNode& node) {
     std::vector<std::unique_ptr<ASTNode>> stmts;
     std::for_each(node.stmts.begin(), node.stmts.end(), [this, &stmts](std::unique_ptr<ASTNode>& stmt) {
+        root = true;
         stmt->accept(*this);
-        stmts.push_back(std::move(optimizedNode));
+        if (optimizedNode) stmts.push_back(std::move(optimizedNode));
     });
     optimizedNode = std::make_unique<SequenceNode>(std::move(stmts));
 }
 
-int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {
+int OptimizationVisitor1::computeBinaryOp(Op op, int left, int right) {
     switch (op) {
         case Op::Add: return left + right;
         case Op::Sub: return left - right;
@@ -235,4 +231,53 @@ int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {
         default: throw std::runtime_error("unknown operator");
     }
 }
+
+void OptimizationVisitor2::visit(NumberNode& node) {
+    optimizedNode = std::make_unique<NumberNode>(node.value);
+};
+
+void OptimizationVisitor2::visit(BinaryOperatorNode& node) {
+    node.left->accept(*this);
+    auto left = std::move(optimizedNode);
+    node.right->accept(*this);
+    auto right = std::move(optimizedNode);
+    optimizedNode = std::make_unique<BinaryOperatorNode>(node.op, std::move(left), std::move(right));
+};
+
+void OptimizationVisitor2::visit(VariableDeclNode& node) {
+    // if unused, skip.
+    if (find(varsReferenced.begin(), varsReferenced.end(), node.name) == varsReferenced.end()) {
+        return;
+    }
+
+    node.decl->accept(*this);
+    optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(optimizedNode));
+};
+
+void OptimizationVisitor2::visit(VariableRefNode& node) {
+    optimizedNode = std::make_unique<VariableRefNode>(node.name);
+};
+
+void OptimizationVisitor2::visit(FunctionDefNode& node) {
+    node.body->accept(*this);
+    optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(optimizedNode));
+};
+
+void OptimizationVisitor2::visit(FunctionCallNode& node) {
+    std::vector<std::unique_ptr<ASTNode>> args;
+    std::for_each(node.args.begin(), node.args.end(), [this, &args](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+        args.push_back(std::move(optimizedNode));
+    });
+    optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(args));
+};
+
+void OptimizationVisitor2::visit(SequenceNode& node) {
+    std::vector<std::unique_ptr<ASTNode>> stmts;
+    std::for_each(node.stmts.begin(), node.stmts.end(), [this, &stmts](std::unique_ptr<ASTNode>& stmt) {
+        stmt->accept(*this);
+        if (optimizedNode) stmts.push_back(std::move(optimizedNode));
+    });
+    optimizedNode = std::make_unique<SequenceNode>(std::move(stmts));
+};
 
