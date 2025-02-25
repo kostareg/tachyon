@@ -46,6 +46,13 @@ void PrintVisitor::visit(FunctionCallNode& node) {
     std::cout << ")";
 }
 
+void PrintVisitor::visit(SequenceNode& node) {
+    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+    });
+    std::cout << ";" << std::endl;
+}
+
 void TreeVisitor::visit(NumberNode& node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.value << "\"];\n";
@@ -119,6 +126,12 @@ void TreeVisitor::visit(FunctionCallNode& node) {
     root = rootO;
 }
 
+void TreeVisitor::visit(SequenceNode& node) {
+    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+    });
+}
+
 void TreeVisitor::render() {
     file << "}\n";
     file.flush();
@@ -180,6 +193,15 @@ void OptimizationVisitor::visit(FunctionCallNode& node) {
         args.push_back(std::move(optimizedNode));
     });
     optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(args));
+}
+
+void OptimizationVisitor::visit(SequenceNode& node) {
+    std::vector<std::unique_ptr<ASTNode>> stmts;
+    std::for_each(node.stmts.begin(), node.stmts.end(), [this, &stmts](std::unique_ptr<ASTNode>& stmt) {
+        stmt->accept(*this);
+        stmts.push_back(std::move(optimizedNode));
+    });
+    optimizedNode = std::make_unique<SequenceNode>(std::move(stmts));
 }
 
 int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {

@@ -100,5 +100,16 @@ public:
     }
 };
 
+class SequenceNode : public ASTNode {
+public:
+    std::vector<std::unique_ptr<ASTNode>> stmts;
+
+    SequenceNode(std::vector<std::unique_ptr<ASTNode>>&& stmts) : stmts(std::move(stmts)) {}
+
+    void accept(Visitor& visitor) {
+        visitor.visit(*this);
+    }
+};
+
 // Function to evaluate the AST
 int evaluateAST(const ASTNode* node);

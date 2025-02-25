@@ -14,7 +14,8 @@ int main(int argc, char *argv[]) {
           std::make_unique<NumberNode>(2),
           std::make_unique<NumberNode>(4)));
 
-    auto expr = std::make_unique<FunctionDefNode>("myvar", std::vector<std::string>{"param1", "param2"}, std::make_unique<BinaryOperatorNode>(
+    std::vector<std::unique_ptr<ASTNode>> stmts;
+    stmts.push_back(std::make_unique<FunctionDefNode>("myvar", std::vector<std::string>{"param1", "param2"}, std::make_unique<BinaryOperatorNode>(
           Op::Add,
           std::make_unique<BinaryOperatorNode>(
               Op::Mul,
@@ -24,7 +25,19 @@ int main(int argc, char *argv[]) {
                   std::make_unique<NumberNode>(5)
               ),
               std::make_unique<VariableRefNode>("y")
-        ), std::make_unique<FunctionCallNode>("myfn", std::move(exampleArgs))));
+        ), std::make_unique<FunctionCallNode>("myfn", std::move(exampleArgs)))));
+    stmts.push_back(std::make_unique<NumberNode>(3));
+    stmts.push_back(std::make_unique<BinaryOperatorNode>(
+              Op::Mul,
+              std::make_unique<BinaryOperatorNode>(
+                  Op::Add,
+                  std::make_unique<NumberNode>(3),
+                  std::make_unique<NumberNode>(5)
+              ),
+              std::make_unique<VariableRefNode>("y")
+        ));
+
+    auto expr = std::make_unique<SequenceNode>(std::move(stmts));
 
     TreeVisitor tree0;
     expr->accept(tree0);

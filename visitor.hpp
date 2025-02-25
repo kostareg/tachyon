@@ -11,6 +11,7 @@ class VariableDeclNode;
 class VariableRefNode;
 class FunctionDefNode;
 class FunctionCallNode;
+class SequenceNode;
 enum class Op;
 
 class Visitor {
@@ -21,6 +22,7 @@ public:
     virtual void visit(VariableRefNode& node) = 0;
     virtual void visit(FunctionDefNode& node) = 0;
     virtual void visit(FunctionCallNode& node) = 0;
+    virtual void visit(SequenceNode& node) = 0;
     virtual ~Visitor() = default;
 };
 
@@ -32,6 +34,7 @@ public:
     void visit(VariableRefNode& node) override;
     void visit(FunctionDefNode& node) override;
     void visit(FunctionCallNode& node) override;
+    void visit(SequenceNode& node) override;
 };
 
 class TreeVisitor : public Visitor {
@@ -47,6 +50,7 @@ public:
     void visit(VariableRefNode& node) override;
     void visit(FunctionDefNode& node) override;
     void visit(FunctionCallNode& node) override;
+    void visit(SequenceNode& node) override;
     void render();
 };
 
@@ -59,6 +63,7 @@ public:
     void visit(VariableRefNode& node) override;
     void visit(FunctionDefNode& node) override;
     void visit(FunctionCallNode& node) override;
+    void visit(SequenceNode& node) override;
     int computeBinaryOp(Op op, int left, int right);
 };
 
