@@ -16,6 +16,16 @@ void PrintVisitor::visit(BinaryOperatorNode& node) {
     std::cout << ")";
 }
 
+void PrintVisitor::visit(VariableDeclNode& node) {
+    std::cout << node.name << " = ";
+    node.decl->accept(*this);
+    std::cout << ";";
+}
+
+void PrintVisitor::visit(VariableRefNode& node) {
+    std::cout << node.name;
+}
+
 void TreeVisitor::visit(NumberNode& node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.value << "\"];\n";
@@ -35,6 +45,25 @@ void TreeVisitor::visit(BinaryOperatorNode& node) {
     node.right->accept(*this);
 
     root = rootO;
+}
+
+void TreeVisitor::visit(VariableDeclNode& node) {
+    auto rootO = root;
+    auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
+    file << ident << " [label=\"" << node.name << "\"];\n";
+    file << root << " -> " << ident << ";\n";
+
+    root = ident;
+
+    node.decl->accept(*this);
+
+    root = rootO;
+}
+
+void TreeVisitor::visit(VariableRefNode& node) {
+    auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
+    file << ident << " [label=\"" << node.name << "\"];\n";
+    file << root << " -> " << ident << ";\n";
 }
 
 void TreeVisitor::render() {
@@ -67,8 +96,23 @@ void OptimizationVisitor::visit(BinaryOperatorNode& node) {
         if (auto rightNum = dynamic_cast<NumberNode*>(right.get())) {
             double result = computeBinaryOp(node.op, leftNum->value, rightNum->value);
             optimizedNode = std::make_unique<NumberNode>(result);
+            return;
         }
     }
+
+    // could not optimize, return optimized children.
+    optimizedNode = std::make_unique<BinaryOperatorNode>(node.op, std::move(left), std::move(right));
+}
+
+void OptimizationVisitor::visit(VariableDeclNode& node) {
+    // optimize the contents.
+    node.decl->accept(*this);
+    auto decl = std::move(optimizedNode);
+    optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(decl));
+}
+
+void OptimizationVisitor::visit(VariableRefNode& node) {
+    optimizedNode = std::make_unique<VariableRefNode>(node.name);
 }
 
 int OptimizationVisitor::computeBinaryOp(Op op, int left, int right) {

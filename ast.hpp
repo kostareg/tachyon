@@ -51,5 +51,28 @@ public:
     }
 };
 
+class VariableDeclNode : public ASTNode {
+public:
+    std::string name;
+    std::unique_ptr<ASTNode> decl;
+
+    VariableDeclNode(std::string name, std::unique_ptr<ASTNode> decl) : name(name), decl(std::move(decl)) {}
+
+    void accept(Visitor& visitor) {
+        visitor.visit(*this);
+    }
+};
+
+class VariableRefNode : public ASTNode {
+public:
+    std::string name;
+
+    VariableRefNode(std::string name) : name(std::move(name)) {}
+
+    void accept(Visitor& visitor) {
+        visitor.visit(*this);
+    }
+};
+
 // Function to evaluate the AST
 int evaluateAST(const ASTNode* node);

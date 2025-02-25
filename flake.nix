@@ -34,6 +34,7 @@
                   packages = with pkgs; [
                     meson
                     ninja
+                    gdb
                     graphviz
                     feh
                   ];
