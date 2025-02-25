@@ -40,10 +40,10 @@ public:
 
 class TreeVisitor : public Visitor {
     std::ofstream file;
-    std::string root = "Root";
+    std::string root;
 public:
     TreeVisitor() : file("./build/ast.dot") {
-        file << "digraph AST{\n";
+        file << "digraph AST{\nnode [shape=box];\n";
     }
     void visit(NumberNode& node) override;
     void visit(BinaryOperatorNode& node) override;

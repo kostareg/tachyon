@@ -61,14 +61,14 @@ void PrintVisitor::visit(SequenceNode& node) {
 void TreeVisitor::visit(NumberNode& node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.value << "\"];\n";
-    file << root << " -> " << ident << ";\n";
+    if (!root.empty()) file << root << " -> " << ident << ";\n";
 }
 
 void TreeVisitor::visit(BinaryOperatorNode& node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << op_to_string(node.op) << "\"];\n";
-    file << root << " -> " << ident << ";\n";
+    if (!root.empty()) file << root << " -> " << ident << ";\n";
 
     // change the root for lhs and rhs, then set it back to original.
     root = ident;
@@ -83,7 +83,7 @@ void TreeVisitor::visit(VariableDeclNode& node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "\"];\n";
-    file << root << " -> " << ident << ";\n";
+    if (!root.empty()) file << root << " -> " << ident << ";\n";
 
     root = ident;
 
@@ -95,7 +95,7 @@ void TreeVisitor::visit(VariableDeclNode& node) {
 void TreeVisitor::visit(VariableRefNode& node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "\"];\n";
-    file << root << " -> " << ident << ";\n";
+    if (!root.empty()) file << root << " -> " << ident << ";\n";
 }
 
 void TreeVisitor::visit(FunctionDefNode& node) {
@@ -106,7 +106,7 @@ void TreeVisitor::visit(FunctionDefNode& node) {
         file << arg << ",";
     });
     file << ")\"];\n";
-    file << root << " -> " << ident << ";\n";
+    if (!root.empty()) file << root << " -> " << ident << ";\n";
 
     root = ident;
 
@@ -119,7 +119,7 @@ void TreeVisitor::visit(FunctionCallNode& node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "()\"];\n";
-    file << root << " -> " << ident << ";\n";
+    if (!root.empty()) file << root << " -> " << ident << ";\n";
 
     root = ident;
 
@@ -132,9 +132,13 @@ void TreeVisitor::visit(FunctionCallNode& node) {
 }
 
 void TreeVisitor::visit(SequenceNode& node) {
-    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& arg) {
-        arg->accept(*this);
-    });
+    auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
+    for (size_t i=0; i<node.stmts.size(); ++i) {
+        file << "subgraph cluster_" << ident << i << " {\n";
+        file << "label=\"Expression " << i << "\";\n";
+        node.stmts[i]->accept(*this);
+        file << "}\n";
+    };
 }
 
 void TreeVisitor::render() {
