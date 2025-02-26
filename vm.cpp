@@ -1,5 +1,6 @@
 #include "vm.hpp"
 
+#include <cmath>
 #include <iostream>
 
 void VM::load(uint16_t program[0xFFFF]) {
@@ -151,8 +152,18 @@ void VM::run() {
                 ++pc;
                 break;
             };
-            // reg + const -> reg
+            // reg ^ reg -> reg
             case 17: {
+                uint16_t l = registers[memory[pc]];
+                ++pc;
+                uint16_t r = registers[memory[pc]];
+                ++pc;
+                registers[memory[pc]] = pow(l, r);
+                ++pc;
+                break;
+            };
+            // reg + const -> reg
+            case 18: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -162,7 +173,7 @@ void VM::run() {
                 break;
             };
             // reg - const -> reg
-            case 18: {
+            case 19: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -172,7 +183,7 @@ void VM::run() {
                 break;
             };
             // reg * const -> reg
-            case 19: {
+            case 20: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -182,7 +193,7 @@ void VM::run() {
                 break;
             };
             // reg / const -> reg
-            case 20: {
+            case 21: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -191,29 +202,69 @@ void VM::run() {
                 ++pc;
                 break;
             };
+            // reg ^ const -> reg
+            case 22: {
+                uint16_t l = registers[memory[pc]];
+                ++pc;
+                uint16_t r = memory[pc];
+                ++pc;
+                registers[memory[pc]] = pow(l, r);
+                ++pc;
+                break;
+            };
+            // const - reg -> reg
+            case 23: {
+                uint16_t l = memory[pc];
+                ++pc;
+                uint16_t r = registers[memory[pc]];
+                ++pc;
+                registers[memory[pc]] = l - r;
+                ++pc;
+                break;
+            };
+            // const / reg -> reg
+            case 24: {
+                uint16_t l = memory[pc];
+                ++pc;
+                uint16_t r = registers[memory[pc]];
+                ++pc;
+                registers[memory[pc]] = l / r;
+                ++pc;
+                break;
+            };
+            // const ^ reg -> reg
+            case 25: {
+                uint16_t l = memory[pc];
+                ++pc;
+                uint16_t r = registers[memory[pc]];
+                ++pc;
+                registers[memory[pc]] = pow(l, r);
+                ++pc;
+                break;
+            };
             // jump const
-            case 21: {
+            case 26: {
                 pc = memory[pc];
                 break;
             };
             // jump reg
-            case 22: {
+            case 27: {
                 pc = registers[memory[pc]];
                 break;
             };
             // jump memory
-            case 23: {
+            case 28: {
                 pc = memory[memory[pc]];
                 break;
             };
             // jump pop stack
-            case 24: {
+            case 29: {
                 pc = stack.top();
                 stack.pop();
                 break;
             };
             // reg eq const -> reg
-            case 25: {
+            case 30: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -223,7 +274,7 @@ void VM::run() {
                 break;
             };
             // reg eq reg -> reg
-            case 26: {
+            case 31: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = registers[memory[pc]];
@@ -233,7 +284,7 @@ void VM::run() {
                 break;
             };
             // reg < const -> reg
-            case 27: {
+            case 32: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -243,7 +294,7 @@ void VM::run() {
                 break;
             };
             // reg > const -> reg
-            case 28: {
+            case 33: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = registers[memory[pc]];
@@ -253,7 +304,7 @@ void VM::run() {
                 break;
             };
             // reg < reg -> reg
-            case 29: {
+            case 34: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = memory[pc];
@@ -263,7 +314,7 @@ void VM::run() {
                 break;
             };
             // reg > reg -> reg
-            case 30: {
+            case 35: {
                 uint16_t l = registers[memory[pc]];
                 ++pc;
                 uint16_t r = registers[memory[pc]];
@@ -272,8 +323,9 @@ void VM::run() {
                 ++pc;
                 break;
             };
-            // if reg then jump
+            // TODO: if reg then jump
             default: std::cout << "unknown instruction " << op << std::endl;
         }
     }
 }
+

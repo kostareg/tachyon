@@ -28,14 +28,16 @@ int main(int argc, char *argv[]) {
                   std::make_unique<NumberNode>(3),
                   std::make_unique<NumberNode>(5)
               ),
-              std::make_unique<VariableRefNode>("y")
-        ), std::make_unique<FunctionCallNode>("myfn", std::move(exampleArgs)))));
-    myfnBody.push_back(std::make_unique<FunctionCallNode>("print", std::move(myfnBodyArg)));
+              std::make_unique<NumberNode>(9)
+        ), /*std::make_unique<FunctionCallNode>("myfn", std::move(exampleArgs))*/
+            std::make_unique<NumberNode>(2))));
+    // myfnBody.push_back(std::make_unique<FunctionCallNode>("print", std::move(myfnBodyArg)));
 
     std::vector<std::unique_ptr<ASTNode>> stmts;
 
     stmts.push_back(std::make_unique<FunctionDefNode>("myfn", std::vector<std::string>{"param1", "param2"}, std::make_unique<SequenceNode>(std::move(myfnBody))));
     stmts.push_back(std::make_unique<NumberNode>(3));
+    stmts.push_back(std::make_unique<VariableRefNode>("m"));
     stmts.push_back(std::make_unique<BinaryOperatorNode>(
               Op::Mul,
               std::make_unique<BinaryOperatorNode>(
@@ -43,7 +45,7 @@ int main(int argc, char *argv[]) {
                   std::make_unique<NumberNode>(3),
                   std::make_unique<NumberNode>(5)
               ),
-              std::make_unique<VariableRefNode>("y")
+              std::make_unique<NumberNode>(2)
         ));
     stmts.push_back(std::make_unique<VariableDeclNode>(
               "l",
@@ -51,6 +53,14 @@ int main(int argc, char *argv[]) {
                   Op::Mul,
                   std::make_unique<NumberNode>(7),
                   std::make_unique<NumberNode>(7)
+              )
+        ));
+    stmts.push_back(std::make_unique<VariableDeclNode>(
+              "m",
+              std::make_unique<BinaryOperatorNode>(
+                  Op::Mul,
+                  std::make_unique<NumberNode>(7),
+                  std::make_unique<NumberNode>(5)
               )
         ));
     stmts.push_back(std::make_unique<VariableDeclNode>(
@@ -95,18 +105,37 @@ int main(int argc, char *argv[]) {
     PrintVisitor printer;
     opt2.optimizedNode->accept(printer);
 
-    TreeVisitor tree1;
+    /*TreeVisitor tree1;
     opt2.optimizedNode->accept(tree1);
-    tree1.render();
+    tree1.render();*/
 
     LoweringVisitor lower;
     opt2.optimizedNode->accept(lower);
+    auto seq = std::make_unique<ir::SequenceNode>(std::move(lower.loweredNodes));
 
     ir::PrintVisitor printLow;
-    auto seq = std::make_unique<ir::SequenceNode>(std::move(lower.loweredNodes));
     seq->accept(printLow);
 
-      /*
+    ir::LoweringVisitor lowerIR;
+    seq->accept(lowerIR);
+
+    std::cout << "--- loading vm... ---" << std::endl;
+    VM vm;
+    uint16_t memory[0xFFFF] = {};
+    std::copy(lowerIR.program, lowerIR.program + 0x0FFF, memory + 8);
+    vm.load(memory);
+    vm.run();
+
+    std::cout << "--- vm exit. memory: ---" << std::endl;
+    for (size_t i=8; i<40; ++i) {
+        std::cout << i << " : " << vm.memory[i] << std::endl;
+    }
+    std::cout << "--- and registers: ---" << std::endl;
+    for (size_t i=0; i<8; ++i) {
+        std::cout << "reg" << i << " : " << vm.registers[i] << std::endl;
+    }
+
+    /*
     VM vm;
     uint16_t memory[0xFFFF] = {};
     memory[8] = 1;
