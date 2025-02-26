@@ -5,12 +5,13 @@
 #include <vector>
 
 #include "visitor.hpp"
+#include "op.hpp"
 
 /// Base class for AST Nodes.
 class ASTNode {
 public:
     virtual void accept(Visitor& visitor) = 0;
-    virtual std::unique_ptr<ASTNode> clone() const = 0;
+    virtual std::unique_ptr<ASTNode> clone() const = 0; // TODO: rm all?
     virtual ~ASTNode() = default;
 };
 
@@ -18,7 +19,7 @@ public:
 class NumberNode : public ASTNode {
 public:
     int value;
-    explicit NumberNode(int val) : value(val) {}
+    explicit NumberNode(int val) : value(val) {} // TODO: explicit?
 
     void accept(Visitor& visitor) override {
         visitor.visit(*this);
@@ -28,19 +29,6 @@ public:
         return std::make_unique<NumberNode>(*this);
     }
 };
-
-enum class Op { Add, Sub, Mul, Div, Pow };
-
-inline std::string op_to_string(Op op) {
-    switch (op) {
-        case Op::Add: return "+";
-        case Op::Sub: return "-";
-        case Op::Mul: return "*";
-        case Op::Div: return "/";
-        case Op::Pow: return "^";
-        default: return "unknown";
-    }
-}
 
 // Operator Node (Internal Node)
 class BinaryOperatorNode : public ASTNode {
@@ -105,7 +93,7 @@ class FunctionDefNode : public ASTNode {
 public:
     std::string name;
     std::vector<std::string> args;
-    std::unique_ptr<ASTNode> body;
+    std::unique_ptr<ASTNode> body; // TODO: seq?
 
     FunctionDefNode(std::string name, std::vector<std::string> args, std::unique_ptr<ASTNode> body) : name(std::move(name)), args(std::move(args)), body(std::move(body)) {}
 
@@ -167,5 +155,3 @@ public:
     }
 };
 
-// Function to evaluate the AST
-int evaluateAST(const ASTNode* node);

@@ -52,8 +52,8 @@ void PrintVisitor::visit(FunctionCallNode& node) {
 }
 
 void PrintVisitor::visit(SequenceNode& node) {
-    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& arg) {
-        if (arg) arg->accept(*this);
+    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& stmt) {
+        if (stmt) stmt->accept(*this);
         std::cout << ";" << std::endl;
     });
 }
@@ -154,6 +154,7 @@ void TreeVisitor::render() {
     std::cout << std::endl << "Viewing with feh. Press ESC to exit." << std::endl;
     std::cout.flush();
     int r = std::system("feh ./build/ast.png");
+    std::cout << "---" << std::endl;
     if (r != 0) std::cerr << "Error viewing with feh" << std::endl;
 }
 
@@ -190,15 +191,14 @@ void OptimizationVisitor1::visit(VariableDeclNode& node) {
 }
 
 void OptimizationVisitor1::visit(VariableRefNode& node) {
-    root = false;
     varsReferenced.push_back(node.name);
     optimizedNode = std::make_unique<VariableRefNode>(node.name);
 }
 
 void OptimizationVisitor1::visit(FunctionDefNode& node) {
-    root = false;
+    root = true;
     node.body->accept(*this);
-    optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(optimizedNode));
+    if (optimizedNode) optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args), std::move(optimizedNode));
 }
 
 void OptimizationVisitor1::visit(FunctionCallNode& node) {
@@ -280,4 +280,55 @@ void OptimizationVisitor2::visit(SequenceNode& node) {
     });
     optimizedNode = std::make_unique<SequenceNode>(std::move(stmts));
 };
+
+void LoweringVisitor::visit(NumberNode& node) {
+    tmp = std::make_unique<ir::NumberNode>(node.value);
+}
+
+void LoweringVisitor::visit(BinaryOperatorNode& node) {
+    node.left->accept(*this);
+    auto left = std::move(tmp);
+    node.right->accept(*this);
+    auto right = std::move(tmp);
+
+    auto tx = tmpVar();
+
+    loweredNodes.push_back(std::make_unique<ir::VariableDeclNode>(tx, std::make_unique<ir::BinaryOperatorNode>(node.op, std::move(left), std::move(right))));
+    tmp = std::make_unique<ir::VariableRefNode>(tx);
+}
+
+void LoweringVisitor::visit(VariableDeclNode& node) {
+    node.decl->accept(*this);
+    loweredNodes.push_back(std::make_unique<ir::VariableDeclNode>(node.name, std::move(tmp)));
+}
+
+void LoweringVisitor::visit(VariableRefNode& node) {
+    tmp = std::make_unique<ir::VariableRefNode>(node.name);
+}
+
+void LoweringVisitor::visit(FunctionDefNode& node) {
+    // clear the lowered nodes list, copy everything into the function node,
+    // then bring back lowered nodes list.
+    auto otherNodes = std::move(loweredNodes);
+    node.body->accept(*this);
+    otherNodes.push_back(std::make_unique<ir::BlockNode>(node.name, std::make_unique<ir::SequenceNode>(std::move(loweredNodes))));
+    loweredNodes = std::move(otherNodes);
+}
+
+void LoweringVisitor::visit(FunctionCallNode& node) {
+    std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode>& arg) {
+        arg->accept(*this);
+        if (tmp) loweredNodes.push_back(std::make_unique<ir::ParamNode>(std::move(tmp)));
+    });
+    auto tx = tmpVar();
+    loweredNodes.push_back(std::make_unique<ir::BlockCallNode>(node.name, tx));
+    tmp = std::make_unique<ir::VariableRefNode>(tx);
+}
+
+void LoweringVisitor::visit(SequenceNode& node) {
+    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode>& stmt) {
+        stmt->accept(*this);
+        if (tmp) loweredNodes.push_back(std::move(tmp));
+    });
+}
 

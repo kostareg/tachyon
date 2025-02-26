@@ -7,7 +7,6 @@
 // main is where all program execution starts
 //
 int main(int argc, char *argv[]) {
-    /*
     std::vector<std::unique_ptr<ASTNode>> exampleArgs;
     exampleArgs.push_back(std::make_unique<BinaryOperatorNode>(Op::Add,
           std::make_unique<NumberNode>(2),
@@ -16,8 +15,11 @@ int main(int argc, char *argv[]) {
           std::make_unique<NumberNode>(2),
           std::make_unique<NumberNode>(4)));
 
-    std::vector<std::unique_ptr<ASTNode>> stmts;
-    stmts.push_back(std::make_unique<FunctionDefNode>("myvar", std::vector<std::string>{"param1", "param2"}, std::make_unique<BinaryOperatorNode>(
+    std::vector<std::unique_ptr<ASTNode>> myfnBodyArg;
+    myfnBodyArg.push_back(std::make_unique<VariableRefNode>("o"));
+
+    std::vector<std::unique_ptr<ASTNode>> myfnBody;
+    myfnBody.push_back(std::make_unique<VariableDeclNode>("o", std::make_unique<BinaryOperatorNode>(
           Op::Add,
           std::make_unique<BinaryOperatorNode>(
               Op::Mul,
@@ -28,6 +30,11 @@ int main(int argc, char *argv[]) {
               ),
               std::make_unique<VariableRefNode>("y")
         ), std::make_unique<FunctionCallNode>("myfn", std::move(exampleArgs)))));
+    myfnBody.push_back(std::make_unique<FunctionCallNode>("print", std::move(myfnBodyArg)));
+
+    std::vector<std::unique_ptr<ASTNode>> stmts;
+
+    stmts.push_back(std::make_unique<FunctionDefNode>("myfn", std::vector<std::string>{"param1", "param2"}, std::make_unique<SequenceNode>(std::move(myfnBody))));
     stmts.push_back(std::make_unique<NumberNode>(3));
     stmts.push_back(std::make_unique<BinaryOperatorNode>(
               Op::Mul,
@@ -74,9 +81,10 @@ int main(int argc, char *argv[]) {
 
     auto expr = std::make_unique<SequenceNode>(std::move(stmts));
 
+    /*
     TreeVisitor tree0;
     expr->accept(tree0);
-    tree0.render();
+    tree0.render();*/
 
     OptimizationVisitor1 opt1;
     expr->accept(opt1);
@@ -89,8 +97,16 @@ int main(int argc, char *argv[]) {
 
     TreeVisitor tree1;
     opt2.optimizedNode->accept(tree1);
-    tree1.render();*/
+    tree1.render();
 
+    LoweringVisitor lower;
+    opt2.optimizedNode->accept(lower);
+
+    ir::PrintVisitor printLow;
+    auto seq = std::make_unique<ir::SequenceNode>(std::move(lower.loweredNodes));
+    seq->accept(printLow);
+
+      /*
     VM vm;
     uint16_t memory[0xFFFF] = {};
     memory[8] = 1;
@@ -104,7 +120,7 @@ int main(int argc, char *argv[]) {
     vm.load(memory);
     vm.run();
     std::cout << vm.registers[0] << std::endl;
-    std::cout << vm.registers[1] << std::endl;
+    std::cout << vm.registers[1] << std::endl;*/
 
     return 0;
 }

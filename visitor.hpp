@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ir.hpp"
+
 #include <fstream>
 #include <memory>
 #include <vector>
@@ -52,6 +54,7 @@ public:
     void visit(FunctionDefNode& node) override;
     void visit(FunctionCallNode& node) override;
     void visit(SequenceNode& node) override;
+
     void render();
 };
 
@@ -80,6 +83,7 @@ public:
     void visit(FunctionDefNode& node) override;
     void visit(FunctionCallNode& node) override;
     void visit(SequenceNode& node) override;
+
     int computeBinaryOp(Op op, int left, int right);
 };
 
@@ -100,5 +104,24 @@ public:
     void visit(FunctionDefNode& node) override;
     void visit(FunctionCallNode& node) override;
     void visit(SequenceNode& node) override;
+};
+
+class LoweringVisitor : public Visitor {
+public:
+    std::vector<std::unique_ptr<ir::IRNode>> loweredNodes;
+    std::unique_ptr<ir::IRNode> tmp;
+    int tmpInt = 0;
+
+    void visit(NumberNode& node) override;
+    void visit(BinaryOperatorNode& node) override;
+    void visit(VariableDeclNode& node) override;
+    void visit(VariableRefNode& node) override;
+    void visit(FunctionDefNode& node) override;
+    void visit(FunctionCallNode& node) override;
+    void visit(SequenceNode& node) override;
+
+    std::string tmpVar() {
+        return "t" + std::to_string(++tmpInt);
+    }
 };
 
