@@ -18,7 +18,7 @@ void PrintVisitor::visit(const BinaryOperatorNode &node) {
     auto prefixO = prefix;
     prefix = "";
     node.lhs->accept(*this);
-    std::cout << " " << op_to_string(node.op) << " ";
+    std::cout << " " << op_to_str(node.op) << " ";
     node.rhs->accept(*this);
     prefix = prefixO;
 }

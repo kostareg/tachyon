@@ -12,7 +12,7 @@ void PrintVisitor::visit(const NumberNode &node) { std::cout << node.value; }
 void PrintVisitor::visit(const BinaryOperatorNode &node) {
     std::cout << "(";
     node.lhs->accept(*this);
-    std::cout << " " << op_to_string(node.op) << " ";
+    std::cout << " " << op_to_str(node.op) << " ";
     node.rhs->accept(*this);
     std::cout << ")";
 }
@@ -62,7 +62,7 @@ void TreeVisitor::visit(const NumberNode &node) {
 void TreeVisitor::visit(const BinaryOperatorNode &node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
-    file << ident << " [label=\"" << op_to_string(node.op) << "\"];\n";
+    file << ident << " [label=\"" << op_to_str(node.op) << "\"];\n";
     if (!root.empty())
         file << root << " -> " << ident << ";\n";
 
