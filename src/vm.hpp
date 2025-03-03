@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <stack>
 
@@ -15,7 +16,7 @@ class VM {
      *
      * All initialized to zero.
      */
-    uint16_t registers[32] = {};
+    std::array<uint16_t, 32> registers = {};
 
     /**
      * @brief Program memory.
