@@ -1,8 +1,16 @@
 #pragma once
 
 #include <string>
+
+/**
+ * @brief Mathematical operators.
+ */
 enum class Op { Add, Sub, Mul, Div, Pow };
 
+/**
+ * @brief For printing operators.
+ * @sa Op
+ */
 inline std::string op_to_string(Op op) {
     switch (op) {
     case Op::Add:

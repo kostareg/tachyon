@@ -1,6 +1,7 @@
+#include <iostream>
+
 #include "ast/ast.hpp"
 #include "vm.hpp"
-#include <iostream>
 
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ast::ASTNode>> exampleArgs;

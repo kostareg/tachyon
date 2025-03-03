@@ -4,71 +4,104 @@
 #include <string>
 #include <vector>
 
-#include "../op.hpp"
-#include "visitor.hpp"
+#include "ast/visitor.hpp"
+#include "op.hpp"
 
+/**
+ * @namespace ast
+ * @brief Abstract syntax tree nodes.
+ */
 namespace ast {
-/// Base class for AST Nodes.
+/**
+ * @brief Base class for all abstract syntax tree nodes.
+ *
+ * The base class for the abstract syntax tree (AST) outlines the structure
+ * that the rest of the nodes will derive.
+ */
 class ASTNode {
   public:
+    /**
+     * @brief Accepts a visitor.
+     * @param visitor The visitor.
+     */
     virtual void accept(Visitor &visitor) = 0;
     virtual ~ASTNode() = default;
 };
 
-// Number Node (Leaf)
+/**
+ * @brief Integer number.
+ */
 class NumberNode : public ASTNode {
   public:
     int value;
-    explicit NumberNode(int val) : value(val) {} // TODO: explicit?
+
+    explicit NumberNode(int val) : value(val) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
-// Operator Node (Internal Node)
+/**
+ * @brief Binary operator.
+ * @sa ::Op
+ */
 class BinaryOperatorNode : public ASTNode {
   public:
     ::Op op;
-    std::unique_ptr<ASTNode> left;
-    std::unique_ptr<ASTNode> right;
+    std::unique_ptr<ASTNode> lhs;
+    std::unique_ptr<ASTNode> rhs;
 
-    BinaryOperatorNode(::Op op, std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right)
-        : op(op), left(std::move(left)), right(std::move(right)) {}
+    explicit BinaryOperatorNode(::Op op, std::unique_ptr<ASTNode> left,
+                                std::unique_ptr<ASTNode> right)
+        : op(op), lhs(std::move(left)), rhs(std::move(right)) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
+/**
+ * @brief Variable declaration.
+ */
 class VariableDeclNode : public ASTNode {
   public:
     std::string name;
     std::unique_ptr<ASTNode> decl;
 
-    VariableDeclNode(std::string name, std::unique_ptr<ASTNode> decl)
+    explicit VariableDeclNode(std::string name, std::unique_ptr<ASTNode> decl)
         : name(std::move(name)), decl(std::move(decl)) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
+/**
+ * @brief Variable reference.
+ */
 class VariableRefNode : public ASTNode {
   public:
     std::string name;
 
-    VariableRefNode(std::string name) : name(std::move(name)) {}
+    explicit VariableRefNode(std::string name) : name(std::move(name)) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
+/**
+ * @brief Function definition.
+ */
 class FunctionDefNode : public ASTNode {
   public:
     std::string name;
     std::vector<std::string> args;
     std::unique_ptr<ASTNode> body; // TODO: seq?
 
-    FunctionDefNode(std::string name, std::vector<std::string> args, std::unique_ptr<ASTNode> body)
+    explicit FunctionDefNode(std::string name, std::vector<std::string> args,
+                             std::unique_ptr<ASTNode> body)
         : name(std::move(name)), args(std::move(args)), body(std::move(body)) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
+/**
+ * @brief Function call.
+ */
 class FunctionCallNode : public ASTNode {
   public:
     std::string name;
@@ -80,11 +113,19 @@ class FunctionCallNode : public ASTNode {
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
+/**
+ * @brief Sequence of ASTNodes.
+ * @sa ast::ASTNode
+ *
+ * It's just a vector of pointers to ASTNodes, enabling their sequential
+ * composition.
+ */
 class SequenceNode : public ASTNode {
   public:
     std::vector<std::unique_ptr<ASTNode>> stmts;
 
-    SequenceNode(std::vector<std::unique_ptr<ASTNode>> &&stmts) : stmts(std::move(stmts)) {}
+    explicit SequenceNode(std::vector<std::unique_ptr<ASTNode>> &&stmts)
+        : stmts(std::move(stmts)) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };

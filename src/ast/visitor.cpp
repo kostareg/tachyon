@@ -1,41 +1,41 @@
-#include "visitor.hpp"
-#include "ast.hpp"
-
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
 
-namespace ast {
-void PrintVisitor::visit(NumberNode &node) { std::cout << node.value; }
+#include "ast/ast.hpp"
+#include "ast/visitor.hpp"
 
-void PrintVisitor::visit(BinaryOperatorNode &node) {
+namespace ast {
+void PrintVisitor::visit(const NumberNode &node) { std::cout << node.value; }
+
+void PrintVisitor::visit(const BinaryOperatorNode &node) {
     std::cout << "(";
-    node.left->accept(*this);
+    node.lhs->accept(*this);
     std::cout << " " << op_to_string(node.op) << " ";
-    node.right->accept(*this);
+    node.rhs->accept(*this);
     std::cout << ")";
 }
 
-void PrintVisitor::visit(VariableDeclNode &node) {
+void PrintVisitor::visit(const VariableDeclNode &node) {
     std::cout << node.name << " = ";
     node.decl->accept(*this);
 }
 
-void PrintVisitor::visit(VariableRefNode &node) { std::cout << node.name; }
+void PrintVisitor::visit(const VariableRefNode &node) { std::cout << node.name; }
 
-void PrintVisitor::visit(FunctionDefNode &node) {
+void PrintVisitor::visit(const FunctionDefNode &node) {
     std::cout << "def " << node.name << "(";
     std::for_each(node.args.begin(), node.args.end(),
-                  [](std::string &arg) { std::cout << arg << ","; });
+                  [](const std::string &arg) { std::cout << arg << ","; });
     std::cout << ") {";
     node.body->accept(*this);
     std::cout << "}";
 }
 
-void PrintVisitor::visit(FunctionCallNode &node) {
+void PrintVisitor::visit(const FunctionCallNode &node) {
     std::cout << node.name << "(";
-    std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode> &arg) {
+    std::for_each(node.args.begin(), node.args.end(), [this](const std::unique_ptr<ASTNode> &arg) {
         if (arg)
             arg->accept(*this);
         std::cout << ",";
@@ -43,22 +43,23 @@ void PrintVisitor::visit(FunctionCallNode &node) {
     std::cout << ")";
 }
 
-void PrintVisitor::visit(SequenceNode &node) {
-    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode> &stmt) {
-        if (stmt)
-            stmt->accept(*this);
-        std::cout << ";" << std::endl;
-    });
+void PrintVisitor::visit(const SequenceNode &node) {
+    std::for_each(node.stmts.begin(), node.stmts.end(),
+                  [this](const std::unique_ptr<ASTNode> &stmt) {
+                      if (stmt)
+                          stmt->accept(*this);
+                      std::cout << ";" << std::endl;
+                  });
 }
 
-void TreeVisitor::visit(NumberNode &node) {
+void TreeVisitor::visit(const NumberNode &node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.value << "\"];\n";
     if (!root.empty())
         file << root << " -> " << ident << ";\n";
 }
 
-void TreeVisitor::visit(BinaryOperatorNode &node) {
+void TreeVisitor::visit(const BinaryOperatorNode &node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << op_to_string(node.op) << "\"];\n";
@@ -68,13 +69,13 @@ void TreeVisitor::visit(BinaryOperatorNode &node) {
     // change the root for lhs and rhs, then set it back to original.
     root = ident;
 
-    node.left->accept(*this);
-    node.right->accept(*this);
+    node.lhs->accept(*this);
+    node.rhs->accept(*this);
 
     root = rootO;
 }
 
-void TreeVisitor::visit(VariableDeclNode &node) {
+void TreeVisitor::visit(const VariableDeclNode &node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "\"];\n";
@@ -88,19 +89,19 @@ void TreeVisitor::visit(VariableDeclNode &node) {
     root = rootO;
 }
 
-void TreeVisitor::visit(VariableRefNode &node) {
+void TreeVisitor::visit(const VariableRefNode &node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "\"];\n";
     if (!root.empty())
         file << root << " -> " << ident << ";\n";
 }
 
-void TreeVisitor::visit(FunctionDefNode &node) {
+void TreeVisitor::visit(const FunctionDefNode &node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "(";
     std::for_each(node.args.begin(), node.args.end(),
-                  [this](std::string &arg) { file << arg << ","; });
+                  [this](const std::string &arg) { file << arg << ","; });
     file << ")\"];\n";
     if (!root.empty())
         file << root << " -> " << ident << ";\n";
@@ -112,7 +113,7 @@ void TreeVisitor::visit(FunctionDefNode &node) {
     root = rootO;
 }
 
-void TreeVisitor::visit(FunctionCallNode &node) {
+void TreeVisitor::visit(const FunctionCallNode &node) {
     auto rootO = root;
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     file << ident << " [label=\"" << node.name << "()\"];\n";
@@ -121,7 +122,7 @@ void TreeVisitor::visit(FunctionCallNode &node) {
 
     root = ident;
 
-    std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode> &arg) {
+    std::for_each(node.args.begin(), node.args.end(), [this](const std::unique_ptr<ASTNode> &arg) {
         arg->accept(*this);
         std::cout << ",";
     });
@@ -129,7 +130,7 @@ void TreeVisitor::visit(FunctionCallNode &node) {
     root = rootO;
 }
 
-void TreeVisitor::visit(SequenceNode &node) {
+void TreeVisitor::visit(const SequenceNode &node) {
     auto ident = std::to_string(reinterpret_cast<uintptr_t>(&node));
     for (size_t i = 0; i < node.stmts.size(); ++i) {
         file << "subgraph cluster_" << ident << i << " {\n";
@@ -158,19 +159,19 @@ void TreeVisitor::render() {
         std::cerr << "Error viewing with feh" << std::endl;
 }
 
-void OptimizationVisitor1::visit(NumberNode &node) {
+void OptimizationVisitor1::visit(const NumberNode &node) {
     if (root)
         return;
     optimizedNode = std::make_unique<NumberNode>(node.value);
 }
 
-void OptimizationVisitor1::visit(BinaryOperatorNode &node) {
+void OptimizationVisitor1::visit(const BinaryOperatorNode &node) {
     if (root)
         return;
     root = false;
-    node.left->accept(*this);
+    node.lhs->accept(*this);
     auto left = std::move(optimizedNode);
-    node.right->accept(*this);
+    node.rhs->accept(*this);
     auto right = std::move(optimizedNode);
 
     // apply constant folding if both hands are NumberNodes.
@@ -187,18 +188,18 @@ void OptimizationVisitor1::visit(BinaryOperatorNode &node) {
         std::make_unique<BinaryOperatorNode>(node.op, std::move(left), std::move(right));
 }
 
-void OptimizationVisitor1::visit(VariableDeclNode &node) {
+void OptimizationVisitor1::visit(const VariableDeclNode &node) {
     root = false;
     node.decl->accept(*this);
     optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(optimizedNode));
 }
 
-void OptimizationVisitor1::visit(VariableRefNode &node) {
+void OptimizationVisitor1::visit(const VariableRefNode &node) {
     varsReferenced.push_back(node.name);
     optimizedNode = std::make_unique<VariableRefNode>(node.name);
 }
 
-void OptimizationVisitor1::visit(FunctionDefNode &node) {
+void OptimizationVisitor1::visit(const FunctionDefNode &node) {
     root = true;
     node.body->accept(*this);
     if (optimizedNode)
@@ -206,20 +207,21 @@ void OptimizationVisitor1::visit(FunctionDefNode &node) {
                                                           std::move(optimizedNode));
 }
 
-void OptimizationVisitor1::visit(FunctionCallNode &node) {
+void OptimizationVisitor1::visit(const FunctionCallNode &node) {
     root = false;
     std::vector<std::unique_ptr<ASTNode>> args;
-    std::for_each(node.args.begin(), node.args.end(), [this, &args](std::unique_ptr<ASTNode> &arg) {
-        arg->accept(*this);
-        args.push_back(std::move(optimizedNode));
-    });
+    std::for_each(node.args.begin(), node.args.end(),
+                  [this, &args](const std::unique_ptr<ASTNode> &arg) {
+                      arg->accept(*this);
+                      args.push_back(std::move(optimizedNode));
+                  });
     optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(args));
 }
 
-void OptimizationVisitor1::visit(SequenceNode &node) {
+void OptimizationVisitor1::visit(const SequenceNode &node) {
     std::vector<std::unique_ptr<ASTNode>> stmts;
     std::for_each(node.stmts.begin(), node.stmts.end(),
-                  [this, &stmts](std::unique_ptr<ASTNode> &stmt) {
+                  [this, &stmts](const std::unique_ptr<ASTNode> &stmt) {
                       root = true;
                       stmt->accept(*this);
                       if (optimizedNode)
@@ -245,20 +247,20 @@ int OptimizationVisitor1::computeBinaryOp(::Op op, int left, int right) {
     }
 }
 
-void OptimizationVisitor2::visit(NumberNode &node) {
+void OptimizationVisitor2::visit(const NumberNode &node) {
     optimizedNode = std::make_unique<NumberNode>(node.value);
 };
 
-void OptimizationVisitor2::visit(BinaryOperatorNode &node) {
-    node.left->accept(*this);
+void OptimizationVisitor2::visit(const BinaryOperatorNode &node) {
+    node.lhs->accept(*this);
     auto left = std::move(optimizedNode);
-    node.right->accept(*this);
+    node.rhs->accept(*this);
     auto right = std::move(optimizedNode);
     optimizedNode =
         std::make_unique<BinaryOperatorNode>(node.op, std::move(left), std::move(right));
 };
 
-void OptimizationVisitor2::visit(VariableDeclNode &node) {
+void OptimizationVisitor2::visit(const VariableDeclNode &node) {
     // if unused, skip.
     if (find(varsReferenced.begin(), varsReferenced.end(), node.name) == varsReferenced.end()) {
         return;
@@ -268,29 +270,30 @@ void OptimizationVisitor2::visit(VariableDeclNode &node) {
     optimizedNode = std::make_unique<VariableDeclNode>(node.name, std::move(optimizedNode));
 };
 
-void OptimizationVisitor2::visit(VariableRefNode &node) {
+void OptimizationVisitor2::visit(const VariableRefNode &node) {
     optimizedNode = std::make_unique<VariableRefNode>(node.name);
 };
 
-void OptimizationVisitor2::visit(FunctionDefNode &node) {
+void OptimizationVisitor2::visit(const FunctionDefNode &node) {
     node.body->accept(*this);
     optimizedNode = std::make_unique<FunctionDefNode>(node.name, std::move(node.args),
                                                       std::move(optimizedNode));
 };
 
-void OptimizationVisitor2::visit(FunctionCallNode &node) {
+void OptimizationVisitor2::visit(const FunctionCallNode &node) {
     std::vector<std::unique_ptr<ASTNode>> args;
-    std::for_each(node.args.begin(), node.args.end(), [this, &args](std::unique_ptr<ASTNode> &arg) {
-        arg->accept(*this);
-        args.push_back(std::move(optimizedNode));
-    });
+    std::for_each(node.args.begin(), node.args.end(),
+                  [this, &args](const std::unique_ptr<ASTNode> &arg) {
+                      arg->accept(*this);
+                      args.push_back(std::move(optimizedNode));
+                  });
     optimizedNode = std::make_unique<FunctionCallNode>(node.name, std::move(args));
 };
 
-void OptimizationVisitor2::visit(SequenceNode &node) {
+void OptimizationVisitor2::visit(const SequenceNode &node) {
     std::vector<std::unique_ptr<ASTNode>> stmts;
     std::for_each(node.stmts.begin(), node.stmts.end(),
-                  [this, &stmts](std::unique_ptr<ASTNode> &stmt) {
+                  [this, &stmts](const std::unique_ptr<ASTNode> &stmt) {
                       stmt->accept(*this);
                       if (optimizedNode)
                           stmts.push_back(std::move(optimizedNode));
@@ -298,14 +301,14 @@ void OptimizationVisitor2::visit(SequenceNode &node) {
     optimizedNode = std::make_unique<SequenceNode>(std::move(stmts));
 };
 
-void LoweringVisitor::visit(NumberNode &node) {
+void LoweringVisitor::visit(const NumberNode &node) {
     tmp = std::make_unique<ir::NumberNode>(node.value);
 }
 
-void LoweringVisitor::visit(BinaryOperatorNode &node) {
-    node.left->accept(*this);
+void LoweringVisitor::visit(const BinaryOperatorNode &node) {
+    node.lhs->accept(*this);
     auto left = std::move(tmp);
-    node.right->accept(*this);
+    node.rhs->accept(*this);
     auto right = std::move(tmp);
 
     auto tx = tmpVar();
@@ -315,16 +318,16 @@ void LoweringVisitor::visit(BinaryOperatorNode &node) {
     tmp = std::make_unique<ir::VariableRefNode>(tx);
 }
 
-void LoweringVisitor::visit(VariableDeclNode &node) {
+void LoweringVisitor::visit(const VariableDeclNode &node) {
     node.decl->accept(*this);
     loweredNodes.push_back(std::make_unique<ir::VariableDeclNode>(node.name, std::move(tmp)));
 }
 
-void LoweringVisitor::visit(VariableRefNode &node) {
+void LoweringVisitor::visit(const VariableRefNode &node) {
     tmp = std::make_unique<ir::VariableRefNode>(node.name);
 }
 
-void LoweringVisitor::visit(FunctionDefNode &node) {
+void LoweringVisitor::visit(const FunctionDefNode &node) {
     // clear the lowered nodes list, copy everything into the function node,
     // then bring back lowered nodes list.
     auto otherNodes = std::move(loweredNodes);
@@ -334,8 +337,8 @@ void LoweringVisitor::visit(FunctionDefNode &node) {
     loweredNodes = std::move(otherNodes);
 }
 
-void LoweringVisitor::visit(FunctionCallNode &node) {
-    std::for_each(node.args.begin(), node.args.end(), [this](std::unique_ptr<ASTNode> &arg) {
+void LoweringVisitor::visit(const FunctionCallNode &node) {
+    std::for_each(node.args.begin(), node.args.end(), [this](const std::unique_ptr<ASTNode> &arg) {
         arg->accept(*this);
         if (tmp)
             loweredNodes.push_back(std::make_unique<ir::ParamNode>(std::move(tmp)));
@@ -345,11 +348,12 @@ void LoweringVisitor::visit(FunctionCallNode &node) {
     tmp = std::make_unique<ir::VariableRefNode>(tx);
 }
 
-void LoweringVisitor::visit(SequenceNode &node) {
-    std::for_each(node.stmts.begin(), node.stmts.end(), [this](std::unique_ptr<ASTNode> &stmt) {
-        stmt->accept(*this);
-        if (tmp)
-            loweredNodes.push_back(std::move(tmp));
-    });
+void LoweringVisitor::visit(const SequenceNode &node) {
+    std::for_each(node.stmts.begin(), node.stmts.end(),
+                  [this](const std::unique_ptr<ASTNode> &stmt) {
+                      stmt->accept(*this);
+                      if (tmp)
+                          loweredNodes.push_back(std::move(tmp));
+                  });
 }
 } // namespace ast

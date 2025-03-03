@@ -1,73 +1,58 @@
-#include "visitor.hpp"
-#include "ir.hpp"
 #include <algorithm>
 #include <iostream>
 
+#include "ir/ir.hpp"
+#include "ir/visitor.hpp"
+
 namespace ir {
-std::unique_ptr<IRNode> PrintVisitor::visit(NumberNode &node) {
-    std::cout << node.value;
-    return nullptr;
-}
+void PrintVisitor::visit(const NumberNode &node) { std::cout << node.value; }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(VariableRefNode &node) {
-    std::cout << node.name;
-    return nullptr;
-}
+void PrintVisitor::visit(const VariableRefNode &node) { std::cout << node.name; }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(VariableDeclNode &node) {
+void PrintVisitor::visit(const VariableDeclNode &node) {
     std::cout << prefix << node.name << " = ";
     node.decl->accept(*this);
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(BinaryOperatorNode &node) {
+void PrintVisitor::visit(const BinaryOperatorNode &node) {
     auto prefixO = prefix;
     prefix = "";
     node.lhs->accept(*this);
     std::cout << " " << op_to_string(node.op) << " ";
     node.rhs->accept(*this);
     prefix = prefixO;
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(SequenceNode &node) {
-    std::for_each(node.body.begin(), node.body.end(), [this](std::unique_ptr<IRNode> &stmt) {
+void PrintVisitor::visit(const SequenceNode &node) {
+    std::for_each(node.body.begin(), node.body.end(), [this](const std::unique_ptr<IRNode> &stmt) {
         stmt->accept(*this);
         std::cout << std::endl;
     });
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(BlockNode &node) {
+void PrintVisitor::visit(const BlockNode &node) {
     std::cout << "LABEL " << node.label << std::endl;
 
     prefix += "    ";
     if (node.body)
         node.body->accept(*this);
     prefix.erase(prefix.size() - 4);
-
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(BlockCallNode &node) {
+void PrintVisitor::visit(const BlockCallNode &node) {
     std::cout << prefix << "CALL " << node.label << " TO " << node.outName;
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> PrintVisitor::visit(ParamNode &node) {
+void PrintVisitor::visit(const ParamNode &node) {
     std::cout << prefix << "PARAM ";
     node.param->accept(*this);
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(NumberNode &node) {
-    tmp[0] = node.value;
-    return nullptr;
-}
+void LoweringVisitor::visit(const NumberNode &node) { tmp[0] = node.value; }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(VariableRefNode &node) { return nullptr; }
+void LoweringVisitor::visit(const VariableRefNode &node) {}
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(VariableDeclNode &node) {
+void LoweringVisitor::visit(const VariableDeclNode &node) {
     if (auto num = dynamic_cast<NumberNode *>(node.decl.get())) {
         // if we are declaring a constant, mov it directly.
         auto reg = findFreeReg();
@@ -97,10 +82,9 @@ std::unique_ptr<IRNode> LoweringVisitor::visit(VariableDeclNode &node) {
 
         vars[to] = node.name;
     }
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(BinaryOperatorNode &node) {
+void LoweringVisitor::visit(const BinaryOperatorNode &node) {
     if (auto var = dynamic_cast<VariableRefNode *>(node.lhs.get())) {
         if (auto num = dynamic_cast<NumberNode *>(node.rhs.get())) {
             // find the variable's register, then run reg <op> const
@@ -147,35 +131,30 @@ std::unique_ptr<IRNode> LoweringVisitor::visit(BinaryOperatorNode &node) {
             tmp[0] = out;
         }
     }
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(SequenceNode &node) {
+void LoweringVisitor::visit(const SequenceNode &node) {
     std::for_each(node.body.begin(), node.body.end(),
-                  [this](std::unique_ptr<IRNode> &elem) { elem->accept(*this); });
-    return nullptr;
+                  [this](const std::unique_ptr<IRNode> &elem) { elem->accept(*this); });
 }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(BlockNode &node) {
+void LoweringVisitor::visit(const BlockNode &node) {
     // record the position, then call the rest.
     blocks[node.label] = pc;
     node.body->accept(*this);
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(BlockCallNode &node) {
+void LoweringVisitor::visit(const BlockCallNode &node) {
     // jump to position
     program[pc] = 26;
     program[pc + 1] = blocks[node.label] + 8; // header
     pc += 2;
-    return nullptr;
 }
 
-std::unique_ptr<IRNode> LoweringVisitor::visit(ParamNode &node) {
+void LoweringVisitor::visit(const ParamNode &node) {
     node.param->accept(*this);
     program[pc] = 10;
     program[pc + 1] = tmp[0];
     pc += 2;
-    return nullptr;
 }
 } // namespace ir

@@ -1,7 +1,7 @@
-#include "vm.hpp"
-
 #include <cmath>
 #include <iostream>
+
+#include "vm.hpp"
 
 void VM::load(uint16_t program[0xFFFF]) { std::copy(program, program + 0xFFFF, memory); }
 
