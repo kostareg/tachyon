@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 class VM {
-public:
+  public:
     // TODO: mmap or malloc?
     uint16_t registers[32] = {};
     /// The program is loaded here.
