@@ -221,8 +221,18 @@ void VM::run_fn(Proto *proto) {
             ++pc;
             break;
         };
-        // const - reg -> reg
+        // const + reg -> reg
         case 0x0055: {
+            uint16_t l = proto->bc[pc];
+            ++pc;
+            uint16_t r = registers[proto->bc[pc]];
+            ++pc;
+            registers[proto->bc[pc]] = l + r;
+            ++pc;
+            break;
+        };
+        // const - reg -> reg
+        case 0x0056: {
             uint16_t l = proto->bc[pc];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -231,8 +241,18 @@ void VM::run_fn(Proto *proto) {
             ++pc;
             break;
         };
+        // const * reg -> reg
+        case 0x0057: {
+            uint16_t l = proto->bc[pc];
+            ++pc;
+            uint16_t r = registers[proto->bc[pc]];
+            ++pc;
+            registers[proto->bc[pc]] = l * r;
+            ++pc;
+            break;
+        };
         // const / reg -> reg
-        case 0x0056: {
+        case 0x0058: {
             uint16_t l = proto->bc[pc];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -242,7 +262,7 @@ void VM::run_fn(Proto *proto) {
             break;
         };
         // const ^ reg -> reg
-        case 0x0057: {
+        case 0x0059: {
             uint16_t l = proto->bc[pc];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -252,7 +272,7 @@ void VM::run_fn(Proto *proto) {
             break;
         };
         // reg + reg -> reg
-        case 0x0058: {
+        case 0x005A: {
             uint16_t l = registers[proto->bc[pc]];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -262,7 +282,7 @@ void VM::run_fn(Proto *proto) {
             break;
         };
         // reg - reg -> reg
-        case 0x0059: {
+        case 0x005B: {
             uint16_t l = registers[proto->bc[pc]];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -272,7 +292,7 @@ void VM::run_fn(Proto *proto) {
             break;
         };
         // reg * reg -> reg
-        case 0x005A: {
+        case 0x005C: {
             uint16_t l = registers[proto->bc[pc]];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -282,7 +302,7 @@ void VM::run_fn(Proto *proto) {
             break;
         };
         // reg / reg -> reg
-        case 0x005B: {
+        case 0x005D: {
             uint16_t l = registers[proto->bc[pc]];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];
@@ -292,7 +312,7 @@ void VM::run_fn(Proto *proto) {
             break;
         };
         // reg ^ reg -> reg
-        case 0x005C: {
+        case 0x005E: {
             uint16_t l = registers[proto->bc[pc]];
             ++pc;
             uint16_t r = registers[proto->bc[pc]];

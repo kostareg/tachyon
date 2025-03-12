@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     fn1[4] = 0x0011;
     fn1[5] = 1;
     fn1[6] = 0;
-    fn1[7] = 0x005A;
+    fn1[7] = 0x005C;
     fn1[8] = 0;
     fn1[9] = 1;
     fn1[10] = 0;
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
     uint16_t fn2[0xFFFF] = {};
     fn2[0] = 0x0001;
-    fn2[1] = 0x0058;
+    fn2[1] = 0x005A;
     fn2[2] = 0;
     fn2[3] = 1;
     fn2[4] = 0;
