@@ -116,10 +116,12 @@ class SequenceNode : public IRNode {
 class BlockNode : public IRNode {
   public:
     std::string label;
+    std::vector<std::string> params;
     std::unique_ptr<IRNode> body;
 
-    explicit BlockNode(std::string label, std::unique_ptr<IRNode> body)
-        : label(label), body(std::move(body)) {};
+    explicit BlockNode(std::string label, std::vector<std::string> params,
+                       std::unique_ptr<IRNode> body)
+        : label(label), params(std::move(params)), body(std::move(body)) {};
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
@@ -130,6 +132,7 @@ class BlockNode : public IRNode {
 class BlockCallNode : public IRNode {
   public:
     std::string label;
+    std::vector<std::string> params;
     std::string outName;
 
     explicit BlockCallNode(std::string label, std::string outName)
@@ -144,9 +147,20 @@ class BlockCallNode : public IRNode {
 class ParamNode : public IRNode {
   public:
     std::unique_ptr<IRNode> param;
+    std::string name;
 
-    explicit ParamNode(std::unique_ptr<IRNode> param) : param(std::move(param)) {};
+    explicit ParamNode(std::unique_ptr<IRNode> param, std::string name)
+        : param(std::move(param)), name(name) {};
 
+    void accept(Visitor &visitor) override { visitor.visit(*this); }
+};
+
+/**
+ * @brief Print last param.
+ */
+class PrintNode : public IRNode {
+  public:
+    explicit PrintNode() {};
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 } // namespace ir

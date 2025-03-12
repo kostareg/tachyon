@@ -1,8 +1,11 @@
 #pragma once
 
-#include <array>
 #include <cstdint>
+#include <mimalloc.h>
 #include <stack>
+
+#include "proto.hpp"
+#include "register_allocator.hpp"
 
 // TODO: mmap or malloc instead of arrays?
 
@@ -10,30 +13,11 @@
  * @brief Just-in-time virtual machine.
  */
 class VM {
-  public:
     /**
-     * @brief 32 16-bit global registers.
-     *
-     * All initialized to zero.
+     * @brief Holds a pointer to all registers and reallocs/frees when needed.
+     * @sa RegisterAllocator
      */
-    std::array<uint16_t, 32> registers = {};
-
-    /**
-     * @brief Program memory.
-     *
-     * The program memory is organized like so (subject to change):
-     *
-     * +----------+----------------+
-     * | Position + Description    |
-     * +----------+----------------+
-     * | 0-7      | Header         |
-     * | 8-65535  | Program        |
-     * +----------+----------------+
-     *
-     * The program is loaded here using `VM::load`, then the program counter
-     * goes through each instruction from the program section.
-     */
-    uint16_t memory[0xFFFF];
+    RegisterAllocator regalloc;
 
     /**
      * @brief The stack.
@@ -41,18 +25,23 @@ class VM {
      */
     std::stack<uint16_t> stack;
 
-    /**
-     * @brief Program counter.
-     */
-    uint16_t pc = 8;
+    std::vector<std::unique_ptr<Proto>> fns;
 
-    /**
-     * @brief Load a program into memory.
-     */
-    void load(uint16_t program[0xFFFF]);
-
+  public:
     /**
      * @brief Run the virtual machine interpreter.
+     *
+     * +--------------+-----------------+
+     * | Start        | Operation class |
+     * +--------------+-----------------+
+     * | 0x0000       | Machine         |
+     * | 0x0010       | Register        |
+     * | 0x0020       | Stack           |
+     * | 0x0030       | Comparison      |
+     * | 0x0040       | Positional      |
+     * | 0x0050       | Arithmetic      |
+     * | 0x0100       | Function        |
+     * +--------------+-----------------+
      */
-    void run();
+    void run_fn(Proto *proto);
 };

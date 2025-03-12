@@ -1,128 +1,79 @@
-#include <iostream>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
-#include "ast/ast.hpp"
 #include "vm.hpp"
 
 int main(int argc, char *argv[]) {
-    std::vector<std::unique_ptr<ast::ASTNode>> exampleArgs;
-    exampleArgs.push_back(std::make_unique<ast::BinaryOperatorNode>(
-        Op::Add, std::make_unique<ast::NumberNode>(2), std::make_unique<ast::NumberNode>(4)));
-    exampleArgs.push_back(std::make_unique<ast::BinaryOperatorNode>(
-        Op::Pow, std::make_unique<ast::NumberNode>(2), std::make_unique<ast::NumberNode>(4)));
+#ifdef DEBUG
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_level(spdlog::level::trace); // Enable trace messages
+    console_sink->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] %v%$");
 
-    std::vector<std::unique_ptr<ast::ASTNode>> myfnBodyArg;
-    myfnBodyArg.push_back(std::make_unique<ast::VariableRefNode>("o"));
+    // Create a logger with the colored sink
+    auto logger = std::make_shared<spdlog::logger>("colored_logger", console_sink);
+    spdlog::set_default_logger(logger);
 
-    std::vector<std::unique_ptr<ast::ASTNode>> myfnBody;
-    myfnBody.push_back(std::make_unique<ast::VariableDeclNode>(
-        "o",
-        std::make_unique<ast::BinaryOperatorNode>(
-            Op::Add,
-            std::make_unique<ast::BinaryOperatorNode>(
-                Op::Mul,
-                std::make_unique<ast::BinaryOperatorNode>(Op::Add,
-                                                          std::make_unique<ast::NumberNode>(3),
-                                                          std::make_unique<ast::NumberNode>(5)),
-                std::make_unique<ast::NumberNode>(
-                    9)), /*std::make_unique<ast::FunctionCallNode>("myfn", std::move(exampleArgs))*/
-            std::make_unique<ast::NumberNode>(2))));
-    // myfnBody.push_back(std::make_unique<ast::FunctionCallNode>("print", std::move(myfnBodyArg)));
+    // Set global log level to trace
+    spdlog::set_level(spdlog::level::trace);
+#endif
+    uint16_t fn1[0xFFFF] = {};
+    fn1[0] = 0x0001;
+    fn1[1] = 0x0010;
+    fn1[2] = 0;
+    fn1[3] = 10;
+    fn1[4] = 0x0011;
+    fn1[5] = 1;
+    fn1[6] = 0;
+    fn1[7] = 0x005A;
+    fn1[8] = 0;
+    fn1[9] = 1;
+    fn1[10] = 0;
+    fn1[11] = 0x0000;
 
-    std::vector<std::unique_ptr<ast::ASTNode>> stmts;
+    uint16_t fn2[0xFFFF] = {};
+    fn2[0] = 0x0001;
+    fn2[1] = 0x0058;
+    fn2[2] = 0;
+    fn2[3] = 1;
+    fn2[4] = 0;
+    fn2[5] = 0x0004;
+    fn2[6] = 0;
 
-    stmts.push_back(std::make_unique<ast::FunctionDefNode>(
-        "myfn", std::vector<std::string>{"param1", "param2"},
-        std::make_unique<ast::SequenceNode>(std::move(myfnBody))));
-    stmts.push_back(std::make_unique<ast::NumberNode>(3));
-    stmts.push_back(std::make_unique<ast::VariableRefNode>("m"));
-    stmts.push_back(std::make_unique<ast::BinaryOperatorNode>(
-        Op::Mul,
-        std::make_unique<ast::BinaryOperatorNode>(Op::Add, std::make_unique<ast::NumberNode>(3),
-                                                  std::make_unique<ast::NumberNode>(5)),
-        std::make_unique<ast::NumberNode>(2)));
-    stmts.push_back(std::make_unique<ast::VariableDeclNode>(
-        "l",
-        std::make_unique<ast::BinaryOperatorNode>(Op::Mul, std::make_unique<ast::NumberNode>(7),
-                                                  std::make_unique<ast::NumberNode>(7))));
-    stmts.push_back(std::make_unique<ast::VariableDeclNode>(
-        "m",
-        std::make_unique<ast::BinaryOperatorNode>(Op::Mul, std::make_unique<ast::NumberNode>(7),
-                                                  std::make_unique<ast::NumberNode>(5))));
-    stmts.push_back(std::make_unique<ast::VariableDeclNode>(
-        "y", std::make_unique<ast::BinaryOperatorNode>(Op::Mul,
-                                                       std::make_unique<ast::VariableRefNode>("l"),
-                                                       std::make_unique<ast::NumberNode>(7))));
-    stmts.push_back(std::make_unique<ast::VariableDeclNode>(
-        "n",
-        std::make_unique<ast::BinaryOperatorNode>(Op::Mul, std::make_unique<ast::NumberNode>(7),
-                                                  std::make_unique<ast::NumberNode>(7))));
-    stmts.push_back(std::make_unique<ast::BinaryOperatorNode>(
-        Op::Mul,
-        std::make_unique<ast::BinaryOperatorNode>(Op::Add, std::make_unique<ast::NumberNode>(3),
-                                                  std::make_unique<ast::VariableRefNode>("n")),
-        std::make_unique<ast::VariableRefNode>("y")));
+    uint16_t main[0xFFFF] = {};
+    main[0] = 0x0001;
+    main[1] = 0x0100;
+    main[2] = 0;
+    main[3] = 0;
+    main[4] = 0x0110;
+    main[5] = 0;
+    main[6] = 0x0001;
+    main[7] = 0x0120;
+    main[8] = 0;
+    main[9] = 10;
+    main[10] = 0x0120;
+    main[11] = 1;
+    main[12] = 20;
+    main[13] = 0x0100;
+    main[14] = 2;
+    main[15] = 1;
+    main[16] = 0x0110;
+    main[17] = 2;
+    main[18] = 0x0010;
+    main[19] = 1;
+    main[20] = 0xFFFF;
+    main[21] = 0x0110;
+    main[22] = 1;
+    main[23] = 0x0000;
 
-    auto expr = std::make_unique<ast::SequenceNode>(std::move(stmts));
+    std::vector<std::unique_ptr<Proto>> a;
+    a.push_back(std::make_unique<Proto>("fn1", fn1));
+    a.push_back(std::make_unique<Proto>("fn2", fn2, 2, 1));
+    Proto main_proto("main", main, std::move(a));
 
-    /*
-    TreeVisitor tree0;
-    expr->accept(tree0);
-    tree0.render();*/
-
-    ast::OptimizationVisitor1 opt1;
-    expr->accept(opt1);
-
-    ast::OptimizationVisitor2 opt2(opt1.varsReferenced);
-    opt1.optimizedNode->accept(opt2);
-
-    ast::PrintVisitor printer;
-    opt2.optimizedNode->accept(printer);
-
-    /*TreeVisitor tree1;
-    opt2.optimizedNode->accept(tree1);
-    tree1.render();*/
-
-    ast::LoweringVisitor lower;
-    opt2.optimizedNode->accept(lower);
-    auto seq = std::make_unique<ir::SequenceNode>(std::move(lower.loweredNodes));
-
-    ir::PrintVisitor printLow;
-    seq->accept(printLow);
-
-    ir::LoweringVisitor lowerIR;
-    seq->accept(lowerIR);
-
-    std::cout << "--- loading vm... ---" << std::endl;
     VM vm;
-    uint16_t memory[0xFFFF] = {};
-    std::copy(lowerIR.program, lowerIR.program + 0x0FFF, memory + 8);
-    vm.load(memory);
-    vm.run();
-
-    std::cout << "--- vm exit. memory: ---" << std::endl;
-    for (size_t i = 8; i < 40; ++i) {
-        std::cout << i << " : " << vm.memory[i] << std::endl;
-    }
-    std::cout << "--- and registers: ---" << std::endl;
-    for (size_t i = 0; i < 8; ++i) {
-        std::cout << "reg" << i << " : " << vm.registers[i] << std::endl;
-    }
-
-    /*
-    VM vm;
-    uint16_t memory[0xFFFF] = {};
-    memory[8] = 1;
-    memory[9] = 2;
-    memory[10] = 0;
-    memory[11] = 1000;
-    memory[12] = 3;
-    memory[13] = 1;
-    memory[14] = 0;
-    memory[15] = 0;
-    vm.load(memory);
-    vm.run();
-    std::cout << vm.registers[0] << std::endl;
-    std::cout << vm.registers[1] << std::endl;*/
+    vm.run_fn(&main_proto);
+    // std::cout << vm.registers[0] << std::endl;
+    // std::cout << vm.registers[1] << std::endl;
 
     return 0;
 }

@@ -333,17 +333,29 @@ void LoweringVisitor::visit(const FunctionDefNode &node) {
     auto otherNodes = std::move(loweredNodes);
     node.body->accept(*this);
     otherNodes.push_back(std::make_unique<ir::BlockNode>(
-        node.name, std::make_unique<ir::SequenceNode>(std::move(loweredNodes))));
+        node.name, node.args, std::make_unique<ir::SequenceNode>(std::move(loweredNodes))));
     loweredNodes = std::move(otherNodes);
 }
 
 void LoweringVisitor::visit(const FunctionCallNode &node) {
-    std::for_each(node.args.begin(), node.args.end(), [this](const std::unique_ptr<ASTNode> &arg) {
-        arg->accept(*this);
-        if (tmp)
-            loweredNodes.push_back(std::make_unique<ir::ParamNode>(std::move(tmp)));
-    });
+    int i = 0;
+    std::for_each(
+        node.args.begin(), node.args.end(), [this, i](const std::unique_ptr<ASTNode> &arg) mutable {
+            arg->accept(*this);
+            if (tmp)
+                loweredNodes.push_back(
+                    std::make_unique<ir::ParamNode>(std::move(tmp), "p" + std::to_string(i++)));
+        });
+
     auto tx = tmpVar();
+
+    // special case for print
+    if (node.name == "print") {
+        loweredNodes.push_back(std::make_unique<ir::PrintNode>());
+        // TODO: tmp = NumberNode 0 or blank and catch error?
+        return;
+    }
+
     loweredNodes.push_back(std::make_unique<ir::BlockCallNode>(node.name, tx));
     tmp = std::make_unique<ir::VariableRefNode>(tx);
 }

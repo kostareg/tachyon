@@ -37,6 +37,7 @@ class Visitor {
     virtual void visit(const BlockNode &node) = 0;
     virtual void visit(const BlockCallNode &node) = 0;
     virtual void visit(const ParamNode &node) = 0;
+    virtual void visit(const PrintNode &node) = 0;
     virtual ~Visitor() = default;
 };
 
@@ -54,6 +55,35 @@ class PrintVisitor : public Visitor {
     void visit(const BlockNode &node) override;
     void visit(const BlockCallNode &node) override;
     void visit(const ParamNode &node) override;
+    void visit(const PrintNode &node) override;
+};
+
+/**
+ * @brief Write function block stubs.
+ * @sa LoweringVisitor
+ *
+ * Basically a lightweight first pass of the lowering visitor that records all
+ * block names and creates stubs for them. In
+ * LoweringVisitor::visit(const BlockNode), stubs are updated to point to the
+ * allocated section of memory for the function.
+ *
+ * Every visitor apart from the BlockNode is placeholder or passthru.
+ */
+class StubVisitor : public Visitor {
+  public:
+    uint16_t stubs[0x400];
+    uint16_t pc = 0;
+    std::unordered_map<std::string, int> blocks;
+
+    void visit(const NumberNode &node) override;
+    void visit(const VariableRefNode &node) override;
+    void visit(const VariableDeclNode &node) override;
+    void visit(const BinaryOperatorNode &node) override;
+    void visit(const SequenceNode &node) override;
+    void visit(const BlockNode &node) override;
+    void visit(const BlockCallNode &node) override;
+    void visit(const ParamNode &node) override;
+    void visit(const PrintNode &node) override;
 };
 
 /**
@@ -62,9 +92,10 @@ class PrintVisitor : public Visitor {
  */
 class LoweringVisitor : public Visitor {
   public:
-    uint16_t program[0x0FFF];
-    std::string vars[32]; // var names for registers
-    uint16_t pc;
+    uint16_t program[0xFFF8]; // without headers
+    std::string vars[64];     // var names for registers
+    uint16_t pc = 0;
+    uint16_t pcDef = 33793; // pc for definitions section
     uint16_t tmp[0xFF];
     std::unordered_map<std::string, int> blocks;
 
@@ -76,6 +107,7 @@ class LoweringVisitor : public Visitor {
     void visit(const BlockNode &node) override;
     void visit(const BlockCallNode &node) override;
     void visit(const ParamNode &node) override;
+    void visit(const PrintNode &node) override;
 
     /// Find an unused register. Returns -1 if all are occupied.
     int findFreeReg() {
