@@ -17,7 +17,7 @@ void VM::run_fn(Proto *proto) {
         proto->children.clear();
     }
 
-    auto registers = regalloc.new_fn();
+    registers.new_fn();
     uint16_t pc = 0;
 
     if (!proto->bc) {
@@ -351,11 +351,11 @@ void VM::run_fn(Proto *proto) {
             run_fn(fn);
 
             for (int i = 0; i < fn->returns; ++i) {
-                spdlog::trace("migrated {}: {}", i, registers[256 + i]);
-                registers[i] = registers[256 + i];
+                spdlog::trace("migrated {}: {}", i, registers[i]);
+                registers.get_last_fn(i) = registers[i];
             }
 
-            regalloc.free_fn();
+            registers.free_fn();
 
             break;
         };
@@ -365,7 +365,7 @@ void VM::run_fn(Proto *proto) {
             ++pc;
             size_t val = proto->bc[pc];
             ++pc;
-            regalloc.early_push(idx, val);
+            registers.early_push(idx, val);
             break;
         };
         // push reg fn param
@@ -374,7 +374,7 @@ void VM::run_fn(Proto *proto) {
             ++pc;
             size_t val = registers[proto->bc[pc]];
             ++pc;
-            regalloc.early_push(idx, val);
+            registers.early_push(idx, val);
             break;
         };
         default:
@@ -387,7 +387,7 @@ void VM::run_fn(Proto *proto) {
             break;
     }
 
-    spdlog::trace("{} done, registers: {}, {}, {}", proto->name, registers[0], registers[1],
+    spdlog::trace("{} done, regalloc: {}, {}, {}", proto->name, registers[0], registers[1],
                   registers[2]);
 
     // move children back for next use

@@ -129,18 +129,46 @@ class LoweringVisitor : public Visitor {
         return -1;
     }
     /// Given an operator Op, find the corresponding bytecode value.
-    int makeOperator(::Op op) {
+    int makeOperator(::Op op, bool leftVar, bool rightVar) {
+        if (!leftVar && !rightVar)
+            throw std::runtime_error("ice: cannot interpret const+const");
+
         switch (op) {
         case Op::Add:
-            return 13;
+            if (leftVar && rightVar)
+                return 0x005A;
+            else if (leftVar)
+                return 0x0050;
+            else
+                return 0x0055;
         case Op::Sub:
-            return 14;
+            if (leftVar && rightVar)
+                return 0x005B;
+            else if (leftVar)
+                return 0x0051;
+            else
+                return 0x0056;
         case Op::Mul:
-            return 15;
+            if (leftVar && rightVar)
+                return 0x005C;
+            else if (leftVar)
+                return 0x0052;
+            else
+                return 0x0057;
         case Op::Div:
-            return 16;
+            if (leftVar && rightVar)
+                return 0x005D;
+            else if (leftVar)
+                return 0x0053;
+            else
+                return 0x0058;
         case Op::Pow:
-            return 17;
+            if (leftVar && rightVar)
+                return 0x005E;
+            else if (leftVar)
+                return 0x0054;
+            else
+                return 0x0059;
         default:
             throw std::runtime_error("trying to find the bytecode of unknown operator");
         }

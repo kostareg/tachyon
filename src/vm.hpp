@@ -7,8 +7,6 @@
 #include "proto.hpp"
 #include "register_allocator.hpp"
 
-// TODO: mmap or malloc instead of arrays?
-
 /**
  * @brief Just-in-time virtual machine.
  */
@@ -17,7 +15,7 @@ class VM {
      * @brief Holds a pointer to all registers and reallocs/frees when needed.
      * @sa RegisterAllocator
      */
-    RegisterAllocator regalloc;
+    RegisterAllocator registers;
 
     /**
      * @brief The stack.

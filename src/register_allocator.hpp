@@ -1,18 +1,6 @@
 #include <cstdint>
 #include <mimalloc.h>
-
-/* TODO: consider implementation.
- * My issue here is that when mi_realloc is called to shrink, the pointer may
- * change. The current implementation of VM just keeps the pointer where it is.
- *
- * Consider having each function store their offset, then using
- *
- * ```
- * int* get_register(size_t index) {
- *     return registers + index;  // Offset by 'index'
- * }
- * ```
- */
+#include <spdlog/spdlog.h>
 
 class RegisterAllocator {
     /**
@@ -66,7 +54,6 @@ class RegisterAllocator {
     void free_fn() {
         reglast -= 256;
 
-        /*
         if (cap / 2 >= reglast) {
             cap /= 2;
             spdlog::trace("new cap: {}", cap);
@@ -76,8 +63,14 @@ class RegisterAllocator {
             spdlog::trace("first elem: {}", registers[0]);
             spdlog::trace("last elem: {}", registers[cap]);
         }
-        */
     }
+
+    uint16_t &get_last_fn(size_t i) { return registers[reglast - 256 * 2 + i]; }
+
+    /**
+     * @brief Always point to the last 256 registers.
+     */
+    uint16_t &operator[](size_t i) { return registers[reglast - 256 + i]; }
 
     ~RegisterAllocator() { mi_free(registers); }
 };

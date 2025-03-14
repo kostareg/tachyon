@@ -124,7 +124,7 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             // find the variable's register, then run reg <op> const
             var->accept(*this);
             auto out = findFreeReg();
-            program[pc] = makeOperator(node.op) + 5;
+            program[pc] = makeOperator(node.op, true, false);
             program[pc + 1] = tmp[0];
             program[pc + 2] = num->value;
             program[pc + 3] = out;
@@ -137,7 +137,7 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             auto reg2 = tmp[0];
 
             auto out = findFreeReg();
-            program[pc] = makeOperator(node.op);
+            program[pc] = makeOperator(node.op, true, true);
             program[pc + 1] = reg1;
             program[pc + 2] = reg2;
             program[pc + 3] = out;
@@ -148,21 +148,9 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
         if (auto var = dynamic_cast<VariableRefNode *>(node.rhs.get())) {
             var->accept(*this);
             auto out = findFreeReg();
-            auto op = makeOperator(node.op) + 5;
-            if (node.op != Op::Add && node.op != Op::Mul) {
-                // find the right operation case.
-                op += 3; // div, pow
-                if (node.op == Op::Sub)
-                    op += 1; // sub
-                program[pc] = op;
-                program[pc + 1] = num->value;
-                program[pc + 2] = tmp[0];
-            } else {
-                // reverse order and use reg +/* const.
-                program[pc] = op;
-                program[pc + 1] = tmp[0];
-                program[pc + 2] = num->value;
-            }
+            program[pc] = makeOperator(node.op, false, true);
+            program[pc + 1] = num->value;
+            program[pc + 2] = tmp[0];
             program[pc + 3] = out;
             pc += 4;
             tmp[0] = out;
