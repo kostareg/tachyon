@@ -1,7 +1,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "vm.hpp"
+#include "vm/vm.hpp"
 
 int main(int argc, char *argv[]) {
 #ifdef DEBUG
@@ -65,12 +65,12 @@ int main(int argc, char *argv[]) {
     main[22] = 1;
     main[23] = 0x0000;
 
-    std::vector<std::unique_ptr<Proto>> a;
-    a.push_back(std::make_unique<Proto>("fn1", fn1));
-    a.push_back(std::make_unique<Proto>("fn2", fn2, 2, 1));
-    Proto main_proto("main", main, std::move(a));
+    std::vector<std::unique_ptr<vm::Proto>> a;
+    a.push_back(std::make_unique<vm::Proto>("fn1", fn1));
+    a.push_back(std::make_unique<vm::Proto>("fn2", fn2, 2, 1));
+    vm::Proto main_proto("main", main, std::move(a));
 
-    VM vm;
+    vm::VM vm;
     vm.run_fn(&main_proto);
     // std::cout << vm.registers[0] << std::endl;
     // std::cout << vm.registers[1] << std::endl;

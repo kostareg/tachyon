@@ -2,8 +2,9 @@
 #include <iostream>
 #include <spdlog/spdlog.h>
 
-#include "vm.hpp"
+#include "vm/vm.hpp"
 
+namespace vm {
 void VM::run_fn(Proto *proto) {
     spdlog::trace("running function {}", proto->name);
 
@@ -399,3 +400,4 @@ void VM::run_fn(Proto *proto) {
         fns.erase(fns.end() - numChildren, fns.end());
     }
 }
+} // namespace vm

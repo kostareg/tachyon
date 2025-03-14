@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 
+namespace vm {
 /*
  * @brief Function prototype.
  */
@@ -36,3 +37,4 @@ struct Proto {
           std::vector<std::unique_ptr<Proto>> children)
         : name(name), bc(bc), params(params), returns(returns), children(std::move(children)) {};
 };
+} // namespace vm

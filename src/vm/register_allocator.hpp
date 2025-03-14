@@ -2,6 +2,7 @@
 #include <mimalloc.h>
 #include <spdlog/spdlog.h>
 
+namespace vm {
 class RegisterAllocator {
     /**
      * @brief 16-bit registers.
@@ -74,3 +75,4 @@ class RegisterAllocator {
 
     ~RegisterAllocator() { mi_free(registers); }
 };
+} // namespace vm

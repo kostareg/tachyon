@@ -4,9 +4,10 @@
 #include <mimalloc.h>
 #include <stack>
 
-#include "proto.hpp"
-#include "register_allocator.hpp"
+#include "vm/proto.hpp"
+#include "vm/register_allocator.hpp"
 
+namespace vm {
 /**
  * @brief Just-in-time virtual machine.
  */
@@ -43,3 +44,4 @@ class VM {
      */
     void run_fn(Proto *proto);
 };
+} // namespace vm

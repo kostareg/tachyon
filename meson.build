@@ -3,7 +3,7 @@ project('tachyon', 'cpp',
 )
 src_files = [ 'src/ast/visitor.cpp'
             , 'src/ir/visitor.cpp'
-            , 'src/vm.cpp'
+            , 'src/vm/vm.cpp'
             ]
 
 mimalloc = dependency('mimalloc')
