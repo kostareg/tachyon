@@ -177,5 +177,43 @@ int main(int argc, char *argv[]) {
     ast::PrintVisitor pr;
     nodes->accept(pr);
 
+    ast::OptimizationVisitor1 opt1;
+    nodes->accept(opt1);
+
+    std::cout << "ast opt 1:" << std::endl;
+    ast::PrintVisitor printA1;
+    opt1.optimizedNode->accept(printA1);
+
+    ast::OptimizationVisitor2 opt2(opt1.varsReferenced);
+    opt1.optimizedNode->accept(opt2);
+
+    std::cout << "ast opt 2:" << std::endl;
+    ast::PrintVisitor printA2;
+    opt2.optimizedNode->accept(printA2);
+
+    ast::LoweringVisitor lower1;
+    opt2.optimizedNode->accept(lower1);
+    auto n = std::make_unique<ir::SequenceNode>(std::move(lower1.loweredNodes));
+
+    ir::PrintVisitor printI;
+    n->accept(printI);
+
+    ir::LoweringVisitor lower2("main");
+    n->accept(lower2);
+
+    for (int i = 0; i < 20; ++i) {
+        std::cout << i << " : " << "0x" << std::hex << std::setw(4) << std::setfill('0')
+                  << lower2.program[i] << std::dec << std::endl;
+    }
+
+    lower2.finish();
+
+    std::cout << "------vm------" << std::endl;
+
+    vm::VM vm1;
+    vm1.run_fn(lower2.proto.get());
+
+    std::cout << "--------------" << std::endl;
+
     return 0;
 }

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "op.hpp"
+
 namespace parser {
 enum class TokenType {
     IDENT,
@@ -27,6 +29,21 @@ void printTokenType(TokenType t);
 
 inline bool isoperator(TokenType t) {
     return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
+};
+
+inline Op tok_to_op(TokenType t) {
+    if (t == PLUS)
+        return Op::Add;
+    else if (t == MINUS)
+        return Op::Sub;
+    else if (t == STAR)
+        return Op::Mul;
+    else if (t == FSLASH)
+        return Op::Div;
+    else if (t == CARET)
+        return Op::Pow;
+    else
+        throw std::runtime_error("ice: unknown operator");
 };
 
 struct Token {

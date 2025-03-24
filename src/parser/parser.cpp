@@ -41,6 +41,7 @@ std::unique_ptr<ASTNode> Parser::expr() {
     // if we are the lhs of an operator
     // TODO: order of operations
     if (isoperator(peek(1).type)) {
+        ::Op op = tok_to_op(peek(1).type);
         auto l = advance();
         std::unique_ptr<ASTNode> lhs;
         if (l.type == NUMBER) {
@@ -53,7 +54,7 @@ std::unique_ptr<ASTNode> Parser::expr() {
 
         advance(); // operator
         auto rhs = expr();
-        return std::make_unique<BinaryOperatorNode>(::Op::Mul, std::move(lhs), std::move(rhs));
+        return std::make_unique<BinaryOperatorNode>(op, std::move(lhs), std::move(rhs));
     };
 
     auto n = matchRead(NUMBER);
