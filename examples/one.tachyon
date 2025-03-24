@@ -1,0 +1,4 @@
+xx = 10;
+yy = xx;
+zz = xx * yy;
+print(zz);

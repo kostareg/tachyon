@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "ast/ast.hpp"
+#include "parser/tokenizer.hpp"
 #include "vm/vm.hpp"
 
 int main(int argc, char *argv[]) {
@@ -19,6 +20,7 @@ int main(int argc, char *argv[]) {
     spdlog::set_level(spdlog::level::trace);
 #endif
 
+    /*
     std::vector<std::unique_ptr<ast::ASTNode>> mainS;
     std::vector<std::unique_ptr<ast::ASTNode>> fn1S;
     std::vector<std::unique_ptr<ast::ASTNode>> fn2S;
@@ -145,6 +147,25 @@ int main(int argc, char *argv[]) {
     vm.run_fn(&main_proto);
     // std::cout << vm.registers[0] << std::endl;
     // std::cout << vm.registers[1] << std::endl;
+    */
+
+    std::ifstream file("examples/one.tachyon");
+    std::string str;
+    std::string file_contents;
+    while (std::getline(file, str)) {
+        file_contents += str;
+        file_contents.push_back('\n');
+        std::cout << str << std::endl;
+    }
+
+    Tokenizer t;
+    auto toks = t.tokenize(file_contents);
+
+    std::cout << "------------" << std::endl;
+    for (int i = 0; i < toks.size(); ++i) {
+        toks[i].print();
+        std::cout << std::endl;
+    }
 
     return 0;
 }
