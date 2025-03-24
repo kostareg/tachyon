@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+namespace parser {
 enum class TokenType {
     IDENT,
     NUMBER,
@@ -20,7 +21,13 @@ enum class TokenType {
     END
 };
 
+using enum TokenType;
+
 void printTokenType(TokenType t);
+
+inline bool isoperator(TokenType t) {
+    return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
+};
 
 struct Token {
     TokenType type;
@@ -44,3 +51,4 @@ class Tokenizer {
   public:
     std::vector<Token> tokenize(std::string s);
 };
+} // namespace parser

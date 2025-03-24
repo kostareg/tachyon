@@ -2,9 +2,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "ast/ast.hpp"
+// #include "ast/ast.hpp"
+#include "parser/parser.hpp"
 #include "parser/tokenizer.hpp"
-#include "vm/vm.hpp"
+// #include "vm/vm.hpp"
 
 int main(int argc, char *argv[]) {
 #ifdef DEBUG
@@ -158,7 +159,7 @@ int main(int argc, char *argv[]) {
         std::cout << str << std::endl;
     }
 
-    Tokenizer t;
+    parser::Tokenizer t;
     auto toks = t.tokenize(file_contents);
 
     std::cout << "------------" << std::endl;
@@ -166,6 +167,15 @@ int main(int argc, char *argv[]) {
         toks[i].print();
         std::cout << std::endl;
     }
+    std::cout << "------------" << std::endl;
+
+    parser::Parser p(toks);
+    auto nodes = p.parse();
+
+    std::cout << "done parsing" << std::endl;
+
+    ast::PrintVisitor pr;
+    nodes->accept(pr);
 
     return 0;
 }

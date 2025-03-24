@@ -3,6 +3,7 @@
 
 #include "parser/tokenizer.hpp"
 
+namespace parser {
 using enum TokenType;
 
 void printTokenType(TokenType t) {
@@ -39,7 +40,6 @@ std::vector<Token> Tokenizer::tokenize(std::string s) {
     size_t pos = 0;
 
     while (1) {
-        std::cout << "pos " << pos << std::endl;
         if (pos == s.size()) {
             tokens.push_back(Token(END));
             break;
@@ -81,7 +81,7 @@ std::vector<Token> Tokenizer::tokenize(std::string s) {
                 ++pos;
             }
             --pos;
-            tokens.push_back(Token(IDENT, stoi(n)));
+            tokens.push_back(Token(NUMBER, stoi(n)));
         } else
             throw std::runtime_error(fmt::format("unrecognized char at {}", pos));
 
@@ -92,3 +92,5 @@ std::vector<Token> Tokenizer::tokenize(std::string s) {
 
     return tokens;
 }
+
+} // namespace parser
