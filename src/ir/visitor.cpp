@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "ir/ir.hpp"
 #include "ir/visitor.hpp"
@@ -50,51 +51,20 @@ void PrintVisitor::visit(const ParamNode &node) {
     node.param->accept(*this);
 }
 
-void PrintVisitor::visit(const PrintNode &node) { std::cout << prefix << "PRINT"; }
+void LoweringVisitor::visit(const NumberNode &node) { tmp = node.value; }
 
-void StubVisitor::visit(const NumberNode &node) {}
-
-void StubVisitor::visit(const VariableRefNode &node) {}
-
-void StubVisitor::visit(const VariableDeclNode &node) { node.decl->accept(*this); }
-
-void StubVisitor::visit(const BinaryOperatorNode &node) {
-    node.lhs->accept(*this);
-    node.rhs->accept(*this);
-}
-
-void StubVisitor::visit(const SequenceNode &node) {
-    std::for_each(node.body.begin(), node.body.end(),
-                  [this](const std::unique_ptr<IRNode> &stmt) { stmt->accept(*this); });
-}
-
-void StubVisitor::visit(const BlockNode &node) {
-    // write a blank stub
-    stubs[pc] = 26;
-    stubs[pc + 1] = 0;
-    blocks[node.label] = pc;
-    pc += 2;
-}
-
-void StubVisitor::visit(const BlockCallNode &node) {}
-
-void StubVisitor::visit(const ParamNode &node) {}
-
-void StubVisitor::visit(const PrintNode &node) {}
-
-void LoweringVisitor::visit(const NumberNode &node) { tmp[0] = node.value; }
-
-void LoweringVisitor::visit(const VariableRefNode &node) { tmp[0] = findVar(node.name); }
+void LoweringVisitor::visit(const VariableRefNode &node) { tmp = findVar(node.name); }
 
 void LoweringVisitor::visit(const VariableDeclNode &node) {
+    spdlog::trace("variable declaration");
     if (auto num = dynamic_cast<NumberNode *>(node.decl.get())) {
         // if we are declaring a constant, move it directly.
         auto reg = findFreeReg();
 
         num->accept(*this);
-        program[pc] = 2;
+        program[pc] = 0x0010;
         program[pc + 1] = reg;
-        program[pc + 2] = tmp[0];
+        program[pc + 2] = tmp;
         pc += 3;
 
         vars[reg] = node.name;
@@ -102,16 +72,15 @@ void LoweringVisitor::visit(const VariableDeclNode &node) {
         // if we are declaring a binop, let it handle itself and claim its
         // register under our name.
         binop->accept(*this);
-        vars[tmp[0]] = node.name;
-        std::cout << std::endl;
+        vars[tmp] = node.name;
     } else if (auto var = dynamic_cast<VariableRefNode *>(node.decl.get())) {
         // if we are declaring the same as another variable, copy it.
         var->accept(*this);
         auto to = findFreeReg();
 
-        program[pc] = 3;
+        program[pc] = 0x0011;
         program[pc + 1] = to;
-        program[pc + 2] = tmp[0];
+        program[pc + 2] = tmp;
         pc += 3;
 
         vars[to] = node.name;
@@ -125,16 +94,16 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             var->accept(*this);
             auto out = findFreeReg();
             program[pc] = makeOperator(node.op, true, false);
-            program[pc + 1] = tmp[0];
+            program[pc + 1] = tmp;
             program[pc + 2] = num->value;
             program[pc + 3] = out;
             pc += 4;
-            tmp[0] = out;
+            tmp = out;
         } else if (auto varR = dynamic_cast<VariableRefNode *>(node.rhs.get())) {
             var->accept(*this);
-            auto reg1 = tmp[0];
+            auto reg1 = tmp;
             varR->accept(*this);
-            auto reg2 = tmp[0];
+            auto reg2 = tmp;
 
             auto out = findFreeReg();
             program[pc] = makeOperator(node.op, true, true);
@@ -142,7 +111,7 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             program[pc + 2] = reg2;
             program[pc + 3] = out;
             pc += 4;
-            tmp[0] = out;
+            tmp = out;
         }
     } else if (auto num = dynamic_cast<NumberNode *>(node.lhs.get())) {
         if (auto var = dynamic_cast<VariableRefNode *>(node.rhs.get())) {
@@ -150,91 +119,71 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             auto out = findFreeReg();
             program[pc] = makeOperator(node.op, false, true);
             program[pc + 1] = num->value;
-            program[pc + 2] = tmp[0];
+            program[pc + 2] = tmp;
             program[pc + 3] = out;
             pc += 4;
-            tmp[0] = out;
+            tmp = out;
         }
     }
 }
 
 void LoweringVisitor::visit(const SequenceNode &node) {
-    std::for_each(node.body.begin(), node.body.end(),
-                  [this](const std::unique_ptr<IRNode> &elem) { elem->accept(*this); });
+    std::for_each(node.body.begin(), node.body.end(), [this](const std::unique_ptr<IRNode> &elem) {
+        spdlog::trace("sequence node");
+        elem->accept(*this);
+    });
 }
 
 void LoweringVisitor::visit(const BlockNode &node) {
-    std::cout << "lowering a block node" << std::endl;
-    // first rename parameters.
-    for (int i = 0; i < node.params.size(); ++i) {
-        // TODO: horrible
-        auto x = std::distance(
-            std::begin(vars), std::find(std::begin(vars), std::end(vars), "p" + std::to_string(i)));
-        std::cout << "found " << x << std::endl;
-        for (int m = 0; m < 64; ++m) {
-            std::cout << "  " << vars[m] << std::endl;
-        }
-        vars[findFreeReg()] = vars[x];
-    }
-    std::cout << "all params renamed" << std::endl;
-    // check the stubs.
-    if (blocks.contains(node.label)) {
-        // find free section of function defs and run.
-        auto pcOld = pc;
-        pc = pcDef;
-        program[pc++] = 0;
-
-        // modify stub to point to def after buf
-        program[blocks[node.label] + 32760 + 1] = pc + 8; // program + 1 = pc + header
-
-        // if the program reaches this block (without being called), stop.
-        node.body->accept(*this);
-
-        // update pcDef, reset pc.
-        pcDef += pc - pcOld; // length of the block
-        pc = pcOld;
-    } else {
-        // should not reach.
-        throw std::runtime_error("internal compiler error: stub not found");
-    }
+    // add it to the children, then hand down handling.
+    LoweringVisitor v(node.label);
+    node.body->accept(v);
+    proto->children.push_back(std::move(v.proto));
 }
 
 void LoweringVisitor::visit(const BlockCallNode &node) {
-    // jump to position.
-    program[pc] = 26;
-    program[pc + 1] = blocks[node.label] + 32768; // memory header + program + buffer
-    pc += 2;
-    // TODO: outname
+    // find where its stored
+    if (node.label == "print") {
+        // load print somewhere and call it.
+        auto reg = findFreeReg();
+        program[pc] = 0x0100;
+        program[pc + 1] = reg;
+        program[pc + 2] = 0xFFFF;
+        program[pc + 3] = 0x0110;
+        program[pc + 4] = reg;
+        pc += 5;
+    } else {
+        // TODO
+        auto reg = findVar(node.label);
+        // jump to position.
+        program[pc] = 0x0110;
+        program[pc + 1] = reg;
+        pc += 2;
+    }
 }
 
 void LoweringVisitor::visit(const ParamNode &node) {
     if (auto num = dynamic_cast<NumberNode *>(node.param.get())) {
         auto reg = findFreeReg();
         num->accept(*this);
-        program[pc] = 2;
+        program[pc] = 0x0120;
         program[pc + 1] = reg;
-        program[pc + 2] = tmp[0];
+        program[pc + 2] = tmp;
         pc += 3;
 
         vars[reg] = node.name;
     } else if (auto var = dynamic_cast<VariableRefNode *>(node.param.get())) {
         var->accept(*this);
-        if (tmp[0] != 65535) {
-            auto reg = findFreeReg();
-            program[pc] = 2;
-            program[pc + 1] = reg;
-            program[pc + 2] = tmp[0];
+        if (tmp != 65535) {
+            program[pc] = 0x0121;
+            program[pc + 1] = node.idx;
+            program[pc + 2] = tmp;
             pc += 3;
-
-            vars[reg] = node.name;
         } else {
             throw std::runtime_error("param uses unknown variable");
         }
+    } else {
+        throw std::runtime_error("ice: could not handle fn param");
     }
-}
-
-void LoweringVisitor::visit(const PrintNode &node) {
-    program[pc] = 36;
-    ++pc;
 }
 } // namespace ir

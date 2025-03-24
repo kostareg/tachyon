@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "op.hpp"
+#include "vm/vm.hpp"
 
 namespace ir {
 // fwd-decls of ir.hpp nodes.
@@ -17,7 +18,6 @@ class SequenceNode;
 class BlockNode;
 class BlockCallNode;
 class ParamNode;
-class PrintNode;
 
 /**
  * @brief Visitor pattern for intermediate representation.
@@ -37,7 +37,6 @@ class Visitor {
     virtual void visit(const BlockNode &node) = 0;
     virtual void visit(const BlockCallNode &node) = 0;
     virtual void visit(const ParamNode &node) = 0;
-    virtual void visit(const PrintNode &node) = 0;
     virtual ~Visitor() = default;
 };
 
@@ -55,40 +54,16 @@ class PrintVisitor : public Visitor {
     void visit(const BlockNode &node) override;
     void visit(const BlockCallNode &node) override;
     void visit(const ParamNode &node) override;
-    void visit(const PrintNode &node) override;
-};
-
-/**
- * @brief Write function block stubs.
- * @sa LoweringVisitor
- *
- * Basically a lightweight first pass of the lowering visitor that records all
- * block names and creates stubs for them. In
- * LoweringVisitor::visit(const BlockNode), stubs are updated to point to the
- * allocated section of memory for the function.
- *
- * Every visitor apart from the BlockNode is placeholder or passthru.
- */
-class StubVisitor : public Visitor {
-  public:
-    uint16_t stubs[0x400];
-    uint16_t pc = 0;
-    std::unordered_map<std::string, int> blocks;
-
-    void visit(const NumberNode &node) override;
-    void visit(const VariableRefNode &node) override;
-    void visit(const VariableDeclNode &node) override;
-    void visit(const BinaryOperatorNode &node) override;
-    void visit(const SequenceNode &node) override;
-    void visit(const BlockNode &node) override;
-    void visit(const BlockCallNode &node) override;
-    void visit(const ParamNode &node) override;
-    void visit(const PrintNode &node) override;
 };
 
 /**
  * @brief Lower to bytecode.
  * @sa VM::run()
+ *
+ * Creates a "main" vm::Proto node that stores the bytecode of the body of the
+ * AST, and propagates lowering of child functions to their own visitors. At
+ * this point, the AST has already checked that all called functions are
+ * defined and *in scope*. This assumption simplifies our work here.
  */
 class LoweringVisitor : public Visitor {
   public:
@@ -96,8 +71,12 @@ class LoweringVisitor : public Visitor {
     std::string vars[64];     // var names for registers
     uint16_t pc = 0;
     uint16_t pcDef = 33793; // pc for definitions section
-    uint16_t tmp[0xFF];
+    uint16_t tmp;
     std::unordered_map<std::string, int> blocks;
+
+    std::unique_ptr<vm::Proto> proto;
+
+    LoweringVisitor(std::string name) : proto(std::make_unique<vm::Proto>(name, nullptr)) {}
 
     void visit(const NumberNode &node) override;
     void visit(const VariableRefNode &node) override;
@@ -107,7 +86,8 @@ class LoweringVisitor : public Visitor {
     void visit(const BlockNode &node) override;
     void visit(const BlockCallNode &node) override;
     void visit(const ParamNode &node) override;
-    void visit(const PrintNode &node) override;
+
+    void finish() { proto->bc = program; }
 
     /// Find an unused register. Returns -1 if all are occupied.
     int findFreeReg() {

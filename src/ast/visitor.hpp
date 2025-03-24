@@ -91,6 +91,8 @@ class TreeVisitor : public Visitor {
  * This pass also collects information on which static variables are used.
  * This data will be used by the second pass for dead code optimization of
  * unused variables.
+ *
+ * TODO: also store list of functions to double check.
  */
 class OptimizationVisitor1 : public Visitor {
   public:

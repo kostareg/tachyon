@@ -148,19 +148,11 @@ class ParamNode : public IRNode {
   public:
     std::unique_ptr<IRNode> param;
     std::string name;
+    int idx;
 
-    explicit ParamNode(std::unique_ptr<IRNode> param, std::string name)
-        : param(std::move(param)), name(name) {};
+    explicit ParamNode(std::unique_ptr<IRNode> param, std::string name, int idx)
+        : param(std::move(param)), name(name), idx(idx) {};
 
-    void accept(Visitor &visitor) override { visitor.visit(*this); }
-};
-
-/**
- * @brief Print last param.
- */
-class PrintNode : public IRNode {
-  public:
-    explicit PrintNode() {};
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 } // namespace ir

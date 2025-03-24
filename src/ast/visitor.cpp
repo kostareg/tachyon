@@ -222,6 +222,7 @@ void OptimizationVisitor1::visit(const SequenceNode &node) {
     std::vector<std::unique_ptr<ASTNode>> stmts;
     std::for_each(node.stmts.begin(), node.stmts.end(),
                   [this, &stmts](const std::unique_ptr<ASTNode> &stmt) {
+                      spdlog::trace("opt1 sequence node");
                       root = true;
                       stmt->accept(*this);
                       if (optimizedNode)
@@ -320,6 +321,7 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
 
 void LoweringVisitor::visit(const VariableDeclNode &node) {
     node.decl->accept(*this);
+    spdlog::trace("ast variable decl node");
     loweredNodes.push_back(std::make_unique<ir::VariableDeclNode>(node.name, std::move(tmp)));
 }
 
@@ -344,17 +346,11 @@ void LoweringVisitor::visit(const FunctionCallNode &node) {
             arg->accept(*this);
             if (tmp)
                 loweredNodes.push_back(
-                    std::make_unique<ir::ParamNode>(std::move(tmp), "p" + std::to_string(i++)));
+                    std::make_unique<ir::ParamNode>(std::move(tmp), "p" + std::to_string(i), i));
+            ++i;
         });
 
     auto tx = tmpVar();
-
-    // special case for print
-    if (node.name == "print") {
-        loweredNodes.push_back(std::make_unique<ir::PrintNode>());
-        // TODO: tmp = NumberNode 0 or blank and catch error?
-        return;
-    }
 
     loweredNodes.push_back(std::make_unique<ir::BlockCallNode>(node.name, tx));
     tmp = std::make_unique<ir::VariableRefNode>(tx);
@@ -363,6 +359,7 @@ void LoweringVisitor::visit(const FunctionCallNode &node) {
 void LoweringVisitor::visit(const SequenceNode &node) {
     std::for_each(node.stmts.begin(), node.stmts.end(),
                   [this](const std::unique_ptr<ASTNode> &stmt) {
+                      spdlog::trace("ast sequence node");
                       stmt->accept(*this);
                       if (tmp)
                           loweredNodes.push_back(std::move(tmp));

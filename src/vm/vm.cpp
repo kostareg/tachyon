@@ -29,7 +29,7 @@ void VM::run_fn(Proto *proto) {
     /// TODO: needed? replace with return void?
     while (proto->bc[pc] != 0) {
         uint16_t op = proto->bc[pc];
-        spdlog::trace("{}[{}] op {}", proto->name, pc, op);
+        spdlog::trace("{}[{}] op 0x{:04x}", proto->name, pc, op);
         ++pc;
 
         switch (op) {
@@ -324,6 +324,7 @@ void VM::run_fn(Proto *proto) {
         };
         // point reg to fn
         case 0x0100: {
+            // TODO: same as 0x0010?
             uint16_t reg = proto->bc[pc];
             ++pc;
             uint16_t idx = proto->bc[pc];
@@ -339,8 +340,9 @@ void VM::run_fn(Proto *proto) {
             spdlog::trace("calling fn register {}", idx);
 
             if (idx == 0xFFFF) {
-                // special case: print reg 0
-                std::cout << registers[0] << std::endl;
+                spdlog::trace("print? {}", registers[0]);
+                // special case: print register (param)
+                std::cout << registers[256] << std::endl;
                 break;
             } else if (idx >= fns.size()) {
                 // if its not a parent or child function
@@ -375,6 +377,7 @@ void VM::run_fn(Proto *proto) {
             ++pc;
             size_t val = registers[proto->bc[pc]];
             ++pc;
+            spdlog::trace("here is the register value that I am pushing: {}", val);
             registers.early_push(idx, val);
             break;
         };
