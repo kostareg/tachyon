@@ -7,7 +7,7 @@
 
 #include "op.hpp"
 
-namespace parser {
+namespace lexer {
 enum class TokenType {
     IDENT,
     NUMBER,
@@ -64,8 +64,8 @@ struct Token {
     };
 };
 
-class Tokenizer {
+class Lexer {
   public:
-    std::vector<Token> tokenize(std::string s);
+    std::vector<Token> lex(std::string s);
 };
-} // namespace parser
+} // namespace lexer

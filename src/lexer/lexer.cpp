@@ -1,9 +1,9 @@
 #include <fmt/format.h>
 #include <iostream>
 
-#include "parser/tokenizer.hpp"
+#include "lexer/lexer.hpp"
 
-namespace parser {
+namespace lexer {
 using enum TokenType;
 
 void printTokenType(TokenType t) {
@@ -35,7 +35,7 @@ void printTokenType(TokenType t) {
         std::cout << "unknown token";
 }
 
-std::vector<Token> Tokenizer::tokenize(std::string s) {
+std::vector<Token> Lexer::lex(std::string s) {
     std::vector<Token> tokens;
     size_t pos = 0;
 
@@ -106,4 +106,4 @@ std::vector<Token> Tokenizer::tokenize(std::string s) {
     return tokens;
 }
 
-} // namespace parser
+} // namespace lexer

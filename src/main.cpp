@@ -2,10 +2,8 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-// #include "ast/ast.hpp"
+#include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
-#include "parser/tokenizer.hpp"
-// #include "vm/vm.hpp"
 
 int main(int argc, char *argv[]) {
 #ifdef DEBUG
@@ -30,8 +28,8 @@ int main(int argc, char *argv[]) {
         std::cout << str << std::endl;
     }
 
-    parser::Tokenizer t;
-    auto toks = t.tokenize(file_contents);
+    lexer::Lexer t;
+    auto toks = t.lex(file_contents);
 
     std::cout << "------------" << std::endl;
     for (int i = 0; i < toks.size(); ++i) {

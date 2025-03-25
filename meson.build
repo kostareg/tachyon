@@ -3,7 +3,7 @@ project('tachyon', 'cpp',
 )
 src_files = [ 'src/ast/visitor.cpp'
             , 'src/ir/visitor.cpp'
-            , 'src/parser/tokenizer.cpp'
+            , 'src/lexer/lexer.cpp'
             , 'src/parser/parser.cpp'
             , 'src/vm/vm.cpp'
             ]

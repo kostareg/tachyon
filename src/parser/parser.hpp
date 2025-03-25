@@ -1,9 +1,10 @@
 #pragma once
 
 #include "ast/ast.hpp"
-#include "parser/tokenizer.hpp"
+#include "lexer/lexer.hpp"
 
 using namespace ast;
+using namespace lexer;
 
 namespace parser {
 
