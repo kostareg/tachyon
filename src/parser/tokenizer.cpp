@@ -48,6 +48,19 @@ std::vector<Token> Tokenizer::tokenize(std::string s) {
         auto c = s[pos];
 
         if (c == ' ' || c == '\n') {
+        } else if (c == '/' && s[pos + 1] == '*') {
+            pos += 3;
+            while (s[pos - 1] != '*' && s[pos] != '/') {
+                ++pos;
+                // EOF
+                if (pos > s.size())
+                    throw std::runtime_error("unclosed comment to eof");
+            }
+        } else if (c == '/' && s[pos + 1] == '/') {
+            pos += 2;
+            while (s[pos] != '\n') {
+                ++pos;
+            }
         } else if (c == '=')
             tokens.push_back(EQ);
         else if (c == '+')

@@ -1,0 +1,8 @@
+// This file defines basic grammar for the Tachyon programming language.
+// Single-line comments start with two forward slashes.
+
+/* 
+ * Multi-line comments start with a forward slash and a star,
+ * ...
+ * and end with a star and a forward slash.
+ */

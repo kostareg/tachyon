@@ -1,4 +1,6 @@
 xx = 20;
 yy = xx;
-zz = xx + 1;
+zz = xx * yy;
 print(zz;);
+
+//xxx
