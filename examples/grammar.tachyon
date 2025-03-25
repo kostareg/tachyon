@@ -6,3 +6,59 @@
  * ...
  * and end with a star and a forward slash.
  */
+
+n : Integer  = 5
+x : Real     = 9.99999
+y : Complex  = 4.1 + 10.9i
+z : 5x5 Real = zeroes // matrix
+
+f x y : Real -> Real -> Real = x + y
+
+g n x : Real -> Real -> Real = {
+    return \sum |0 --> \inf| x^n/n!
+}
+
+// or
+
+g' n x = \sum |0 --> \inf| x^n/n!
+
+gAtSomePoint = g 5 // currying
+
+// Now some more practical code. @derive generates derivatives for a given fn.
+@derive
+h x = 5x^3 + 4x^2 + 5
+
+// Now automatically have h' x, h'' x, d2h/dx2, etc... in scope.
+// D(h, 5) is always in scope, even without @derive.
+
+// systems
+mysys = @system x, y {
+    x + y = 10
+    x^2 = 25
+}
+
+print(@solve mysys)
+/*
+ * mysys has two finite solutions, so solving it will return 2 systems with two
+ * rows each. this prints:
+ * [
+ *     @system { x = 5, y = 5 },
+ *     @system { x = -5, y = 15 },
+ * ]
+ * Note how these systems have no parameters (after @system) like mysys does,
+ * because its solved.
+ *
+ * NB: solving systems with a free parameter will look like this:
+ * [ @system a { x = a, y = 1-a } ]
+ * Importantly, there is an `a` as a parameter of the system.
+ */
+
+// we can also do differential eqns:
+myode = @ode x | t {
+    dx = -x
+}
+print(@solve myode of t=0..10 with x = 1)
+// prints:
+// @system {
+//     x = e^(-x)
+// }
