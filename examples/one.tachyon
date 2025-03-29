@@ -1,6 +1,6 @@
 xx = 20;
 yy = xx;
 zz = xx * yy;
-print(zz;);
+print(zz);
 
 //xxx

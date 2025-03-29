@@ -23,10 +23,15 @@ std::unique_ptr<ASTNode> Parser::statement() {
     } else if (ident && match(LPAREN)) {
         // myfn(1, 2 * 5, x);
         std::vector<std::unique_ptr<ASTNode>> args;
+        bool needsDelim = false;
         while (!match(RPAREN)) {
+            if (needsDelim) {
+                expect(COMMA);
+            } else {
+                needsDelim = true;
+            }
             // ... handle exprs
             args.push_back(expr());
-            expect(SEMIC); // TODO: COMMA
         }
 
         expect(SEMIC);

@@ -59,9 +59,6 @@ class BinaryOperatorNode : public IRNode {
     explicit BinaryOperatorNode(Op op, std::unique_ptr<IRNode> lhs, std::unique_ptr<IRNode> rhs)
         : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
 
-    // TODO: consider checking in constructor that conditions above are
-    //       satisfied.
-
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
@@ -107,20 +104,17 @@ class SequenceNode : public IRNode {
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };
 
-// TODO: will we use this for loops, or can I rename to Function &
-//       FunctionCall? Else, it's the same as `SequenceNode`.
-
 /**
  * @brief Block definition.
  */
-class BlockNode : public IRNode {
+class FunctionDefNode : public IRNode {
   public:
     std::string label;
     std::vector<std::string> params;
     std::unique_ptr<IRNode> body;
 
-    explicit BlockNode(std::string label, std::vector<std::string> params,
-                       std::unique_ptr<IRNode> body)
+    explicit FunctionDefNode(std::string label, std::vector<std::string> params,
+                             std::unique_ptr<IRNode> body)
         : label(label), params(std::move(params)), body(std::move(body)) {};
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
@@ -129,13 +123,13 @@ class BlockNode : public IRNode {
 /**
  * @brief Block call.
  */
-class BlockCallNode : public IRNode {
+class FunctionCallNode : public IRNode {
   public:
     std::string label;
     std::vector<std::string> params;
     std::string outName;
 
-    explicit BlockCallNode(std::string label, std::string outName)
+    explicit FunctionCallNode(std::string label, std::string outName)
         : label(label), outName(outName) {};
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }

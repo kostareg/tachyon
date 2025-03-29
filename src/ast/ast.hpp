@@ -90,7 +90,7 @@ class FunctionDefNode : public ASTNode {
   public:
     std::string name;
     std::vector<std::string> args;
-    std::unique_ptr<ASTNode> body; // TODO: seq?
+    std::unique_ptr<ASTNode> body;
 
     explicit FunctionDefNode(std::string name, std::vector<std::string> args,
                              std::unique_ptr<ASTNode> body)

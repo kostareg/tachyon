@@ -31,7 +31,7 @@ h x = 5x^3 + 4x^2 + 5
 // Now automatically have h' x, h'' x, d2h/dx2, etc... in scope.
 // D(h, 5) is always in scope, even without @derive.
 
-// systems
+// systems - a library? probably part of std.
 mysys = @system x, y {
     x + y = 10
     x^2 = 25
@@ -62,3 +62,12 @@ print(@solve myode of t=0..10 with x = 1)
 // @system {
 //     x = e^(-x)
 // }
+
+mymatrix = ( 1 2 3 4
+           | 1 2 3 4
+           | 1 2 3 4 )
+
+// maybe a std library macro for matrices
+@matrix | 1 2 3 |
+        | 1 2 3 |
+        | 4 5 6 |

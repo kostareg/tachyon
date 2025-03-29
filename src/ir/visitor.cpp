@@ -5,8 +5,6 @@
 #include "ir/ir.hpp"
 #include "ir/visitor.hpp"
 
-// TODO: program[++pc] faster?
-
 namespace ir {
 void PrintVisitor::visit(const NumberNode &node) { std::cout << node.value; }
 
@@ -33,7 +31,7 @@ void PrintVisitor::visit(const SequenceNode &node) {
     });
 }
 
-void PrintVisitor::visit(const BlockNode &node) {
+void PrintVisitor::visit(const FunctionDefNode &node) {
     std::cout << "LABEL " << node.label << std::endl;
 
     prefix += "    ";
@@ -42,7 +40,7 @@ void PrintVisitor::visit(const BlockNode &node) {
     prefix.erase(prefix.size() - 4);
 }
 
-void PrintVisitor::visit(const BlockCallNode &node) {
+void PrintVisitor::visit(const FunctionCallNode &node) {
     std::cout << prefix << "CALL " << node.label << " TO " << node.outName;
 }
 
@@ -62,10 +60,9 @@ void LoweringVisitor::visit(const VariableDeclNode &node) {
         auto reg = findFreeReg();
 
         num->accept(*this);
-        program[pc] = 0x0010;
-        program[pc + 1] = reg;
-        program[pc + 2] = tmp;
-        pc += 3;
+        program[pc++] = 0x0010;
+        program[pc++] = reg;
+        program[pc++] = tmp;
 
         vars[reg] = node.name;
     } else if (auto binop = dynamic_cast<BinaryOperatorNode *>(node.decl.get())) {
@@ -78,10 +75,9 @@ void LoweringVisitor::visit(const VariableDeclNode &node) {
         var->accept(*this);
         auto to = findFreeReg();
 
-        program[pc] = 0x0011;
-        program[pc + 1] = to;
-        program[pc + 2] = tmp;
-        pc += 3;
+        program[pc++] = 0x0011;
+        program[pc++] = to;
+        program[pc++] = tmp;
 
         vars[to] = node.name;
     }
@@ -93,11 +89,10 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             // find the variable's register, then run reg <op> const
             var->accept(*this);
             auto out = findFreeReg();
-            program[pc] = makeOperator(node.op, true, false);
-            program[pc + 1] = tmp;
-            program[pc + 2] = num->value;
-            program[pc + 3] = out;
-            pc += 4;
+            program[pc++] = makeOperator(node.op, true, false);
+            program[pc++] = tmp;
+            program[pc++] = num->value;
+            program[pc++] = out;
             tmp = out;
         } else if (auto varR = dynamic_cast<VariableRefNode *>(node.rhs.get())) {
             var->accept(*this);
@@ -106,22 +101,20 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             auto reg2 = tmp;
 
             auto out = findFreeReg();
-            program[pc] = makeOperator(node.op, true, true);
-            program[pc + 1] = reg1;
-            program[pc + 2] = reg2;
-            program[pc + 3] = out;
-            pc += 4;
+            program[pc++] = makeOperator(node.op, true, true);
+            program[pc++] = reg1;
+            program[pc++] = reg2;
+            program[pc++] = out;
             tmp = out;
         }
     } else if (auto num = dynamic_cast<NumberNode *>(node.lhs.get())) {
         if (auto var = dynamic_cast<VariableRefNode *>(node.rhs.get())) {
             var->accept(*this);
             auto out = findFreeReg();
-            program[pc] = makeOperator(node.op, false, true);
-            program[pc + 1] = num->value;
-            program[pc + 2] = tmp;
-            program[pc + 3] = out;
-            pc += 4;
+            program[pc++] = makeOperator(node.op, false, true);
+            program[pc++] = num->value;
+            program[pc++] = tmp;
+            program[pc++] = out;
             tmp = out;
         }
     }
@@ -134,31 +127,31 @@ void LoweringVisitor::visit(const SequenceNode &node) {
     });
 }
 
-void LoweringVisitor::visit(const BlockNode &node) {
+void LoweringVisitor::visit(const FunctionDefNode &node) {
     // add it to the children, then hand down handling.
     LoweringVisitor v(node.label);
+    // propagate information about variable names, this is handled in order.
+    for (int i = 0; i < node.params.size(); ++i) {
+        v.vars[i] = node.params[i];
+    }
     node.body->accept(v);
     proto->children.push_back(std::move(v.proto));
 }
 
-void LoweringVisitor::visit(const BlockCallNode &node) {
+void LoweringVisitor::visit(const FunctionCallNode &node) {
     // find where its stored
     if (node.label == "print") {
         // load print somewhere and call it.
         auto reg = findFreeReg();
-        program[pc] = 0x0100;
-        program[pc + 1] = reg;
-        program[pc + 2] = 0xFFFF;
-        program[pc + 3] = 0x0110;
-        program[pc + 4] = reg;
-        pc += 5;
+        program[pc++] = 0x0010;
+        program[pc++] = reg;
+        program[pc++] = 0xFFFF;
+        program[pc++] = 0x0100;
+        program[pc++] = reg;
     } else {
-        // TODO
-        auto reg = findVar(node.label);
-        // jump to position.
-        program[pc] = 0x0110;
-        program[pc + 1] = reg;
-        pc += 2;
+        // call position.
+        program[pc++] = 0x0100;
+        program[pc++] = findVar(node.label);
     }
 }
 
@@ -166,19 +159,17 @@ void LoweringVisitor::visit(const ParamNode &node) {
     if (auto num = dynamic_cast<NumberNode *>(node.param.get())) {
         auto reg = findFreeReg();
         num->accept(*this);
-        program[pc] = 0x0120;
-        program[pc + 1] = reg;
-        program[pc + 2] = tmp;
-        pc += 3;
+        program[pc++] = 0x0110;
+        program[pc++] = reg;
+        program[pc++] = tmp;
 
         vars[reg] = node.name;
     } else if (auto var = dynamic_cast<VariableRefNode *>(node.param.get())) {
         var->accept(*this);
         if (tmp != 65535) {
-            program[pc] = 0x0121;
-            program[pc + 1] = node.idx;
-            program[pc + 2] = tmp;
-            pc += 3;
+            program[pc++] = 0x0111;
+            program[pc++] = node.idx;
+            program[pc++] = tmp;
         } else {
             throw std::runtime_error("param uses unknown variable");
         }

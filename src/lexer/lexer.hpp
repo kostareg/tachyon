@@ -20,6 +20,7 @@ enum class TokenType {
     LPAREN,
     RPAREN,
     SEMIC,
+    COMMA,
     END
 };
 

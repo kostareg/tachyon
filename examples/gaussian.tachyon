@@ -1,0 +1,87 @@
+/*
+ * Implements a basic Gaussian elimination solver in Tachyon. Will eventually
+ * be in the standard library, wrapped in the @-syntax as seen in
+ * grammar.tachyon. The macro shown there just desugars into a matrix that can
+ * be solved with this solver.
+ */
+
+// TODO: not sure about matrix syntax.
+mymatrix : 5x5 Real = [ 1 2 3 4 5
+                      ; 7 8 9 0 0
+                      ; 9 9 1 4 1
+                      ; 7 8 0 1 3
+                      ; 1 3 6 1 1
+                      ]
+
+j : Integer = 0
+
+while j < mymatrix.cols-1 {
+    i : Integer = j
+    bestRow : Integer = i
+    bestIJ : Real = 0
+    while i < mymatrix.cols-1 {
+        if abs(mymatrix[i][j]) > bestIJ {
+            bestRow = i
+            bestIJ = mymatrix[i][j]
+        }
+        i = i + 1
+    }
+
+    // We found the best row, now swap it.
+    // TODO: mutability?
+    mymatrix.swap_rows(j, bestRow)
+
+    // Normalize
+    mymatrix[j] = mymatrix[j] / mymatrix[j][j] // TODO: consider .normalize() method or even just /=?
+
+    // Eliminate all entries below.
+    j' : Integer = j+1
+    while j' < mymatrix.cols-1 {
+        mymatrix[j'] = mymatrix[j'] - mymatrix[j'][j] * mymatrix[j]
+        j'++
+    }
+}
+
+print(mymatrix)
+
+// TODO: back substitution
+
+/* Based on this description:
+ * 🔁 Core Loop (Forward Elimination):
+ *
+ * For each pivot column j = 0 to n-1:
+ *  1. Pivot Selection (Row Swap)
+ *    a. Find row i ≥ j with max(abs(A[i][j])).
+ *    b. Swap with row j → avoids division by zero (partial pivoting).
+ *  2.  Normalize Pivot Row
+ *    a. Divide row j by A[j][j] → makes pivot 1.
+ *  3. Eliminate Below
+ *    a. For rows i = j+1 to m-1:
+ *       Subtract A[i][j] * row_j from row_i
+ *       → This zeros out all entries below the pivot.
+ * 
+ * 🔁 Back Substitution (if solving Ax = b):
+ * Once upper triangular:
+ *  1. Start at bottom row, solve for variables going up.
+ *  2. Use known values from lower rows.
+ * 
+ * 👇 Minimal Skeleton Pseudocode (no bells and whistles)
+ * ```python
+ * for j in range(n):  # for each column
+ *     # Pivot
+ *     pivot_row = argmax(abs(A[i][j]) for i in range(j, m))
+ *     swap_rows(j, pivot_row)
+ * 
+ *     # Normalize
+ *     A[j] = A[j] / A[j][j]
+ *     b[j] = b[j] / A[j][j]
+ * 
+ *     # Eliminate below
+ *     for i in range(j+1, m):
+ *         factor = A[i][j]
+ *         A[i] = A[i] - factor * A[j]
+ *         b[i] = b[i] - factor * b[j]
+ *
+ *  # incomplete: add back-substitution to finish if you're solving for x.
+ * ```
+*/

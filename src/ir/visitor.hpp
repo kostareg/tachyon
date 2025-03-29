@@ -15,8 +15,8 @@ class VariableRefNode;
 class VariableDeclNode;
 class BinaryOperatorNode;
 class SequenceNode;
-class BlockNode;
-class BlockCallNode;
+class FunctionDefNode;
+class FunctionCallNode;
 class ParamNode;
 
 /**
@@ -34,8 +34,8 @@ class Visitor {
     virtual void visit(const VariableDeclNode &node) = 0;
     virtual void visit(const BinaryOperatorNode &node) = 0;
     virtual void visit(const SequenceNode &node) = 0;
-    virtual void visit(const BlockNode &node) = 0;
-    virtual void visit(const BlockCallNode &node) = 0;
+    virtual void visit(const FunctionDefNode &node) = 0;
+    virtual void visit(const FunctionCallNode &node) = 0;
     virtual void visit(const ParamNode &node) = 0;
     virtual ~Visitor() = default;
 };
@@ -51,8 +51,8 @@ class PrintVisitor : public Visitor {
     void visit(const VariableDeclNode &node) override;
     void visit(const BinaryOperatorNode &node) override;
     void visit(const SequenceNode &node) override;
-    void visit(const BlockNode &node) override;
-    void visit(const BlockCallNode &node) override;
+    void visit(const FunctionDefNode &node) override;
+    void visit(const FunctionCallNode &node) override;
     void visit(const ParamNode &node) override;
 };
 
@@ -83,8 +83,8 @@ class LoweringVisitor : public Visitor {
     void visit(const VariableDeclNode &node) override;
     void visit(const BinaryOperatorNode &node) override;
     void visit(const SequenceNode &node) override;
-    void visit(const BlockNode &node) override;
-    void visit(const BlockCallNode &node) override;
+    void visit(const FunctionDefNode &node) override;
+    void visit(const FunctionCallNode &node) override;
     void visit(const ParamNode &node) override;
 
     void finish() { proto->bc = program; }

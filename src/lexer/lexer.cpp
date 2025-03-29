@@ -29,6 +29,8 @@ void printTokenType(TokenType t) {
         std::cout << "RPAREN";
     else if (t == SEMIC)
         std::cout << "SEMIC";
+    else if (t == COMMA)
+        std::cout << "COMMA";
     else if (t == END)
         std::cout << "END";
     else
@@ -79,6 +81,8 @@ std::vector<Token> Lexer::lex(std::string s) {
             tokens.push_back(RPAREN);
         else if (c == ';')
             tokens.push_back(SEMIC);
+        else if (c == ',')
+            tokens.push_back(COMMA);
         else if (isalpha(c)) {
             std::string i;
             while (isalpha(s[pos]) && !isspace(s[pos])) {

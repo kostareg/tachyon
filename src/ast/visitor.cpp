@@ -334,7 +334,7 @@ void LoweringVisitor::visit(const FunctionDefNode &node) {
     // then bring back lowered nodes list.
     auto otherNodes = std::move(loweredNodes);
     node.body->accept(*this);
-    otherNodes.push_back(std::make_unique<ir::BlockNode>(
+    otherNodes.push_back(std::make_unique<ir::FunctionDefNode>(
         node.name, node.args, std::make_unique<ir::SequenceNode>(std::move(loweredNodes))));
     loweredNodes = std::move(otherNodes);
 }
@@ -352,7 +352,7 @@ void LoweringVisitor::visit(const FunctionCallNode &node) {
 
     auto tx = tmpVar();
 
-    loweredNodes.push_back(std::make_unique<ir::BlockCallNode>(node.name, tx));
+    loweredNodes.push_back(std::make_unique<ir::FunctionCallNode>(node.name, tx));
     tmp = std::make_unique<ir::VariableRefNode>(tx);
 }
 

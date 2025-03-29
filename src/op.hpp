@@ -25,3 +25,19 @@ inline const char *op_to_str(Op op) {
         return "unknown";
     }
 }
+
+/**
+ * @brief Operator precedence, higher goes first.
+ */
+inline int precedence(Op op) {
+    switch (op) {
+    case Op::Add:
+    case Op::Sub:
+        return 1;
+    case Op::Mul:
+    case Op::Div:
+        return 2;
+    case Op::Pow:
+        return 3;
+    }
+}
