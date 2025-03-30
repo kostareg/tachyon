@@ -37,9 +37,10 @@ void printTokenType(TokenType t) {
         std::cout << "unknown token";
 }
 
-std::vector<Token> Lexer::lex(std::string s) {
+Result<std::vector<Token>> Lexer::lex(const std::string &s) {
     std::vector<Token> tokens;
     size_t pos = 0;
+    LexerMetadata m;
 
     while (1) {
         if (pos == s.size()) {
@@ -49,20 +50,32 @@ std::vector<Token> Lexer::lex(std::string s) {
 
         auto c = s[pos];
 
-        if (c == ' ' || c == '\n') {
-        } else if (c == '/' && s[pos + 1] == '*') {
+        if (c == ' ') {
+        } else if (c == '\n')
+            m.nline();
+        else if (c == '/' && s[pos + 1] == '*') {
+            size_t startPos = pos;
+            size_t startLine = m.line;
+            size_t startCol = m.col;
             pos += 3;
             while (s[pos - 1] != '*' && s[pos] != '/') {
                 ++pos;
                 // EOF
-                if (pos > s.size())
-                    throw std::runtime_error("unclosed comment to eof");
+                if (pos > s.size()) {
+                    return Error(ErrorKind::LexError, "comment left open", get_line_at(s, startPos),
+                                 startLine, startCol, 2)
+                        .with_code("E0002")
+                        .with_hint("complete the comment with `*/`.");
+                }
+                if (s[pos] == '\n')
+                    m.nline();
             }
         } else if (c == '/' && s[pos + 1] == '/') {
             pos += 2;
             while (s[pos] != '\n') {
                 ++pos;
             }
+            m.nline();
         } else if (c == '=')
             tokens.push_back(EQ);
         else if (c == '+')
@@ -100,9 +113,12 @@ std::vector<Token> Lexer::lex(std::string s) {
             --pos;
             tokens.push_back(Token(NUMBER, stoi(n)));
         } else
-            throw std::runtime_error(fmt::format("unrecognized char at {}", pos));
+            return Error(ErrorKind::LexError, "unknown character", get_line_at(s, pos), m.line,
+                         m.col, 1)
+                .with_code("E0001");
 
         ++pos;
+        ++m.col;
     }
 
     // ...

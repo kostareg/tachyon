@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "error.hpp"
 #include "op.hpp"
 
 namespace lexer {
@@ -67,6 +68,16 @@ struct Token {
 
 class Lexer {
   public:
-    std::vector<Token> lex(std::string s);
+    Result<std::vector<Token>> lex(const std::string &s);
+};
+
+struct LexerMetadata {
+    size_t line = 1;
+    size_t col = 1;
+
+    void nline() {
+        ++line;
+        col = 0;
+    }
 };
 } // namespace lexer

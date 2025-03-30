@@ -25,11 +25,10 @@ int main(int argc, char *argv[]) {
     while (std::getline(file, str)) {
         file_contents += str;
         file_contents.push_back('\n');
-        std::cout << str << std::endl;
     }
 
     lexer::Lexer t;
-    auto toks = t.lex(file_contents);
+    auto toks = t.lex(file_contents).unwrap();
 
     std::cout << "------------" << std::endl;
     for (int i = 0; i < toks.size(); ++i) {
