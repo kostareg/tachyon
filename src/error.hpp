@@ -25,12 +25,10 @@ inline std::string get_line_at(const std::string &s, size_t pos) {
 }
 
 struct SourceSpan {
+    size_t pos;
     size_t line;
     size_t column;
     size_t length;
-
-    SourceSpan(size_t line, size_t column, size_t length)
-        : line(line), column(column), length(length) {}
 };
 
 struct Error {
@@ -42,20 +40,18 @@ struct Error {
     std::string code;
     std::vector<std::string> hints;
 
-    Error(ErrorKind kind, std::string message, std::string slice, SourceSpan span)
-        : kind(kind), messageShort(message), messageLong(message), slice(slice), span(span) {}
-    Error(ErrorKind kind, std::string message, std::string slice, size_t line, size_t column,
+    Error(ErrorKind kind, std::string message, SourceSpan span)
+        : kind(kind), messageShort(message), messageLong(message), span(span) {}
+    Error(ErrorKind kind, std::string message, size_t pos, size_t line, size_t column,
           size_t length)
-        : kind(kind), messageShort(message), messageLong(message), slice(slice),
-          span(line, column, length) {}
-    Error(ErrorKind kind, std::string messageShort, std::string messageLong, std::string slice,
-          SourceSpan span)
-        : kind(kind), messageShort(messageShort), messageLong(messageLong), slice(slice),
-          span(span) {}
-    Error(ErrorKind kind, std::string messageShort, std::string messageLong, std::string slice,
+        : kind(kind), messageShort(message), messageLong(message), span(pos, line, column, length) {
+    }
+    Error(ErrorKind kind, std::string messageShort, std::string messageLong, SourceSpan span)
+        : kind(kind), messageShort(messageShort), messageLong(messageLong), span(span) {}
+    Error(ErrorKind kind, std::string messageShort, std::string messageLong, size_t pos,
           size_t line, size_t column, size_t length)
-        : kind(kind), messageShort(messageShort), messageLong(messageLong), slice(slice),
-          span(line, column, length) {}
+        : kind(kind), messageShort(messageShort), messageLong(messageLong),
+          span(pos, line, column, length) {}
 
     std::string getSource() {
         // the error line is stored in slice - however, we have to highlight
@@ -69,37 +65,37 @@ struct Error {
 
         // arrow
         slice.append("\n ");
-        for (int i = 0; i < lineDigits; ++i) {
+        for (size_t i = 0; i < lineDigits; ++i) {
             slice.append(" ");
         }
         slice.append(" | ");
-        for (int i = 0; i < span.column - 1; ++i) {
+        for (size_t i = 0; i < span.column - 1; ++i) {
             slice.append(" ");
         }
         slice.append("\033[31m");
-        for (int i = 0; i < span.length; ++i) {
+        for (size_t i = 0; i < span.length; ++i) {
             slice.append("^");
         }
         slice.append(" " + messageShort);
         slice.append("\033[00m");
         slice.append("\n ");
-        for (int i = 0; i < lineDigits; ++i) {
+        for (size_t i = 0; i < lineDigits; ++i) {
             slice.append(" ");
         }
         slice.append(" |\n");
 
-        for (int i = 0; i < hints.size(); ++i) {
+        for (size_t i = 0; i < hints.size(); ++i) {
             // space it out
             slice.append(" ");
-            for (int i = 0; i < lineDigits; ++i) {
+            for (size_t i = 0; i < lineDigits; ++i) {
                 slice.append(" ");
             }
-            slice.append(" +-> \033[1mhint\033[00m: " + hints[i]);
+            slice.append(" +-> \033[1mhint\033[00m: " + hints[i] + "\n");
         }
 
         // line number formatting (arrow line is done)
         std::string numPlaceholder;
-        for (int i = 0; i < lineDigits; ++i) {
+        for (size_t i = 0; i < lineDigits; ++i) {
             numPlaceholder.append(" ");
         }
         return std::format(" {} |\n {} | {}", numPlaceholder, span.line, slice);
@@ -110,8 +106,8 @@ struct Error {
         return *this;
     }
 
-    Error with_hint(std::string help) {
-        this->hints.push_back(help);
+    Error with_hint(std::string hint) {
+        this->hints.push_back(hint);
         return *this;
     }
 };
@@ -121,12 +117,18 @@ template <typename T> class Result {
 
   public:
     Result(T ok) : inner(std::move(ok)) {};
+
+    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+    Result(U &&ok) : inner(T(std::forward<U>(ok))) {}
+
     Result(Error e) : inner(e) {};
 
     bool is_ok() const { return std::holds_alternative<T>(inner); }
     bool is_err() const { return !is_ok(); }
 
-    T unwrap() {
+    T get_t() { return std::move(std::get<T>(inner)); }
+
+    T unwrap_with_src(std::string src) {
         if (is_err()) {
             auto e = std::get<Error>(inner);
             constexpr auto message = "\033[31merror{}\033[0m: {} on L{}C{}.\n"
@@ -134,10 +136,50 @@ template <typename T> class Result {
 
             auto code = e.code.empty() ? "" : "(" + e.code + ")";
 
+            // TODO: for now:
+            e.slice = get_line_at(src, e.span.pos);
+
             std::cout << std::format(message, code, e.messageLong, e.span.line, e.span.column,
                                      e.getSource());
             exit(1);
         }
-        return std::get<T>(inner);
+        return std::move(std::get<T>(inner));
     }
+
+    /**
+     * @brief map an ok T to U, keep error.
+     */
+    template <typename Func> auto map(Func &&f) const -> Result<decltype(f(std::declval<T>()))> {
+        using U = decltype(f(std::declval<T>()));
+
+        if (is_ok()) {
+            return Result<U>(f(std::get<T>(inner)));
+        } else {
+            return std::get<Error>(inner);
+        }
+    };
+
+    /**
+     * @brief chain results.
+     */
+    template <typename Func> auto and_then(Func &&f) const -> decltype(f(std::declval<T>())) {
+        if (is_ok()) {
+            return f(std::get<T>(inner));
+        } else {
+            return std::get<Error>(inner);
+        }
+    }
+};
+
+template <> class Result<void> {
+    std::optional<Error> error;
+
+  public:
+    Result() = default;
+    Result(Error e) : error(e) {};
+
+    bool is_ok() const { return !error.has_value(); }
+    bool is_err() const { return error.has_value(); }
+
+    Error get_e() { return *error; }
 };

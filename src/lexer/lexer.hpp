@@ -27,7 +27,67 @@ enum class TokenType {
 
 using enum TokenType;
 
-void printTokenType(TokenType t);
+inline std::string tok_to_str(TokenType t) {
+    if (t == IDENT)
+        return "IDENT";
+    else if (t == NUMBER)
+        return "NUMBER";
+    else if (t == EQ)
+        return "EQ";
+    else if (t == PLUS)
+        return "PLUS";
+    else if (t == MINUS)
+        return "MINUS";
+    else if (t == STAR)
+        return "STAR";
+    else if (t == FSLASH)
+        return "FSLASH";
+    else if (t == CARET)
+        return "CARET";
+    else if (t == LPAREN)
+        return "LPAREN";
+    else if (t == RPAREN)
+        return "RPAREN";
+    else if (t == SEMIC)
+        return "SEMIC";
+    else if (t == COMMA)
+        return "COMMA";
+    else if (t == END)
+        return "END";
+    else
+        return "unknown token";
+}
+
+inline std::string tok_to_str_pretty(TokenType t) {
+    if (t == IDENT)
+        return "an identifier";
+    else if (t == NUMBER)
+        return "a number";
+    else if (t == EQ)
+        return "an equals sign";
+    else if (t == PLUS)
+        return "a plus sign";
+    else if (t == MINUS)
+        return "a minus sign";
+    else if (t == STAR)
+        return "a star";
+    else if (t == FSLASH)
+        return "a slash";
+    else if (t == CARET)
+        return "a caret symbol";
+    else if (t == LPAREN)
+        return "a left parenthesis";
+    else if (t == RPAREN)
+        return "a right parenthesis";
+    else if (t == SEMIC)
+        return "a semicolon";
+    else if (t == COMMA)
+        return "a comma";
+    else if (t == END)
+        return "the end of the code";
+    else
+        return "an unknown token";
+}
 
 inline bool isoperator(TokenType t) {
     return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
@@ -48,17 +108,28 @@ inline Op tok_to_op(TokenType t) {
         throw std::runtime_error("ice: unknown operator");
 };
 
+struct TokenMeta {
+    size_t pos;
+    size_t line;
+    size_t col;
+    size_t len;
+};
+
 struct Token {
     TokenType type;
     std::optional<int> value;
     std::string ident;
+    TokenMeta m;
 
-    Token(TokenType type) : type(type) {}
-    Token(TokenType type, int value) : type(type), value(value) {}
-    Token(TokenType type, std::string ident) : type(type), ident(ident) {}
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
+        : type(type), m(pos, line, col, len) {}
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, int value)
+        : type(type), value(value), m(pos, line, col, len) {}
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, std::string ident)
+        : type(type), ident(ident), m(pos, line, col, len) {}
 
     void print() {
-        printTokenType(type);
+        std::cout << tok_to_str(type);
         if (value)
             std::cout << " " << *value;
         if (!ident.empty())
@@ -66,12 +137,7 @@ struct Token {
     };
 };
 
-class Lexer {
-  public:
-    Result<std::vector<Token>> lex(const std::string &s);
-};
-
-struct LexerMetadata {
+struct LexerMeta {
     size_t line = 1;
     size_t col = 1;
 
@@ -79,5 +145,10 @@ struct LexerMetadata {
         ++line;
         col = 0;
     }
+};
+
+class Lexer {
+  public:
+    Result<std::vector<Token>> lex(const std::string &s);
 };
 } // namespace lexer

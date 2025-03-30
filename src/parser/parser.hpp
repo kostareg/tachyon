@@ -12,13 +12,15 @@ class Parser {
     std::vector<Token> tokens;
     int pos = 0;
 
-    std::unique_ptr<ASTNode> statement();
-    std::unique_ptr<ASTNode> expr();
-    std::unique_ptr<ASTNode> term();
-    std::unique_ptr<ASTNode> factor();
+    Result<std::unique_ptr<ASTNode>> statement();
+    Result<std::unique_ptr<ASTNode>> expr();
 
     /// See the nth token.
-    Token &peek(int n = 0) { return tokens[pos + n]; };
+    Token &peek(size_t n = 0) {
+        if (pos + n >= tokens.size())
+            return tokens.back(); // TODO: Result + error
+        return tokens[pos + n];
+    };
 
     /// Consume the next token.
     Token &advance() { return tokens[pos++]; };
@@ -41,20 +43,24 @@ class Parser {
     }
 
     /// Consume token type. Parser error if fails.
-    void expect(TokenType type) {
-        if (peek().type != type) {
-            printTokenType(type);
-            std::cout << std::endl << std::flush;
-            throw std::runtime_error("unexpected token. wanted ^");
+    Result<void> expect(TokenType type) {
+        auto next = peek();
+        if (next.type != type) {
+            return Error(ErrorKind::ParseError, "unexpected token", next.m.pos, next.m.line,
+                         next.m.col, next.m.len)
+                .with_code("E0003")
+                .with_hint("was looking for " + tok_to_str_pretty(type) + ", found " +
+                           tok_to_str_pretty(next.type) + ".");
         }
 
         advance();
+        return Result<void>{};
     }
 
   public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
 
-    std::unique_ptr<ASTNode> parse();
+    Result<std::unique_ptr<ASTNode>> parse();
 };
 
 } // namespace parser

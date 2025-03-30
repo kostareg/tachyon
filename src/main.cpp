@@ -28,17 +28,21 @@ int main(int argc, char *argv[]) {
     }
 
     lexer::Lexer t;
-    auto toks = t.lex(file_contents).unwrap();
+    auto nodes = t.lex(file_contents)
+                     .and_then([](std::vector<Token> toks) {
+                         parser::Parser p(toks);
+                         return p.parse();
+                     })
+                     .unwrap_with_src(file_contents);
 
+    /*
     std::cout << "------------" << std::endl;
     for (int i = 0; i < toks.size(); ++i) {
         toks[i].print();
         std::cout << std::endl;
     }
     std::cout << "------------" << std::endl;
-
-    parser::Parser p(toks);
-    auto nodes = p.parse();
+    */
 
     std::cout << "done parsing" << std::endl;
 

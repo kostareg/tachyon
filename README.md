@@ -7,5 +7,7 @@ Tachyon is a just-in-time compiled programming language optimized for mathematic
  - [x] High-level intermediate representation
  - [x] Bytecode
  - [x] Virtual machine
+ - [x] Error handling
+ - [ ] Parser recovery
  - [ ] Complete grammar
  - [ ] Runtime optimizations
