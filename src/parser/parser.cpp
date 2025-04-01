@@ -5,28 +5,29 @@ namespace parser {
 
 using enum TokenType;
 
-Result<std::unique_ptr<ASTNode>> Parser::parse() {
+std::expected<std::unique_ptr<ASTNode>, Error> Parser::parse() {
     std::vector<std::unique_ptr<ASTNode>> statements;
     while (peek().type != END) {
         auto s = statement();
-        if (s.is_err())
+        if (!s.has_value())
             return s;
-        statements.push_back(s.get_t());
+        statements.push_back(std::move(s.value()));
     }
     return std::make_unique<SequenceNode>(std::move(statements));
 };
 
-Result<std::unique_ptr<ASTNode>> Parser::statement() {
+std::expected<std::unique_ptr<ASTNode>, Error> Parser::statement() {
     auto ident = matchRead(IDENT);
     if (ident && match(EQ)) {
         // x = <expr>;
         auto e = expr();
-        if (e.is_err())
+        if (!e.has_value())
             return e;
         auto s = expect(SEMIC);
-        if (s.is_err())
-            return s.get_e();
-        return std::make_unique<VariableDeclNode>(ident->ident, e.get_t());
+        if (!s.has_value())
+            return std::unexpected(s.error());
+        return std::make_unique<VariableDeclNode>(ident->ident,
+                                                  std::move(e.value()));
     } else if (ident && match(LPAREN)) {
         // myfn(1, 2 * 5, x);
         std::vector<std::unique_ptr<ASTNode>> args;
@@ -34,33 +35,35 @@ Result<std::unique_ptr<ASTNode>> Parser::statement() {
         while (!match(RPAREN)) {
             if (needsDelim) {
                 auto c = expect(COMMA);
-                if (c.is_err())
-                    return c.get_e();
+                if (!c.has_value())
+                    return std::unexpected(c.error());
             } else {
                 needsDelim = true;
             }
             // ... handle exprs
             auto e = expr();
-            if (e.is_err())
+            if (!e.has_value())
                 return e;
-            args.push_back(e.get_t());
+            args.push_back(std::move(e.value()));
         }
 
         auto s = expect(SEMIC);
-        if (s.is_err())
-            return s.get_e();
-        return std::make_unique<FunctionCallNode>(ident->ident, std::move(args));
+        if (!s.has_value())
+            return std::unexpected(s.error());
+        return std::make_unique<FunctionCallNode>(ident->ident,
+                                                  std::move(args));
     }
 
     auto next = peek();
-    return Error(ErrorKind::ParseError, "malformed statement", next.m.pos, next.m.line, next.m.col,
-                 next.m.len)
-        .with_code("E0004")
-        .with_hint("this is a syntax error.")
-        .with_hint("there is no way for me to handle this statement.");
+    return std::unexpected(
+        Error(ErrorKind::ParseError, "malformed statement", next.m.pos,
+              next.m.line, next.m.col, next.m.len)
+            .with_code("E0004")
+            .with_hint("this is a syntax error.")
+            .with_hint("there is no way for me to handle this statement."));
 }
 
-Result<std::unique_ptr<ASTNode>> Parser::expr() {
+std::expected<std::unique_ptr<ASTNode>, Error> Parser::expr() {
     // if we are the lhs of an operator
     // TODO: order of operations
     if (isoperator(peek(1).type)) {
@@ -77,9 +80,10 @@ Result<std::unique_ptr<ASTNode>> Parser::expr() {
 
         advance(); // operator
         auto rhs = expr();
-        if (rhs.is_err())
-            return rhs;
-        return std::make_unique<BinaryOperatorNode>(op, std::move(lhs), rhs.get_t());
+        if (!rhs.has_value())
+            return std::unexpected(rhs.error());
+        return std::make_unique<BinaryOperatorNode>(op, std::move(lhs),
+                                                    std::move(rhs.value()));
     };
 
     auto n = matchRead(NUMBER);
@@ -92,10 +96,11 @@ Result<std::unique_ptr<ASTNode>> Parser::expr() {
         return std::make_unique<VariableRefNode>(v->ident);
 
     auto next = peek();
-    return Error(ErrorKind::ParseError, "could not parse expression", next.m.pos, next.m.line,
-                 next.m.col, next.m.len)
-        .with_code("E0005")
-        .with_hint("this is a syntax error.")
-        .with_hint("there is no way for me to handle this expression.");
+    return std::unexpected(
+        Error(ErrorKind::ParseError, "could not parse expression", next.m.pos,
+              next.m.line, next.m.col, next.m.len)
+            .with_code("E0005")
+            .with_hint("this is a syntax error.")
+            .with_hint("there is no way for me to handle this expression."));
 }
 } // namespace parser

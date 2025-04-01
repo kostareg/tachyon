@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "ast/visitor.hpp"
+#include "ast/visitors/visitor.hpp"
 #include "op.hpp"
 
 /**
@@ -107,7 +107,8 @@ class FunctionCallNode : public ASTNode {
     std::string name;
     std::vector<std::unique_ptr<ASTNode>> args;
 
-    FunctionCallNode(std::string name, std::vector<std::unique_ptr<ASTNode>> &&args)
+    FunctionCallNode(std::string name,
+                     std::vector<std::unique_ptr<ASTNode>> &&args)
         : name(std::move(name)), args(std::move(args)) {}
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }

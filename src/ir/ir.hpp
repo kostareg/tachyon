@@ -56,7 +56,8 @@ class BinaryOperatorNode : public IRNode {
     std::unique_ptr<IRNode> lhs;
     std::unique_ptr<IRNode> rhs;
 
-    explicit BinaryOperatorNode(Op op, std::unique_ptr<IRNode> lhs, std::unique_ptr<IRNode> rhs)
+    explicit BinaryOperatorNode(Op op, std::unique_ptr<IRNode> lhs,
+                                std::unique_ptr<IRNode> rhs)
         : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
@@ -99,7 +100,8 @@ class SequenceNode : public IRNode {
   public:
     std::vector<std::unique_ptr<IRNode>> body;
 
-    explicit SequenceNode(std::vector<std::unique_ptr<IRNode>> &&body) : body(std::move(body)) {};
+    explicit SequenceNode(std::vector<std::unique_ptr<IRNode>> &&body)
+        : body(std::move(body)) {};
 
     void accept(Visitor &visitor) override { visitor.visit(*this); }
 };

@@ -5,7 +5,7 @@
 namespace lexer {
 using enum TokenType;
 
-Result<std::vector<Token>> Lexer::lex(const std::string &s) {
+std::expected<std::vector<Token>, Error> Lexer::lex(const std::string &s) {
     std::vector<Token> tokens;
     size_t pos = 0;
     LexerMeta m;
@@ -30,10 +30,11 @@ Result<std::vector<Token>> Lexer::lex(const std::string &s) {
                 ++pos;
                 // EOF
                 if (pos >= s.size()) {
-                    return Error(ErrorKind::LexError, "comment left open", startPos, startLine,
-                                 startCol, 2)
-                        .with_code("E0002")
-                        .with_hint("complete the comment with `*/`.");
+                    return std::unexpected(
+                        Error(ErrorKind::LexError, "comment left open",
+                              startPos, startLine, startCol, 2)
+                            .with_code("E0002")
+                            .with_hint("complete the comment with `*/`."));
                 }
                 if (s[pos] == '\n')
                     m.nline();
@@ -69,7 +70,8 @@ Result<std::vector<Token>> Lexer::lex(const std::string &s) {
             size_t startPos = pos;
             size_t startLine = m.line;
             size_t startCol = m.col;
-            while (isalpha(s[pos]) && !isspace(s[pos])) { // TODO: remove isspace
+            while (isalpha(s[pos]) &&
+                   !isspace(s[pos])) { // TODO: remove isspace
                 i += s[pos];
                 ++pos;
             }
@@ -87,12 +89,15 @@ Result<std::vector<Token>> Lexer::lex(const std::string &s) {
                 ++pos;
             }
             auto len = pos - startPos;
-            tokens.emplace_back(NUMBER, startPos, startLine, startCol, len, stoi(n));
+            tokens.emplace_back(NUMBER, startPos, startLine, startCol, len,
+                                stoi(n));
             m.col += len - 1;
             --pos;
         } else
-            return Error(ErrorKind::LexError, "unknown character", pos, m.line, m.col, 1)
-                .with_code("E0001");
+            return std::unexpected(Error(ErrorKind::LexError,
+                                         "unknown character", pos, m.line,
+                                         m.col, 1)
+                                       .with_code("E0001"));
 
         ++pos;
         ++m.col;

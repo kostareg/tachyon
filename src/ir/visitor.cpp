@@ -8,7 +8,9 @@
 namespace ir {
 void PrintVisitor::visit(const NumberNode &node) { std::cout << node.value; }
 
-void PrintVisitor::visit(const VariableRefNode &node) { std::cout << node.name; }
+void PrintVisitor::visit(const VariableRefNode &node) {
+    std::cout << node.name;
+}
 
 void PrintVisitor::visit(const VariableDeclNode &node) {
     std::cout << prefix << node.name << " = ";
@@ -25,10 +27,11 @@ void PrintVisitor::visit(const BinaryOperatorNode &node) {
 }
 
 void PrintVisitor::visit(const SequenceNode &node) {
-    std::for_each(node.body.begin(), node.body.end(), [this](const std::unique_ptr<IRNode> &stmt) {
-        stmt->accept(*this);
-        std::cout << std::endl;
-    });
+    std::for_each(node.body.begin(), node.body.end(),
+                  [this](const std::unique_ptr<IRNode> &stmt) {
+                      stmt->accept(*this);
+                      std::cout << std::endl;
+                  });
 }
 
 void PrintVisitor::visit(const FunctionDefNode &node) {
@@ -51,7 +54,9 @@ void PrintVisitor::visit(const ParamNode &node) {
 
 void LoweringVisitor::visit(const NumberNode &node) { tmp = node.value; }
 
-void LoweringVisitor::visit(const VariableRefNode &node) { tmp = findVar(node.name); }
+void LoweringVisitor::visit(const VariableRefNode &node) {
+    tmp = findVar(node.name);
+}
 
 void LoweringVisitor::visit(const VariableDeclNode &node) {
     spdlog::trace("variable declaration");
@@ -65,7 +70,8 @@ void LoweringVisitor::visit(const VariableDeclNode &node) {
         program[pc++] = tmp;
 
         vars[reg] = node.name;
-    } else if (auto binop = dynamic_cast<BinaryOperatorNode *>(node.decl.get())) {
+    } else if (auto binop =
+                   dynamic_cast<BinaryOperatorNode *>(node.decl.get())) {
         // if we are declaring a binop, let it handle itself and claim its
         // register under our name.
         binop->accept(*this);
@@ -94,7 +100,8 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
             program[pc++] = num->value;
             program[pc++] = out;
             tmp = out;
-        } else if (auto varR = dynamic_cast<VariableRefNode *>(node.rhs.get())) {
+        } else if (auto varR =
+                       dynamic_cast<VariableRefNode *>(node.rhs.get())) {
             var->accept(*this);
             auto reg1 = tmp;
             varR->accept(*this);
@@ -121,17 +128,18 @@ void LoweringVisitor::visit(const BinaryOperatorNode &node) {
 }
 
 void LoweringVisitor::visit(const SequenceNode &node) {
-    std::for_each(node.body.begin(), node.body.end(), [this](const std::unique_ptr<IRNode> &elem) {
-        spdlog::trace("sequence node");
-        elem->accept(*this);
-    });
+    std::for_each(node.body.begin(), node.body.end(),
+                  [this](const std::unique_ptr<IRNode> &elem) {
+                      spdlog::trace("sequence node");
+                      elem->accept(*this);
+                  });
 }
 
 void LoweringVisitor::visit(const FunctionDefNode &node) {
     // add it to the children, then hand down handling.
     LoweringVisitor v(node.label);
     // propagate information about variable names, this is handled in order.
-    for (int i = 0; i < node.params.size(); ++i) {
+    for (size_t i = 0; i < node.params.size(); ++i) {
         v.vars[i] = node.params[i];
     }
     node.body->accept(v);

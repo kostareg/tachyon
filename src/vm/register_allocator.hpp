@@ -48,7 +48,8 @@ class RegisterAllocator {
     void space_fn() {
         if (reglast >= cap) {
             cap *= 2;
-            registers = static_cast<uint16_t *>(mi_realloc(registers, cap * sizeof(uint16_t)));
+            registers = static_cast<uint16_t *>(
+                mi_realloc(registers, cap * sizeof(uint16_t)));
         }
     }
 
@@ -60,7 +61,8 @@ class RegisterAllocator {
             spdlog::trace("new cap: {}", cap);
             spdlog::trace("first elem: {}", registers[0]);
             spdlog::trace("last elem: {}", registers[cap]);
-            registers = static_cast<uint16_t *>(mi_realloc(registers, cap * sizeof(uint16_t)));
+            registers = static_cast<uint16_t *>(
+                mi_realloc(registers, cap * sizeof(uint16_t)));
             spdlog::trace("first elem: {}", registers[0]);
             spdlog::trace("last elem: {}", registers[cap]);
         }

@@ -1,6 +1,4 @@
 xx = 20;
 yy = xx;
-zz = xx + (99 * yy);
-999
-print(zz, xx;);
-/* */
+zz = xx * yy;
+print(zz);

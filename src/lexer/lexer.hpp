@@ -1,5 +1,6 @@
 #pragma once
 
+#include <expected>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -123,9 +124,11 @@ struct Token {
 
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
         : type(type), m(pos, line, col, len) {}
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, int value)
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
+          int value)
         : type(type), value(value), m(pos, line, col, len) {}
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, std::string ident)
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
+          std::string ident)
         : type(type), ident(ident), m(pos, line, col, len) {}
 
     void print() {
@@ -149,6 +152,6 @@ struct LexerMeta {
 
 class Lexer {
   public:
-    Result<std::vector<Token>> lex(const std::string &s);
+    std::expected<std::vector<Token>, Error> lex(const std::string &s);
 };
 } // namespace lexer

@@ -295,12 +295,13 @@ void VM::run_fn(Proto *proto) {
         }
 
         // if returning from the fn, break
-        if (op == 0x0000 || op == 0x0001 || op == 0x0002 || op == 0x0003 || op == 0x0004)
+        if (op == 0x0000 || op == 0x0001 || op == 0x0002 || op == 0x0003 ||
+            op == 0x0004)
             break;
     }
 
-    spdlog::trace("{} done, regalloc: {}, {}, {}", proto->name, registers[0], registers[1],
-                  registers[2]);
+    spdlog::trace("{} done, regalloc: {}, {}, {}", proto->name, registers[0],
+                  registers[1], registers[2]);
 
     // move children back for next use
     if (numChildren) {

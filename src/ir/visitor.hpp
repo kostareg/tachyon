@@ -76,7 +76,8 @@ class LoweringVisitor : public Visitor {
 
     std::unique_ptr<vm::Proto> proto;
 
-    LoweringVisitor(std::string name) : proto(std::make_unique<vm::Proto>(name, nullptr)) {}
+    LoweringVisitor(std::string name)
+        : proto(std::make_unique<vm::Proto>(name, nullptr)) {}
 
     void visit(const NumberNode &node) override;
     void visit(const VariableRefNode &node) override;
@@ -150,7 +151,8 @@ class LoweringVisitor : public Visitor {
             else
                 return 0x0059;
         default:
-            throw std::runtime_error("trying to find the bytecode of unknown operator");
+            throw std::runtime_error(
+                "trying to find the bytecode of unknown operator");
         }
     }
 };

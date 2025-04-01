@@ -1,3 +1,7 @@
 .devenv
 .direnv
 .cache
+
+build
+cmake-build-debug
+.idea
