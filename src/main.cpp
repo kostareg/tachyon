@@ -26,6 +26,11 @@ void unwrap(std::expected<void, Error> t, std::string src, bool quit) {
 
         std::cout << std::format(message, code, e.messageLong, e.span.line,
                                  e.span.column, e.getSource());
+
+        for (size_t i = 0; i < e.additional.size(); ++i) {
+            unwrap(std::unexpected(e.additional[i]), src, false);
+        }
+
         if (quit)
             exit(1);
     }
@@ -62,6 +67,7 @@ int run(char *fileName) {
     return 0;
 }
 
+// TODO: handle multiple lines
 int repl() {
     vm::VM vm;
     std::string source;

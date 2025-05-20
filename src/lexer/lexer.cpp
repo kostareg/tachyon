@@ -7,6 +7,7 @@ using enum TokenType;
 
 std::expected<Tokens, Error> lex(const std::string s) {
     std::vector<Token> tokens;
+    std::vector<Error> errors;
     size_t pos = 0;
     LexerMeta m;
 
@@ -94,16 +95,17 @@ std::expected<Tokens, Error> lex(const std::string s) {
             m.col += len - 1;
             --pos;
         } else
-            return std::unexpected(Error(ErrorKind::LexError,
-                                         "unknown character", pos, m.line,
-                                         m.col, 1)
-                                       .with_code("E0001"));
+            errors.push_back(Error(ErrorKind::LexError, "unknown character",
+                                   pos, m.line, m.col, 1)
+                                 .with_code("E0001"));
 
         ++pos;
         ++m.col;
     }
 
-    // ...
+    if (!errors.empty()) {
+        return std::unexpected(Error(errors));
+    }
 
     return tokens;
 }

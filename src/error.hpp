@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <format>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -52,6 +53,7 @@ struct Error {
     SourceSpan span;
     std::string code;
     std::vector<std::string> hints;
+    std::vector<Error> additional;
 
     Error(ErrorKind kind, std::string message, SourceSpan span)
         : kind(kind), messageShort(message), messageLong(message), span(span) {}
@@ -67,6 +69,27 @@ struct Error {
           size_t pos, size_t line, size_t column, size_t length)
         : kind(kind), messageShort(messageShort), messageLong(messageLong),
           span(pos, line, column, length) {}
+    Error(std::vector<Error> additionals) {
+        if (additionals.size() == 0) {
+            throw std::runtime_error("ice: 0 errors given");
+        } else {
+            // inherit first element
+            auto e = additionals[0];
+            this->kind = e.kind;
+            this->messageShort = e.messageShort;
+            this->messageLong = e.messageLong;
+            this->source = e.source;
+            this->span = e.span;
+            this->code = e.code;
+            this->hints = e.hints;
+            this->additional = e.additional;
+
+            // add the rest
+            for (size_t i = 1; i < additionals.size(); ++i) {
+                this->add_additional(additionals[i]);
+            }
+        }
+    }
 
     std::string getSource() {
         // the error line is stored in source - however, we have to highlight
@@ -125,6 +148,13 @@ struct Error {
 
     Error with_hint(std::string hint) {
         this->hints.push_back(hint);
+        return *this;
+    }
+
+    void add_additional(Error error) { this->additional.push_back(error); }
+
+    Error with_additional(Error error) {
+        this->add_additional(error);
         return *this;
     }
 };
