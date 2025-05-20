@@ -5,7 +5,7 @@
 namespace lexer {
 using enum TokenType;
 
-std::expected<std::vector<Token>, Error> Lexer::lex(const std::string &s) {
+std::expected<Tokens, Error> lex(const std::string s) {
     std::vector<Token> tokens;
     size_t pos = 0;
     LexerMeta m;

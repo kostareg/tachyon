@@ -30,6 +30,8 @@ inline std::string get_line_at(const std::string &s, size_t pos) {
 
 /**
  * @brief Represents a span of source code.
+ *
+ * TODO: consider moving to span.hpp.
  */
 struct SourceSpan {
     /// Indexed position, range [0, characters-1].

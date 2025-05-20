@@ -1,17 +1,19 @@
+#include <cmath>
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include "ast/ast.hpp"
+#include "ir/ir.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
+#include "vm/vm.hpp"
 
-#include "ast/visitors/lowering_visitor.hpp"
-#include "ast/visitors/optimization_visitor.hpp"
-#include "ast/visitors/print_visitor.hpp"
-
-template <typename T>
-T unwrap_with_src(std::string src, std::expected<T, Error> t) {
+void unwrap(std::expected<void, Error> t, std::string src) {
     if (!t.has_value()) {
         auto e = t.error();
         constexpr auto message = "\033[31merror{}\033[0m: {} on L{}C{}.\n"
@@ -26,10 +28,40 @@ T unwrap_with_src(std::string src, std::expected<T, Error> t) {
                                  e.span.column, e.getSource());
         exit(1);
     }
-    return std::move(t.value());
 };
 
-int main() {
+// TODO: consider moving optimisations to IR.
+// std::expected<ast::ExprRefs, Error> optimize(ast::ExprRefs);
+
+int run(char *fileName) {
+    // if bad file...
+    if (!std::filesystem::exists(fileName) ||
+        !std::filesystem::is_regular_file(fileName)) {
+        std::println(std::cerr,
+                     "specified file ({}) does not exist or is a directory.",
+                     fileName);
+        return 1;
+    }
+
+    // load file contents
+    std::ifstream file(fileName, std::ios::binary);
+    std::string file_contents(std::istreambuf_iterator<char>{file}, {});
+
+    auto m = lexer::lex(file_contents)
+                 .and_then(parser::parse)
+                 // .and_then(optimize)
+                 .and_then(ast::generate_proto)
+                 .and_then([](vm::Proto proto) -> std::expected<void, Error> {
+                     vm::VM vm;
+                     return vm.run_fn(&proto);
+                 });
+
+    unwrap(m, file_contents);
+
+    return 0;
+}
+
+int main(int argc, char **argv) {
 #ifdef DEBUG
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::trace); // Enable trace messages
@@ -44,83 +76,19 @@ int main() {
     spdlog::set_level(spdlog::level::trace);
 #endif
 
-    std::ifstream file("examples/one.tachyon");
-    std::string str;
-    std::string file_contents;
-    while (std::getline(file, str)) {
-        file_contents += str;
-        file_contents.push_back('\n');
+    if (argc == 1) {
+        // repl
+        std::println(std::cerr, "not yet implemented.");
+        return 1;
+    } else if (strcmp(argv[1], "run") == 0) {
+        if (argc == 2) {
+            std::println(std::cerr, "specify a file to run.\n> "
+                                    "tachyon run myfile.tachyon");
+            return 1;
+        }
+        return run(argv[2]);
+    } else {
+        std::println(std::cerr, "unknown command: {}", argv[1]);
+        return 1;
     }
-
-    lexer::Lexer t;
-    auto nodes = unwrap_with_src(
-        file_contents,
-        t.lex(file_contents)
-            .and_then([](std::vector<Token> toks) {
-                parser::Parser p(toks);
-                return p.parse();
-            })
-            .and_then([](std::unique_ptr<ASTNode> nodes)
-                          -> std::expected<std::unique_ptr<ASTNode>, Error> {
-                ast::OptimizationVisitor1 opt1;
-                nodes->accept(opt1);
-                if (opt1.error)
-                    return std::unexpected(*opt1.error);
-                return std::move(opt1.optimizedNode);
-            }));
-
-    /*
-    std::cout << "------------" << std::endl;
-    for (int i = 0; i < toks.size(); ++i) {
-        toks[i].print();
-        std::cout << std::endl;
-    }
-    std::cout << "------------" << std::endl;
-    */
-
-    std::cout << "done parsing" << std::endl;
-
-    ast::PrintVisitor pr;
-    nodes->accept(pr);
-
-    ast::OptimizationVisitor1 opt1;
-    nodes->accept(opt1);
-
-    std::cout << "ast opt 1:" << std::endl;
-    ast::PrintVisitor printA1;
-    opt1.optimizedNode->accept(printA1);
-
-    ast::OptimizationVisitor2 opt2(opt1.varsReferenced);
-    opt1.optimizedNode->accept(opt2);
-
-    std::cout << "ast opt 2:" << std::endl;
-    ast::PrintVisitor printA2;
-    opt2.optimizedNode->accept(printA2);
-
-    ast::LoweringVisitor lower1;
-    opt2.optimizedNode->accept(lower1);
-    auto n = std::make_unique<ir::SequenceNode>(std::move(lower1.loweredNodes));
-
-    ir::PrintVisitor printI;
-    n->accept(printI);
-
-    ir::LoweringVisitor lower2("main");
-    n->accept(lower2);
-
-    for (int i = 0; i < 20; ++i) {
-        std::cout << i << " : " << "0x" << std::hex << std::setw(4)
-                  << std::setfill('0') << lower2.program[i] << std::dec
-                  << std::endl;
-    }
-
-    lower2.finish();
-
-    std::cout << "------vm------" << std::endl;
-
-    vm::VM vm1;
-    vm1.run_fn(lower2.proto.get());
-
-    std::cout << "--------------" << std::endl;
-
-    return 0;
 }

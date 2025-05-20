@@ -109,27 +109,20 @@ inline Op tok_to_op(TokenType t) {
         throw std::runtime_error("ice: unknown operator");
 };
 
-struct TokenMeta {
-    size_t pos;
-    size_t line;
-    size_t col;
-    size_t len;
-};
-
 struct Token {
     TokenType type;
     std::optional<int> value;
     std::string ident;
-    TokenMeta m;
+    SourceSpan span;
 
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
-        : type(type), m(pos, line, col, len) {}
+        : type(type), span(pos, line, col, len) {}
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
           int value)
-        : type(type), value(value), m(pos, line, col, len) {}
+        : type(type), value(value), span(pos, line, col, len) {}
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
           std::string ident)
-        : type(type), ident(ident), m(pos, line, col, len) {}
+        : type(type), ident(ident), span(pos, line, col, len) {}
 
     void print() {
         std::cout << tok_to_str(type);
@@ -139,6 +132,8 @@ struct Token {
             std::cout << " " << ident;
     };
 };
+
+using Tokens = std::vector<Token>;
 
 struct LexerMeta {
     size_t line = 1;
@@ -150,8 +145,5 @@ struct LexerMeta {
     }
 };
 
-class Lexer {
-  public:
-    std::expected<std::vector<Token>, Error> lex(const std::string &s);
-};
+std::expected<Tokens, Error> lex(const std::string);
 } // namespace lexer

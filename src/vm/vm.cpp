@@ -5,7 +5,7 @@
 #include "vm/vm.hpp"
 
 namespace vm {
-void VM::run_fn(Proto *proto) {
+std::expected<void, Error> VM::run_fn(Proto *proto) {
     spdlog::trace("running function {}", proto->name);
 
     size_t numChildren = proto->children.size();
@@ -23,7 +23,7 @@ void VM::run_fn(Proto *proto) {
 
     if (!proto->bc) {
         std::cerr << "ice bytecode uninitialized" << std::endl;
-        return;
+        return {};
     }
 
     while (1) {
@@ -266,7 +266,10 @@ void VM::run_fn(Proto *proto) {
             }
 
             auto fn = fns[idx].get();
-            run_fn(fn);
+            auto r = run_fn(fn);
+            if (!r.has_value()) {
+                return std::unexpected(r.error());
+            }
 
             if (fn->returns)
                 registers.get_last_fn(0) = registers[0];
@@ -311,5 +314,7 @@ void VM::run_fn(Proto *proto) {
                                std::make_move_iterator(fns.end()));
         fns.erase(fns.end() - numChildren, fns.end());
     }
+
+    return {};
 }
 } // namespace vm
