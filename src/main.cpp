@@ -6,13 +6,14 @@
 #include <ostream>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <string>
 
 #include "ast/ast.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "vm/vm.hpp"
 
-void unwrap(std::expected<void, Error> t, std::string src) {
+void unwrap(std::expected<void, Error> t, std::string src, bool quit) {
     if (!t.has_value()) {
         auto e = t.error();
         constexpr auto message = "\033[31merror{}\033[0m: {} on L{}C{}.\n"
@@ -25,7 +26,8 @@ void unwrap(std::expected<void, Error> t, std::string src) {
 
         std::cout << std::format(message, code, e.messageLong, e.span.line,
                                  e.span.column, e.getSource());
-        exit(1);
+        if (quit)
+            exit(1);
     }
 };
 
@@ -55,7 +57,29 @@ int run(char *fileName) {
                      return vm.run_fn(&proto);
                  });
 
-    unwrap(m, file_contents);
+    unwrap(m, file_contents, true);
+
+    return 0;
+}
+
+int repl() {
+    vm::VM vm;
+    std::string source;
+
+    while (std::printf("> ") && std::getline(std::cin, source)) {
+        if (source.empty())
+            continue;
+
+        auto m =
+            lexer::lex(source)
+                .and_then(parser::parse)
+                .and_then(ast::generate_proto)
+                .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
+                    return vm.run_fn(&proto);
+                });
+
+        unwrap(m, source, false);
+    }
 
     return 0;
 }
@@ -76,9 +100,7 @@ int main(int argc, char **argv) {
 #endif
 
     if (argc == 1) {
-        // repl
-        std::println(std::cerr, "not yet implemented.");
-        return 1;
+        return repl();
     } else if (strcmp(argv[1], "run") == 0) {
         if (argc == 2) {
             std::println(std::cerr, "specify a file to run.\n> "
