@@ -2,6 +2,7 @@
 #include <iostream>
 #include <spdlog/spdlog.h>
 
+#include "bytecode.hpp"
 #include "vm/vm.hpp"
 
 namespace vm {
@@ -33,223 +34,223 @@ std::expected<void, Error> VM::run_fn(Proto *proto) {
 
         switch (op) {
         // exit (defined in while condition)
-        case 0x0000:
+        case EXIT:
         // no-op
-        case 0x0001:
+        case NOOP:
         // return void
-        case 0x0002:
+        case RETV:
             break;
         // return const
-        case 0x0003:
+        case RETC:
             registers[0] = proto->bc[pc];
             break;
         // return reg
-        case 0x0004:
+        case RETR:
             registers[0] = registers[proto->bc[pc]];
             break;
         // load reg from const
-        case 0x0010: {
+        case LORC: {
             uint16_t reg = proto->bc[pc++];
             uint16_t val = proto->bc[pc++];
             registers[reg] = val;
             break;
         };
         // load reg from reg
-        case 0x0011: {
+        case LORR: {
             uint16_t reg = proto->bc[pc++];
             uint16_t val = registers[proto->bc[pc++]];
             registers[reg] = val;
             break;
         };
         // load reg from top of stack
-        case 0x0012: {
+        case LORS: {
             uint16_t reg = proto->bc[pc++];
             uint16_t val = stack.top();
             registers[reg] = val;
             break;
         };
         // push const to stack
-        case 0x0020: {
+        case PUSC: {
             uint16_t val = proto->bc[pc++];
             stack.push(val);
             break;
         };
         // push reg to stack
-        case 0x0021: {
+        case PUSR: {
             uint16_t val = registers[proto->bc[pc++]];
             stack.push(val);
             break;
         };
         // pop stack
-        case 0x002E: {
+        case POPS: {
             stack.pop();
             break;
         }
         // reg < const -> reg
-        case 0x0030: {
+        case CRLC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l < r;
             break;
         };
         // reg > const -> reg
-        case 0x0031: {
+        case CRGC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l > r;
             break;
         };
         // reg < reg -> reg
-        case 0x0032: {
+        case CRLR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l < r;
             break;
         };
         // reg > reg -> reg
-        case 0x0033: {
+        case CRGR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l > r;
             break;
         };
         // reg == const -> reg
-        case 0x0034: {
+        case CREC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l == r;
             break;
         };
         // reg == reg -> reg
-        case 0x0035: {
+        case CRER: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l == r;
             break;
         };
         // jump const
-        case 0x0040: {
+        case JMPC: {
             pc = proto->bc[pc];
             break;
         };
         // jump reg
-        case 0x0041: {
+        case JMPR: {
             pc = registers[proto->bc[pc]];
             break;
         };
         // jump from top stack
-        case 0x0042: {
+        case JMPS: {
             pc = stack.top();
             break;
         };
         // TODO: if reg then jump
         // reg + const -> reg
-        case 0x0050: {
+        case MARC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l + r;
             break;
         };
         // reg - const -> reg
-        case 0x0051: {
+        case MSRC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l - r;
             break;
         };
         // reg * const -> reg
-        case 0x0052: {
+        case MMRC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l * r;
             break;
         };
         // reg / const -> reg
-        case 0x0053: {
+        case MDRC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = l / r;
             break;
         };
         // reg ^ const -> reg
-        case 0x0054: {
+        case MPRC: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = proto->bc[pc++];
             registers[proto->bc[pc++]] = pow(l, r);
             break;
         };
         // const + reg -> reg
-        case 0x0055: {
+        case MACR: {
             uint16_t l = proto->bc[pc++];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l + r;
             break;
         };
         // const - reg -> reg
-        case 0x0056: {
+        case MSCR: {
             uint16_t l = proto->bc[pc++];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l - r;
             break;
         };
         // const * reg -> reg
-        case 0x0057: {
+        case MMCR: {
             uint16_t l = proto->bc[pc++];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l * r;
             break;
         };
         // const / reg -> reg
-        case 0x0058: {
+        case MDCR: {
             uint16_t l = proto->bc[pc++];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l / r;
             break;
         };
         // const ^ reg -> reg
-        case 0x0059: {
+        case MPCR: {
             uint16_t l = proto->bc[pc++];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = pow(l, r);
             break;
         };
         // reg + reg -> reg
-        case 0x005A: {
+        case MARR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l + r;
             break;
         };
         // reg - reg -> reg
-        case 0x005B: {
+        case MSRR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l - r;
             break;
         };
         // reg * reg -> reg
-        case 0x005C: {
+        case MMRR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l * r;
             break;
         };
         // reg / reg -> reg
-        case 0x005D: {
+        case MDRR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = l / r;
             break;
         };
         // reg ^ reg -> reg
-        case 0x005E: {
+        case MPRR: {
             uint16_t l = registers[proto->bc[pc++]];
             uint16_t r = registers[proto->bc[pc++]];
             registers[proto->bc[pc++]] = pow(l, r);
             break;
         };
         // call reg
-        case 0x0100: {
+        case CALR: {
             uint16_t idx = registers[proto->bc[pc++]];
 
             spdlog::trace("calling fn register {}", idx);
@@ -279,14 +280,14 @@ std::expected<void, Error> VM::run_fn(Proto *proto) {
             break;
         };
         // push const fn param
-        case 0x0110: {
+        case PUHC: {
             uint16_t idx = proto->bc[pc++];
             size_t val = proto->bc[pc++];
             registers.early_push(idx, val);
             break;
         };
         // push reg fn param
-        case 0x0111: {
+        case PUHR: {
             uint16_t idx = proto->bc[pc++];
             size_t val = registers[proto->bc[pc++]];
             registers.early_push(idx, val);

@@ -8,7 +8,6 @@
 #include <spdlog/spdlog.h>
 
 #include "ast/ast.hpp"
-#include "ir/ir.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "vm/vm.hpp"
