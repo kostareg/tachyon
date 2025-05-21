@@ -1,5 +1,12 @@
-// TODO: some way to represent ()?
 // TODO: double check all usages of commas, semicolons, etc.
+// TODO: \sum or @sum?
+// TODO: {...} = (...).
+
+// Implementation order:
+//  -> basic stuff
+//  -> control flow, conditionals
+//  -> enums and structs
+//  -> ...more
 
 // This file defines basic grammar for the Tachyon programming language.
 // Single-line comments start with two forward slashes.
@@ -14,7 +21,7 @@
 n = 5
 x = 0.999
 b = false
-y = 4.1 + 10.9i // complex numbers
+// y = 4.1 + 10.9i // complex numbers
 
 // Unary and binary operators
 neg = -x
@@ -28,63 +35,69 @@ square = fn(x) { x ^ 2 }
 // Function composition
 f = fn(x) { 2x }
 g = fn(x) { 5x }
-h = f . g // same as 10x
+// h = f . g // same as 10x
 
 // First-class functions
-map([1 2 3], fn(x) { x * 2 })
+f(g(x) { x })
+// map([1 2 3], fn(x) { x * 2 })
 
 // Partial application of functions
-add = fn(a, b) { a + b }
-add5 = add(5, _) // add5(b) = 5 + b
+// add = fn(a, b) { a + b }
+// add5 = add(5, _) // add5(b) = 5 + b
 
 // Macro for symbolic differentiation, integration
-n = @diff x^2 + sin(x) wrt x
-m = @integ sin(x) of x = 0..pi
+// n = @diff x^2 + sin(x) wrt x
+// m = @integ sin(x) of x = 0..pi
 // n = 2x + cos(x)
 // m = 2
 
 // Control flow
-if x > 0 {
-  y = x
-} else {
-  y = -x
-}
+// if x > 0 {
+//   y = x
+// } else {
+//   y = -x
+// }
 
-while x > 0 {
-  x = x - 1
-}
+// while x > 0 {
+//   x = x - 1
+// }
 
 // Data structures and array unpacking
-a = [1 2 3]
-mat = [5 5 5; 1 2 3]
-[a b] = [3 4]
+// a = [1 2 3]
+// mat = [5 5 5; 1 2 3]
+// [a b] = [3 4]
 
 // Modules
-import math
+import Math // can now use Math.PI
+import Math.Genius.Ideas // ./Math/Genius/Ideas.Tachyon
 
 // Expression-only
-x = if a > 0 { a } else { -a }
+// x = if a > 0 { a } else { -a }
 
 // Pattern matching
-match expr {
-    0 => "zero"
-    1 => "one"
-    n if n > 1 => "many"
-    _ => "unknown"
-}
+// match expr {
+//     0 => "zero"
+//     1 => "one"
+//     n if n > 1 => "many"
+//     _ => "unknown"
+// }
 
 // Structs
-Point = struct (x, y)
-MyData = struct {
-  name: string,
-  something: num,
-}
+// Point = struct (x: Num, y: Num)
+// MyData = struct {
+//   name: Str,
+//   something: Num,
+// }
 
 // Enumerations
-Shape = enum {
-    Circle(radius)
-    Rect(width, height)
-}
+// Shape = enum {
+//     Circle(radius: Num)
+//     Rect(width: Num, height: Num)
+// }
+
+// Unit type
+x = ()
+y = fn(x) -> () {}
 
 /**
  * Type inference
@@ -96,6 +109,7 @@ Shape = enum {
  *   -> There is a TypeCheckPass during compilation.
  */
 
+/*
 // Algebraic systems
 mysys = @system x, y {
     x + y = 10
@@ -127,17 +141,18 @@ myode = @ode x | t {
 
 // Plotting macro
 @plot fn(x) { sin(x) } over x = -pi..pi
+*/
 
 // Std sum types defined by Result and Option
-enum Result {
-    Ok(value)
-    Err(message)
-}
+// enum Result {
+//     Ok(value: Str)
+//     Err(message: Str)
+// }
 
-match r {
-    Ok(v) => @todo // prints todo and quits
-    Err(msg) => @todo
-}
+// match r {
+//     Ok(v) => @todo // prints todo and quits
+//     Err(msg) => @todo
+// }
 
 // String interpolation
-l = "hello, {m}"
+// l = "hello, {m}"
