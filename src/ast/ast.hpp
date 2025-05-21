@@ -87,14 +87,19 @@ struct LetRefExpr {
 };
 
 struct ImportExpr {
-    std::string name;
+    std::string path;
+};
+
+struct ReturnExpr {
+    ExprRef returns;
 };
 
 struct SequenceExpr {
     std::vector<Expr> sequence;
 };
 
-using ExprKind = std::variant<LiteralExpr, BinaryOperatorExpr, SequenceExpr>;
+using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr,
+                              LetRefExpr, ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
  * @brief Top-level expression type.

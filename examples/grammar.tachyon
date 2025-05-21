@@ -30,7 +30,8 @@ z = x * (y + 2) - 5 / 2 ^ 3
 l = 3x + (5)(3) // precede x by a number, or ()(), to multiply it
 
 // Anonymous functions, last line of function is return value
-square = fn(x) { x ^ 2 }
+// square = fn(x) { x ^ 2 }
+square' = fn(x) { return x ^ 2 }
 
 // Function composition
 f = fn(x) { 2x }
