@@ -1,5 +1,6 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
+#include <string>
 
 #include "lexer/lexer.hpp"
 
@@ -50,29 +51,88 @@ std::expected<Tokens, Error> lex(const std::string s) {
             tokens.emplace_back(EQ, pos, m.line, m.col, 1);
         else if (c == '+')
             tokens.emplace_back(PLUS, pos, m.line, m.col, 1);
-        else if (c == '-')
-            tokens.emplace_back(MINUS, pos, m.line, m.col, 1);
-        else if (c == '*')
+        else if (c == '-') {
+            // could be ->
+            if (s[pos + 1] == '>') {
+                tokens.emplace_back(RARROW, pos, m.line, m.col, 2);
+                ++pos, ++m.line;
+            } else {
+                tokens.emplace_back(MINUS, pos, m.line, m.col, 1);
+            }
+        } else if (c == '*')
             tokens.emplace_back(STAR, pos, m.line, m.col, 1);
         else if (c == '/')
             tokens.emplace_back(FSLASH, pos, m.line, m.col, 1);
+        else if (c == '>')
+            tokens.emplace_back(RCHEV, pos, m.line, m.col, 1);
         else if (c == '^')
             tokens.emplace_back(CARET, pos, m.line, m.col, 1);
-        else if (c == '(')
-            tokens.emplace_back(LPAREN, pos, m.line, m.col, 1);
-        else if (c == ')')
+        else if (c == '(') {
+            // may be unit type ()
+            if (s[pos + 1] == ')') {
+                tokens.emplace_back(UNIT, pos, m.line, m.col, 2);
+                ++pos;
+                ++m.col;
+            } else
+                tokens.emplace_back(LPAREN, pos, m.line, m.col, 1);
+        } else if (c == ')')
             tokens.emplace_back(RPAREN, pos, m.line, m.col, 1);
+        else if (c == '{')
+            tokens.emplace_back(LBRACE, pos, m.line, m.col, 1);
+        else if (c == '}')
+            tokens.emplace_back(RBRACE, pos, m.line, m.col, 1);
+        else if (c == '.')
+            tokens.emplace_back(DOT, pos, m.line, m.col, 1);
+        else if (c == ':')
+            tokens.emplace_back(COLON, pos, m.line, m.col, 1);
         else if (c == ';')
             tokens.emplace_back(SEMIC, pos, m.line, m.col, 1);
         else if (c == ',')
             tokens.emplace_back(COMMA, pos, m.line, m.col, 1);
-        else if (isalpha(c)) {
+        else if (c == '"') {
+            std::string content;
+            int startPos = pos;
+            int startLine = m.line;
+            int startCol = m.col;
+            ++pos;
+            ++m.col;
+            while (s[pos] != '"') {
+                content += s[pos];
+                if (s[pos] == '\n')
+                    m.nline();
+                ++pos;
+                ++m.col;
+            }
+            tokens.emplace_back(STRING, startPos, startLine, startCol,
+                                pos + 1 - startPos, content);
+        } else if (s.substr(pos, 4) == "True" && !isalpha(s[pos + 4])) {
+            // ^- `True a` -> bool ident, `Truea` -> ident.
+            tokens.emplace_back(BOOL, pos, m.line, m.col, 4, true);
+            pos += 3;
+            m.col += 3;
+        } else if (s.substr(pos, 5) == "False" && !isalpha(s[pos + 5])) {
+            tokens.emplace_back(BOOL, pos, m.line, m.col, 5, false);
+            pos += 4;
+            m.col += 4;
+        } else if (s.substr(pos, 6) == "import" && !isalpha(s[pos + 6])) {
+            tokens.emplace_back(IMPORT, pos, m.line, m.col, 6);
+            pos += 5;
+            m.col += 5;
+        } else if (s.substr(pos, 2) == "fn" && !isalpha(s[pos + 2])) {
+            tokens.emplace_back(FN, pos, m.line, m.col, 2);
+            pos += 1;
+            m.col += 1;
+        } else if (s.substr(pos, 6) == "return" && !isalpha(s[pos + 6])) {
+            tokens.emplace_back(RETURN, pos, m.line, m.col, 6);
+            pos += 5;
+            m.col += 5;
+        } else if (isalpha(c)) {
+            // idents must start with alpha, nums and ' accepted after.
             std::string i;
             size_t startPos = pos;
             size_t startLine = m.line;
             size_t startCol = m.col;
-            while (isalpha(s[pos]) &&
-                   !isspace(s[pos])) { // TODO: remove isspace
+            while (isalpha(s[pos]) || isdigit(s[pos]) || s[pos] == '\'') {
                 i += s[pos];
                 ++pos;
             }
@@ -85,13 +145,13 @@ std::expected<Tokens, Error> lex(const std::string s) {
             size_t startPos = pos;
             size_t startLine = m.line;
             size_t startCol = m.col;
-            while (isdigit(s[pos]) && !isspace(s[pos])) {
+            while ((isdigit(s[pos]) && !isspace(s[pos])) || s[pos] == '.') {
                 n += s[pos];
                 ++pos;
             }
             auto len = pos - startPos;
             tokens.emplace_back(NUMBER, startPos, startLine, startCol, len,
-                                stoi(n));
+                                std::stod(n));
             m.col += len - 1;
             --pos;
         } else
@@ -109,7 +169,8 @@ std::expected<Tokens, Error> lex(const std::string s) {
 
     // log
     for (auto tok : tokens) {
-        std::cout << tok_to_str(tok.type) << std::endl;
+        tok.print();
+        std::printf("\n");
     }
     std::cout << std::endl;
 

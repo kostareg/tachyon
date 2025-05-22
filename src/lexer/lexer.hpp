@@ -2,7 +2,6 @@
 
 #include <expected>
 #include <iostream>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -13,16 +12,28 @@ namespace lexer {
 enum class TokenType {
     IDENT,
     NUMBER,
+    STRING,
+    BOOL,
+    UNIT,
     EQ,
     PLUS,
     MINUS,
     STAR,
     FSLASH,
     CARET,
+    RCHEV, // TODO: rest of comparison
     LPAREN,
     RPAREN,
+    LBRACE,
+    RBRACE,
+    RARROW,
+    DOT,
+    COLON,
     SEMIC,
     COMMA,
+    IMPORT,
+    FN,
+    RETURN,
     NLINE,
     END
 };
@@ -34,6 +45,12 @@ inline std::string tok_to_str(TokenType t) {
         return "IDENT";
     else if (t == NUMBER)
         return "NUMBER";
+    else if (t == STRING)
+        return "STRING";
+    else if (t == BOOL)
+        return "BOOL";
+    else if (t == UNIT)
+        return "UNIT";
     else if (t == EQ)
         return "EQ";
     else if (t == PLUS)
@@ -44,16 +61,34 @@ inline std::string tok_to_str(TokenType t) {
         return "STAR";
     else if (t == FSLASH)
         return "FSLASH";
+    else if (t == RCHEV)
+        return "RCHEV";
     else if (t == CARET)
         return "CARET";
     else if (t == LPAREN)
         return "LPAREN";
     else if (t == RPAREN)
         return "RPAREN";
+    else if (t == LBRACE)
+        return "LBRACE";
+    else if (t == RBRACE)
+        return "RBRACE";
+    else if (t == RARROW)
+        return "RARROW";
+    else if (t == DOT)
+        return "DOT";
+    else if (t == COLON)
+        return "COLON";
     else if (t == SEMIC)
         return "SEMIC";
     else if (t == COMMA)
         return "COMMA";
+    else if (t == IMPORT)
+        return "IMPORT";
+    else if (t == FN)
+        return "FN";
+    else if (t == RETURN)
+        return "RETURN";
     else if (t == NLINE)
         return "NLINE";
     else if (t == END)
@@ -67,6 +102,12 @@ inline std::string tok_to_str_pretty(TokenType t) {
         return "an identifier";
     else if (t == NUMBER)
         return "a number";
+    else if (t == STRING)
+        return "a string";
+    else if (t == BOOL)
+        return "a boolean";
+    else if (t == UNIT)
+        return "a unit";
     else if (t == EQ)
         return "an equals sign";
     else if (t == PLUS)
@@ -77,16 +118,34 @@ inline std::string tok_to_str_pretty(TokenType t) {
         return "a star";
     else if (t == FSLASH)
         return "a slash";
+    else if (t == RCHEV)
+        return "a right chevron";
     else if (t == CARET)
         return "a caret symbol";
     else if (t == LPAREN)
         return "a left parenthesis";
     else if (t == RPAREN)
         return "a right parenthesis";
+    else if (t == LBRACE)
+        return "a left brace";
+    else if (t == RBRACE)
+        return "a right brace";
+    else if (t == RARROW)
+        return "a right arrow";
+    else if (t == DOT)
+        return "a dot";
+    else if (t == COLON)
+        return "a colon";
     else if (t == SEMIC)
         return "a semicolon";
     else if (t == COMMA)
         return "a comma";
+    else if (t == IMPORT)
+        return "an import";
+    else if (t == FN)
+        return "a function declaration";
+    else if (t == RETURN)
+        return "a return";
     else if (t == NLINE)
         return "a new line";
     else if (t == END)
@@ -116,25 +175,29 @@ inline Op tok_to_op(TokenType t) {
 
 struct Token {
     TokenType type;
-    std::optional<int> value;
-    std::string ident;
+    std::variant<std::monostate, double, bool, std::string> value;
     SourceSpan span;
 
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
         : type(type), span(pos, line, col, len) {}
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
-          int value)
+          double value)
         : type(type), value(value), span(pos, line, col, len) {}
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
-          std::string ident)
-        : type(type), ident(ident), span(pos, line, col, len) {}
+          bool value)
+        : type(type), value(value), span(pos, line, col, len) {}
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
+          std::string value)
+        : type(type), value(value), span(pos, line, col, len) {}
 
     void print() {
         std::cout << tok_to_str(type);
-        if (value)
-            std::cout << " " << *value;
-        if (!ident.empty())
-            std::cout << " " << ident;
+        if (std::holds_alternative<double>(value))
+            std::cout << " " << std::get<double>(value);
+        if (std::holds_alternative<bool>(value))
+            std::cout << " " << (std::get<bool>(value) ? "TRUE" : "FALSE");
+        if (std::holds_alternative<std::string>(value))
+            std::cout << " " << std::get<std::string>(value);
     };
 };
 

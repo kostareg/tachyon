@@ -81,7 +81,7 @@ int repl() {
             continue;
         }
 
-        source += line;
+        source += line + '\n';
 
         if (source.empty())
             continue;
