@@ -91,7 +91,7 @@ struct Printer {
     }
 };
 
-std::expected<vm::Proto, Error> generate_proto(ExprRefs) {
+std::expected<vm::Proto, Error> generate_proto(Exprs) {
     return std::unexpected(Error(ErrorKind::ParseError, "A", 0, 0, 0, 0));
 }
 } // namespace ast

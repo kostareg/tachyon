@@ -7,5 +7,5 @@ using namespace ast;
 using namespace lexer;
 
 namespace parser {
-std::expected<ast::ExprRefs, Error> parse(Tokens);
+std::expected<ast::Exprs, Error> parse(Tokens);
 } // namespace parser

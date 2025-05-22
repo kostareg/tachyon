@@ -12,16 +12,16 @@
 
 /**
  * @namespace ast
- * @brief Abstract syntax tree nodes.
+ * @brief abstract syntax tree nodes
  */
 namespace ast {
 // fwd-decl
 struct Expr;
 using ExprRef = std::unique_ptr<Expr>;
-using ExprRefs = std::vector<std::unique_ptr<Expr>>;
+using Exprs = std::vector<Expr>;
 
 /**
- * @brief literal values, ie strings, numbers, booleans, unit.
+ * @brief literal values, ie strings, numbers, booleans, unit
  */
 using LiteralValue = std::variant<double, std::string, bool, std::monostate>;
 
@@ -43,7 +43,7 @@ enum class BasicConcreteTypes {
 struct FunctionConcreteTypes;
 
 /**
- * @brief the "Type" value, ie a reference to a concrete type or enum/struct.
+ * @brief the "Type" value, ie a reference to a concrete type or enum/struct
  */
 using Type =
     std::variant<BasicConcreteTypes, FunctionConcreteTypes, std::string>;
@@ -95,7 +95,7 @@ struct ReturnExpr {
 };
 
 struct SequenceExpr {
-    std::vector<Expr> sequence;
+    Exprs sequence;
 };
 
 using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr,
@@ -109,5 +109,5 @@ struct Expr {
     ExprKind kind;
 };
 
-std::expected<vm::Proto, Error> generate_proto(ExprRefs);
+std::expected<vm::Proto, Error> generate_proto(Exprs);
 } // namespace ast

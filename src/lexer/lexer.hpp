@@ -23,6 +23,7 @@ enum class TokenType {
     RPAREN,
     SEMIC,
     COMMA,
+    NLINE,
     END
 };
 
@@ -53,6 +54,8 @@ inline std::string tok_to_str(TokenType t) {
         return "SEMIC";
     else if (t == COMMA)
         return "COMMA";
+    else if (t == NLINE)
+        return "NLINE";
     else if (t == END)
         return "END";
     else
@@ -84,6 +87,8 @@ inline std::string tok_to_str_pretty(TokenType t) {
         return "a semicolon";
     else if (t == COMMA)
         return "a comma";
+    else if (t == NLINE)
+        return "a new line";
     else if (t == END)
         return "the end of the code";
     else
