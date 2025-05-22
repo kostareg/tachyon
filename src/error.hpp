@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <format>
+#include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -99,8 +101,8 @@ struct Error {
             span.line == 0 ? 1 : static_cast<size_t>(std::log10(span.line)) + 1;
 
         // colors
-        source.insert(span.column - 1 + span.length, "\033[00m");
-        source.insert(span.column - 1, "\033[31m");
+        // source.insert(span.column - 1 + span.length, "\033[00m");
+        // source.insert(span.column - 1, "\033[31m");
 
         // arrow
         source.append("\n ");
@@ -108,7 +110,7 @@ struct Error {
             source.append(" ");
         }
         source.append(" | ");
-        for (size_t i = 0; i < span.column - 1; ++i) {
+        for (size_t i = 0; i < span.column; ++i) {
             source.append(" ");
         }
         source.append("\033[31m");

@@ -89,6 +89,12 @@ int repl() {
         auto m =
             lexer::lex(source)
                 .and_then(parser::parse)
+                .and_then([](Expr e) -> std::expected<Expr, Error> {
+                    // logging
+                    std::visit(ast::Printer{}, e.kind);
+                    std::println();
+                    return e;
+                })
                 .and_then(ast::generate_proto)
                 .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
                     return vm.run_fn(&proto);
