@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <expected>
 #include <mimalloc.h>
 #include <stack>
 
+#include "error.hpp"
 #include "vm/proto.hpp"
 #include "vm/register_allocator.hpp"
 
@@ -42,6 +44,6 @@ class VM {
      * | 0x0100       | Function        |
      * +--------------+-----------------+
      */
-    void run_fn(Proto *proto);
+    std::expected<void, Error> run_fn(Proto *proto);
 };
 } // namespace vm

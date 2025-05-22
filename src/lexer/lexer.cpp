@@ -1,12 +1,12 @@
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 
 #include "lexer/lexer.hpp"
 
 namespace lexer {
-using enum TokenType;
-
-std::expected<std::vector<Token>, Error> Lexer::lex(const std::string &s) {
+std::expected<Tokens, Error> lex(const std::string s) {
     std::vector<Token> tokens;
+    std::vector<Error> errors;
     size_t pos = 0;
     LexerMeta m;
 
@@ -19,9 +19,10 @@ std::expected<std::vector<Token>, Error> Lexer::lex(const std::string &s) {
         auto c = s[pos];
 
         if (c == ' ') {
-        } else if (c == '\n')
+        } else if (c == '\n') {
+            tokens.emplace_back(NLINE, pos, m.line, m.col, 1);
             m.nline();
-        else if (c == '/' && s[pos + 1] == '*') {
+        } else if (c == '/' && s[pos + 1] == '*') {
             size_t startPos = pos;
             size_t startLine = m.line;
             size_t startCol = m.col;
@@ -94,18 +95,24 @@ std::expected<std::vector<Token>, Error> Lexer::lex(const std::string &s) {
             m.col += len - 1;
             --pos;
         } else
-            return std::unexpected(Error(ErrorKind::LexError,
-                                         "unknown character", pos, m.line,
-                                         m.col, 1)
-                                       .with_code("E0001"));
+            errors.push_back(Error(ErrorKind::LexError, "unknown character",
+                                   pos, m.line, m.col, 1)
+                                 .with_code("E0001"));
 
         ++pos;
         ++m.col;
     }
 
-    // ...
+    if (!errors.empty()) {
+        return std::unexpected(Error(errors));
+    }
+
+    // log
+    for (auto tok : tokens) {
+        std::cout << tok_to_str(tok.type) << std::endl;
+    }
+    std::cout << std::endl;
 
     return tokens;
 }
-
 } // namespace lexer
