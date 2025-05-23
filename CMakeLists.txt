@@ -1,31 +1,35 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28)
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 project(tachyon LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-endif()
+# Enable modules
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 
-# Find packages
-find_package(spdlog REQUIRED)
-find_package(fmt REQUIRED)
+# Declare modules
+add_executable(tachyon
+  src/main.cpp
+)
 
-# Source files
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
-
-include_directories(src)
-
-add_executable(tachyon ${SRC_FILES})
-
-# Link dependencies
-target_link_libraries(tachyon
+target_sources(tachyon
   PRIVATE
-    spdlog::spdlog
-    fmt::fmt
-    mimalloc
+    src/ast/ast.cpp
+    src/lexer/lexer.cpp
+    src/parser/parser.cpp
+    src/vm/vm.cpp
+)
+
+target_sources(tachyon
+  PRIVATE
+    FILE_SET cxx_modules TYPE CXX_MODULES FILES
+      src/op.cppm
+      src/error.cppm
+      src/lexer/lexer.cppm
+      src/parser/parser.cppm
+      src/ast/ast.cppm
+      src/vm/vm.cppm
 )

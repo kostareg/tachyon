@@ -1,15 +1,15 @@
-#pragma once
+export module op;
 
 /**
  * @brief Mathematical operators.
  */
-enum class Op { Add, Sub, Mul, Div, Pow };
+export enum class Op { Add, Sub, Mul, Div, Pow };
 
 /**
  * @brief For printing operators.
  * @sa Op
  */
-inline const char *op_to_str(Op op) {
+export inline const char *op_to_str(Op op) {
     switch (op) {
     case Op::Add:
         return "+";

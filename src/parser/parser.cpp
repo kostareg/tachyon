@@ -1,4 +1,14 @@
-#include "parser/parser.hpp"
+module;
+
+#include <expected>
+#include <memory>
+#include <string>
+#include <variant>
+
+module parser;
+
+import lexer;
+using enum TokenType;
 
 namespace parser {
 std::expected<ast::Expr, Error> Parser::parse(int rbp) {

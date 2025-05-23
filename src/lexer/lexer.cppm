@@ -1,15 +1,18 @@
-#pragma once
+module;
 
 #include <expected>
 #include <iostream>
 #include <string>
+#include <variant>
 #include <vector>
 
-#include "error.hpp"
-#include "op.hpp"
+export module lexer;
+
+import error;
+import op;
 
 namespace lexer {
-enum class TokenType {
+export enum class TokenType {
     IDENT,
     NUMBER,
     STRING,
@@ -40,7 +43,7 @@ enum class TokenType {
 
 using enum TokenType;
 
-inline std::string tok_to_str(TokenType t) {
+export inline std::string tok_to_str(TokenType t) {
     if (t == IDENT)
         return "IDENT";
     else if (t == NUMBER)
@@ -97,7 +100,7 @@ inline std::string tok_to_str(TokenType t) {
         return "unknown token";
 }
 
-inline std::string tok_to_str_pretty(TokenType t) {
+export inline std::string tok_to_str_pretty(TokenType t) {
     if (t == IDENT)
         return "an identifier";
     else if (t == NUMBER)
@@ -154,11 +157,11 @@ inline std::string tok_to_str_pretty(TokenType t) {
         return "an unknown token";
 }
 
-inline bool isoperator(TokenType t) {
+export inline bool isoperator(TokenType t) {
     return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
 };
 
-inline Op tok_to_op(TokenType t) {
+export inline Op tok_to_op(TokenType t) {
     if (t == PLUS)
         return Op::Add;
     else if (t == MINUS)
@@ -178,7 +181,7 @@ inline Op tok_to_op(TokenType t) {
  *
  * Represents the precedence of a token.
  */
-inline int get_lbp(TokenType t) {
+export inline int get_lbp(TokenType t) {
     switch (t) {
     case PLUS:
     case MINUS:
@@ -193,7 +196,7 @@ inline int get_lbp(TokenType t) {
     }
 }
 
-struct Token {
+export struct Token {
     TokenType type;
     std::variant<std::monostate, double, bool, std::string> value;
     SourceSpan span;
@@ -221,9 +224,9 @@ struct Token {
     };
 };
 
-using Tokens = std::vector<Token>;
+export using Tokens = std::vector<Token>;
 
-struct LexerMeta {
+export struct LexerMeta {
     size_t line = 1;
     size_t col = 1;
 
@@ -233,5 +236,5 @@ struct LexerMeta {
     }
 };
 
-std::expected<Tokens, Error> lex(const std::string);
+export std::expected<Tokens, Error> lex(const std::string);
 } // namespace lexer

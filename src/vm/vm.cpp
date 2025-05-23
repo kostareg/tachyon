@@ -1,16 +1,15 @@
-#include <cmath>
-#include <iostream>
-#include <spdlog/spdlog.h>
+module;
 
-#include "bytecode.hpp"
-#include "vm/vm.hpp"
+#include <cmath>
+#include <expected>
+#include <iostream>
+#include <iterator>
+
+module vm;
 
 namespace vm {
 std::expected<void, Error> VM::run_fn(Proto *proto) {
-    spdlog::trace("running function {}", proto->name);
-
     size_t numChildren = proto->children.size();
-    spdlog::trace("with {} children", numChildren);
 
     // load protos to vm
     if (numChildren) {
@@ -29,7 +28,6 @@ std::expected<void, Error> VM::run_fn(Proto *proto) {
 
     while (1) {
         uint16_t op = proto->bc[pc];
-        spdlog::trace("{}[{}] op 0x{:04x}", proto->name, pc, op);
         ++pc;
 
         switch (op) {
@@ -253,10 +251,7 @@ std::expected<void, Error> VM::run_fn(Proto *proto) {
         case CALR: {
             uint16_t idx = registers[proto->bc[pc++]];
 
-            spdlog::trace("calling fn register {}", idx);
-
             if (idx == 0xFFFF) {
-                spdlog::trace("print {}", registers[256]);
                 // special case: print register (param)
                 std::cout << registers[256] << std::endl;
                 break;
@@ -304,12 +299,8 @@ std::expected<void, Error> VM::run_fn(Proto *proto) {
             break;
     }
 
-    spdlog::trace("{} done, regalloc: {}, {}, {}", proto->name, registers[0],
-                  registers[1], registers[2]);
-
     // move children back for next use
     if (numChildren) {
-        spdlog::trace("moving {} children of {}", numChildren, proto->name);
         proto->children.insert(proto->children.end(),
                                std::make_move_iterator(fns.end() - numChildren),
                                std::make_move_iterator(fns.end()));

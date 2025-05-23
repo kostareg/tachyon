@@ -1,6 +1,8 @@
+module;
+
 #include <expected>
 
-#include "ast/ast.hpp"
+module ast;
 
 namespace ast {
 std::expected<vm::Proto, Error> generate_proto(Expr) {

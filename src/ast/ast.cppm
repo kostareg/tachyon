@@ -1,15 +1,18 @@
-#pragma once
+module;
 
 #include <expected>
 #include <memory>
 #include <print>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
-#include "error.hpp"
-#include "op.hpp"
-#include "vm/vm.hpp"
+export module ast;
+
+import error;
+import op;
+import vm;
 
 /**
  * @namespace ast
@@ -17,23 +20,24 @@
  */
 namespace ast {
 // fwd-decl
-struct Expr;
-using ExprRef = std::unique_ptr<Expr>;
-using Exprs = std::vector<Expr>;
+export struct Expr;
+export using ExprRef = std::unique_ptr<Expr>;
+export using Exprs = std::vector<Expr>;
 
 /**
  * @brief literal values, ie unit, numbers, strings, booleans
  */
-using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
+export using LiteralValue =
+    std::variant<std::monostate, double, std::string, bool>;
 
-struct LiteralExpr {
+export struct LiteralExpr {
     LiteralValue value;
 };
 
 /**
  * @brief four basic concrete types.
  */
-enum class BasicConcreteTypes {
+export enum class BasicConcreteTypes {
     Number,
     String,
     Boolean,
@@ -41,17 +45,17 @@ enum class BasicConcreteTypes {
 };
 
 // fwd-decl
-struct FunctionConcreteTypes;
+export struct FunctionConcreteTypes;
 
 /**
  * @brief the "Type" value, ie a reference to a concrete type or enum/struct
  */
-using Type =
+export using Type =
     std::variant<BasicConcreteTypes, FunctionConcreteTypes, std::string>;
 
-using MaybeType = std::optional<Type>;
+export using MaybeType = std::optional<Type>;
 
-struct FunctionConcreteTypes {
+export struct FunctionConcreteTypes {
     std::unordered_map<std::string, Type> arguments;
 };
 
@@ -63,7 +67,7 @@ struct FunctionConcreteTypes {
  * arguments are an unordered map of the name and type. Since this is the weak
  * side of the AST, types can be left blank to be inferred (std::nullopt).
  */
-struct FnExpr {
+export struct FnExpr {
     std::unordered_map<std::string, MaybeType> arguments;
     MaybeType returns;
     ExprRef body;
@@ -72,45 +76,46 @@ struct FnExpr {
 /**
  * @brief <expr> +, -, *, /, ^ <expr>
  */
-struct BinaryOperatorExpr {
+export struct BinaryOperatorExpr {
     Op op;
     ExprRef left;
     ExprRef right;
 };
 
-struct LetExpr {
+export struct LetExpr {
     std::string name;
     ExprRef value;
 };
 
-struct LetRefExpr {
+export struct LetRefExpr {
     std::string name;
 };
 
-struct ImportExpr {
+export struct ImportExpr {
     std::string path;
 };
 
-struct ReturnExpr {
+export struct ReturnExpr {
     ExprRef returns;
 };
 
-struct SequenceExpr {
+export struct SequenceExpr {
     Exprs sequence;
 };
 
-using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr,
-                              LetRefExpr, ImportExpr, ReturnExpr, SequenceExpr>;
+export using ExprKind =
+    std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
+                 ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
  * @brief Top-level expression type.
  */
-struct Expr {
+export struct Expr {
     ExprKind kind;
     SourceSpan span;
 };
 
-std::expected<vm::Proto, Error> generate_proto(Expr);
+export std::expected<vm::Proto, Error> generate_proto(Expr);
 
 // visitors
 struct PrintLiteral {
@@ -143,7 +148,7 @@ struct PrintType {
     void operator()(const std::string &otyp) const { std::print("{}", otyp); }
 };
 
-struct Printer {
+export struct Printer {
     void operator()(const LiteralExpr &literal) const {
         std::visit(PrintLiteral{}, literal.value);
     }

@@ -1,36 +1,43 @@
 {
-  description = "C++ project with spdlog";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = {
-    self,
+  outputs = inputs @ {
     nixpkgs,
-    flake-utils,
+    flake-parts,
+    ...
   }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      devShells.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
-          clang
-          cmake
-          gdb
-          spdlog
-          spdlog.dev
-          fmt
-          fmt.dev
-          mimalloc
-          mimalloc.dev
-        ];
-        shellHook = ''
-          export CC=clang
-          export CXX=clang++
-        '';
-      };
-    });
-}
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = ["x86_64-linux"];
 
+      perSystem = {
+        pkgs,
+        system,
+        ...
+      }: let
+        llvm = pkgs.llvmPackages_19;
+        stdenv = llvm.stdenv;
+        libcxx = llvm.libcxx;
+      in {
+        devShells.default = pkgs.mkShell.override {inherit stdenv;} {
+          packages = [
+            pkgs.cmake
+            pkgs.ninja
+            llvm.libcxx
+            llvm.libcxx.dev
+            llvm.libcxxClang
+            llvm.bintools
+            llvm.compiler-rt
+            llvm.libunwind
+            pkgs.glibc
+            pkgs.glibc.dev
+          ];
+
+          CXXFLAGS = "-nostdinc++ -isystem ${libcxx.dev}/include/c++/v1 -isystem ${pkgs.glibc.dev}/include";
+          LDFLAGS = "-L${libcxx.out}/lib -lc++ -lc++abi -L${llvm.compiler-rt}/lib -lunwind -rtlib=compiler-rt -unwindlib=libunwind -Wl,--unresolved-symbols=ignore-in-object-files";
+        };
+      };
+    };
+}

@@ -1,13 +1,17 @@
-#pragma once
+module;
 
-#include "ast/ast.hpp"
-#include "lexer/lexer.hpp"
+#include <expected>
+
+export module parser;
+import ast;
+import lexer;
+import error;
 
 using namespace ast;
 using namespace lexer;
 
 namespace parser {
-class Parser {
+export class Parser {
     /// index of the current token
     size_t i = 0;
     Tokens ts;
@@ -35,7 +39,7 @@ class Parser {
  * @brief builds a Parser and wraps around Parser::parse
  * @see Parser::parse
  */
-inline std::expected<ast::Expr, Error> parse(Tokens ts) {
+export inline std::expected<ast::Expr, Error> parse(Tokens ts) {
     Parser parser(ts);
     return parser.parse();
 }

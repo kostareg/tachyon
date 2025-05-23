@@ -1,8 +1,10 @@
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
+module;
+
+#include <expected>
+#include <iostream>
 #include <string>
 
-#include "lexer/lexer.hpp"
+module lexer;
 
 namespace lexer {
 std::expected<Tokens, Error> lex(const std::string s) {

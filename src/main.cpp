@@ -1,17 +1,18 @@
 #include <cmath>
 #include <cstring>
+#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <ostream>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
 #include <string>
+#include <variant>
 
-#include "ast/ast.hpp"
-#include "lexer/lexer.hpp"
-#include "parser/parser.hpp"
-#include "vm/vm.hpp"
+import parser;
+import ast;
+import lexer;
+import vm;
+import error;
 
 void unwrap(std::expected<void, Error> t, std::string src, bool quit) {
     if (!t.has_value()) {
@@ -89,7 +90,7 @@ int repl() {
         auto m =
             lexer::lex(source)
                 .and_then(parser::parse)
-                .and_then([](Expr e) -> std::expected<Expr, Error> {
+                .and_then([](ast::Expr e) -> std::expected<ast::Expr, Error> {
                     // logging
                     std::visit(ast::Printer{}, e.kind);
                     std::println();
@@ -110,20 +111,6 @@ int repl() {
 }
 
 int main(int argc, char **argv) {
-#ifdef DEBUG
-    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_level(spdlog::level::trace); // Enable trace messages
-    console_sink->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] %v%$");
-
-    // Create a logger with the colored sink
-    auto logger =
-        std::make_shared<spdlog::logger>("colored_logger", console_sink);
-    spdlog::set_default_logger(logger);
-
-    // Set global log level to trace
-    spdlog::set_level(spdlog::level::trace);
-#endif
-
     if (argc == 1) {
         return repl();
     } else if (strcmp(argv[1], "run") == 0) {

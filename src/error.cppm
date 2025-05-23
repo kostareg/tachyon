@@ -1,4 +1,4 @@
-#pragma once
+module;
 
 #include <cmath>
 #include <format>
@@ -8,10 +8,12 @@
 #include <string>
 #include <vector>
 
+export module error;
+
 /**
  * @brief Kind of errors that can occur.
  */
-enum class ErrorKind {
+export enum class ErrorKind {
     LexError,
     ParseError,
 };
@@ -19,7 +21,7 @@ enum class ErrorKind {
 /**
  * @brief Given a string and a position index, get its whole line.
  */
-inline std::string get_line_at(const std::string &s, size_t pos) {
+export inline std::string get_line_at(const std::string &s, size_t pos) {
     size_t start = s.rfind('\n', pos);
     size_t end = s.find('\n', pos);
     if (start == std::string::npos)
@@ -36,7 +38,7 @@ inline std::string get_line_at(const std::string &s, size_t pos) {
  *
  * TODO: consider moving to span.hpp.
  */
-struct SourceSpan {
+export struct SourceSpan {
     /// Indexed position, range [0, characters-1].
     size_t pos;
     /// Line number, range [1, lines].
@@ -47,7 +49,7 @@ struct SourceSpan {
     size_t length;
 };
 
-struct Error {
+export struct Error {
     ErrorKind kind;
     std::string messageShort;
     std::string messageLong;
