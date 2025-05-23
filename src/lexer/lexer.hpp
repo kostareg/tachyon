@@ -173,6 +173,26 @@ inline Op tok_to_op(TokenType t) {
         throw std::runtime_error("ice: unknown operator");
 };
 
+/**
+ * @brief get left binding power
+ *
+ * Represents the precedence of a token.
+ */
+inline int get_lbp(TokenType t) {
+    switch (t) {
+    case PLUS:
+    case MINUS:
+        return 10;
+    case STAR:
+    case FSLASH:
+        return 20;
+    case CARET:
+        return 30;
+    default:
+        return 0;
+    }
+}
+
 struct Token {
     TokenType type;
     std::variant<std::monostate, double, bool, std::string> value;

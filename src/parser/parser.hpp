@@ -15,9 +15,20 @@ class Parser {
   public:
     Parser(Tokens ts) : ts(ts) {}
 
-    std::expected<ast::Expr, Error> parse();
+    std::expected<ast::Expr, Error> parse(int rbp = 0);
 
-    std::expected<Token, Error> next();
+    /**
+     * @brief null denotation (literals, unary operators)
+     */
+    std::expected<ast::Expr, Error> parse_nud(Token t);
+
+    /**
+     * @brief left denotation (binary operators with infix positions)
+     */
+    std::expected<ast::Expr, Error> parse_led(Token t, Expr l);
+
+    Token peek();
+    std::expected<Token, Error> advance();
 };
 
 /**
