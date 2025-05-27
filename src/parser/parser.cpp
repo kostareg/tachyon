@@ -17,9 +17,12 @@ std::expected<ast::Expr, Error> Parser::parse() {
     while (auto x = parse_stmt()) {
         if (!x)
             return std::unexpected(x.error());
+        if (match(END))
+            break;
         if (!match(NLINE))
-            return std::unexpected(
-                Error(ErrorKind::ParseError, "expected new line", peek().span));
+            return std::unexpected(Error(ErrorKind::ParseError,
+                                         "expected new line after statement",
+                                         peek().span));
         stmts.push_back(std::move(x.value()));
     }
 
@@ -88,7 +91,15 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
         return Expr(LiteralExpr(LiteralValue(std::get<bool>(t.value))), t.span);
     else if (t.type == UNIT)
         return Expr(LiteralExpr(LiteralValue()), t.span);
-    else if (t.type == IDENT)
+    else if (t.type == LPAREN) {
+        auto e = parse_expr();
+        if (!match(RPAREN))
+            return std::unexpected(
+                Error(ErrorKind::ParseError,
+                      "expected one expression in parentheses", peek().span));
+        advance();
+        return e;
+    } else if (t.type == IDENT)
         return Expr(LetRefExpr(std::get<std::string>(t.value)), t.span);
 
     return std::unexpected(
