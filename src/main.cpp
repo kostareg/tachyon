@@ -1,4 +1,3 @@
-#include <cmath>
 #include <cstring>
 #include <expected>
 #include <filesystem>
@@ -14,7 +13,7 @@ import lexer;
 import vm;
 import error;
 
-void unwrap(std::expected<void, Error> t, std::string src, bool quit) {
+void unwrap(std::expected<void, Error> t, const std::string &src, bool quit) {
     if (!t.has_value()) {
         auto e = t.error();
         constexpr auto message = "\033[31merror{}\033[0m: {} on L{}C{}.\n"
@@ -28,8 +27,8 @@ void unwrap(std::expected<void, Error> t, std::string src, bool quit) {
         std::cout << std::format(message, code, e.messageLong, e.span.line,
                                  e.span.column, e.getSource());
 
-        for (size_t i = 0; i < e.additional.size(); ++i) {
-            unwrap(std::unexpected(e.additional[i]), src, false);
+        for (auto &i : e.additional) {
+            unwrap(std::unexpected(i), src, false);
         }
 
         if (quit)

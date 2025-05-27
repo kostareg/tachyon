@@ -6,6 +6,6 @@ module ast;
 
 namespace ast {
 std::expected<vm::Proto, Error> generate_proto(Expr) {
-    return std::unexpected(Error(ErrorKind::ParseError, "A", 0, 0, 0, 0));
+    return std::unexpected(Error(ErrorKind::ParseError, "Z", 0, 0, 0, 0));
 }
 } // namespace ast

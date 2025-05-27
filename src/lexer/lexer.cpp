@@ -7,7 +7,7 @@ module;
 module lexer;
 
 namespace lexer {
-std::expected<Tokens, Error> lex(const std::string s) {
+std::expected<Tokens, Error> lex(const std::string &s) {
     std::vector<Token> tokens;
     std::vector<Error> errors;
     size_t pos = 0;
@@ -15,7 +15,7 @@ std::expected<Tokens, Error> lex(const std::string s) {
 
     while (1) {
         if (pos == s.size()) {
-            tokens.push_back(Token(END, pos, m.line, m.col, 0));
+            tokens.emplace_back(END, pos, m.line, m.col, 0);
             break;
         }
 

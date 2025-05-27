@@ -73,8 +73,8 @@ export struct Error {
           size_t pos, size_t line, size_t column, size_t length)
         : kind(kind), messageShort(messageShort), messageLong(messageLong),
           span(pos, line, column, length) {}
-    Error(std::vector<Error> additionals) {
-        if (additionals.size() == 0) {
+    explicit Error(const std::vector<Error> &additionals) {
+        if (additionals.empty()) {
             throw std::runtime_error("ice: 0 errors given");
         } else {
             // inherit first element
@@ -127,13 +127,13 @@ export struct Error {
         }
         source.append(" |\n");
 
-        for (size_t i = 0; i < hints.size(); ++i) {
+        for (const auto &hint : hints) {
             // space it out
             source.append(" ");
             for (size_t i = 0; i < lineDigits; ++i) {
                 source.append(" ");
             }
-            source.append(" +-> \033[1mhint\033[00m: " + hints[i] + "\n");
+            source.append(" +-> \033[1mhint\033[00m: " + hint + "\n");
         }
 
         // line number formatting (arrow line is done)
@@ -145,19 +145,21 @@ export struct Error {
                            source);
     }
 
-    Error with_code(std::string code) {
+    Error with_code(const std::string &code) {
         this->code = code;
         return *this;
     }
 
-    Error with_hint(std::string hint) {
+    Error with_hint(const std::string &hint) {
         this->hints.push_back(hint);
         return *this;
     }
 
-    void add_additional(Error error) { this->additional.push_back(error); }
+    void add_additional(const Error &error) {
+        this->additional.push_back(error);
+    }
 
-    Error with_additional(Error error) {
+    Error with_additional(const Error &error) {
         this->add_additional(error);
         return *this;
     }

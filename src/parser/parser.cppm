@@ -17,7 +17,7 @@ export class Parser {
     Tokens ts;
 
   public:
-    Parser(Tokens ts) : ts(ts) {}
+    explicit Parser(Tokens ts) : ts(ts) {}
 
     std::expected<ast::Expr, Error> parse(int rbp = 0);
 
@@ -39,7 +39,7 @@ export class Parser {
  * @brief builds a Parser and wraps around Parser::parse
  * @see Parser::parse
  */
-export inline std::expected<ast::Expr, Error> parse(Tokens ts) {
+export inline std::expected<ast::Expr, Error> parse(const Tokens &ts) {
     Parser parser(ts);
     return parser.parse();
 }

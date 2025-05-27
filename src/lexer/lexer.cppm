@@ -236,5 +236,5 @@ export struct LexerMeta {
     }
 };
 
-export std::expected<Tokens, Error> lex(const std::string);
+export std::expected<Tokens, Error> lex(const std::string &);
 } // namespace lexer
