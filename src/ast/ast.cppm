@@ -173,10 +173,11 @@ export struct Printer {
     }
 
     void operator()(const BinaryOperatorExpr &binop) const {
-        std::print("{} ", op_to_str(binop.op));
+        std::print("{} (", op_to_str(binop.op));
         std::visit(*this, binop.left->kind);
-        std::print(" ");
+        std::print(", ");
         std::visit(*this, binop.right->kind);
+        std::print(")");
     }
 
     void operator()(const LetExpr &vdecl) const {

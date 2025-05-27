@@ -40,13 +40,19 @@ export class Parser {
     std::expected<Token, Error> advance();
 
     /**
-     * @brief matches token type to current token, advances if possible
-     *
+     * @brief matches token type
      * @param tt token type
+     * @param x offset
      * @return matches?
      */
-    bool match(TokenType tt);
-    bool match(TokenType tt, size_t x);
+    bool match(TokenType tt, size_t x = 0);
+
+    /**
+     * @brief matches and consumes token type, fails if cannot match
+     * @param tt token type
+     * @return void or "expected token" error
+     */
+    std::expected<Token, Error> expect(TokenType tt);
 };
 
 /**

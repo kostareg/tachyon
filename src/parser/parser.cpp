@@ -1,8 +1,8 @@
 module;
 
 #include <expected>
+#include <format>
 #include <memory>
-#include <optional>
 #include <string>
 #include <variant>
 
@@ -14,16 +14,18 @@ using enum TokenType;
 namespace parser {
 std::expected<ast::Expr, Error> Parser::parse() {
     std::vector<ast::Expr> stmts;
-    while (auto x = parse_stmt()) {
-        if (!x)
-            return std::unexpected(x.error());
+    while (true) {
+        auto stmt = parse_stmt();
+        if (!stmt)
+            return std::unexpected(stmt.error());
+
+        if (auto n = expect(NLINE); !n)
+            return std::unexpected(Error(n.error()));
+
+        stmts.push_back(std::move(stmt.value()));
+
         if (match(END))
             break;
-        if (!match(NLINE))
-            return std::unexpected(Error(ErrorKind::ParseError,
-                                         "expected new line after statement",
-                                         peek().span));
-        stmts.push_back(std::move(x.value()));
     }
 
     return Expr(SequenceExpr(std::move(stmts)));
@@ -101,6 +103,10 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
         return e;
     } else if (t.type == IDENT)
         return Expr(LetRefExpr(std::get<std::string>(t.value)), t.span);
+    else if (t.type == FN) {
+        if (auto lp = expect(LPAREN); !lp)
+            return std::unexpected(lp.error());
+    }
 
     return std::unexpected(
         Error(ErrorKind::ParseError, "could not parse expression", t.span));
@@ -123,17 +129,19 @@ std::expected<Token, Error> Parser::advance() {
     return ts[i++];
 }
 
-bool Parser::match(TokenType tt) {
-    if (peek().type == tt) {
-        return true;
-    }
-    return false;
-}
-
 bool Parser::match(TokenType tt, size_t x) {
     if (ts[i + x].type == tt) {
         return true;
     }
     return false;
+}
+
+std::expected<Token, Error> Parser::expect(TokenType tt) {
+    if (match(tt))
+        return advance();
+    else
+        return std::unexpected(Error(
+            ErrorKind::ParseError,
+            std::format("expected {}", tok_to_str_pretty(tt)), peek().span));
 }
 } // namespace parser
