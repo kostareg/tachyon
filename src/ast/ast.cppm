@@ -167,9 +167,9 @@ export struct Printer {
             std::visit(PrintType{}, fn.returns.value());
         else
             std::print("<unknown type>");
-        std::print(" {{ ");
+        std::print(" {{\n");
         std::visit(*this, fn.body->kind);
-        std::print(" }}");
+        std::print("}}");
     }
 
     void operator()(const BinaryOperatorExpr &binop) const {

@@ -4,6 +4,7 @@ module;
 #include <format>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <variant>
 
 module parser;
@@ -19,8 +20,17 @@ std::expected<ast::Expr, Error> Parser::parse() {
         if (!stmt)
             return std::unexpected(stmt.error());
 
-        if (auto n = expect(NLINE); !n)
-            return std::unexpected(Error(n.error()));
+        if (!(match(NLINE) || match(SEMIC)))
+            return std::unexpected(Error(ErrorKind::ParseError,
+                                         "expected end of statement",
+                                         peek().span));
+
+        auto _terminator = advance();
+
+        // get rid of any trailing newlines
+        while (match(NLINE)) {
+            auto _trail = advance();
+        }
 
         stmts.push_back(std::move(stmt.value()));
 
@@ -106,10 +116,139 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
     else if (t.type == FN) {
         if (auto lp = expect(LPAREN); !lp)
             return std::unexpected(lp.error());
+
+        // parse arguments (x, y: Type, z)
+        std::unordered_map<std::string, MaybeType> args;
+        while (true) {
+            auto name = expect(IDENT);
+            if (!name)
+                return std::unexpected(name.error());
+            if (!std::holds_alternative<std::string>(name->value))
+                return std::unexpected(Error(
+                    ErrorKind::ParseError,
+                    "function argument name must be identifer", peek().span));
+
+            MaybeType maybeArgumentType;
+            if (match(COLON)) {
+                // we have a type
+                auto _colon = advance();
+                auto argumentType = expect(IDENT);
+                if (!argumentType)
+                    return std::unexpected(Error(argumentType.error()));
+                if (!std::holds_alternative<std::string>(argumentType->value))
+                    return std::unexpected(
+                        Error(ErrorKind::ParseError,
+                              "function argument type must be identifier",
+                              peek().span));
+
+                auto namedType = std::get<std::string>(argumentType->value);
+
+                if (namedType == "Num") {
+                    maybeArgumentType = BasicConcreteTypes::Number;
+                } else if (namedType == "Str") {
+                    maybeArgumentType = BasicConcreteTypes::String;
+                } else if (namedType == "Bool") {
+                    maybeArgumentType = BasicConcreteTypes::Boolean;
+                } else if (namedType == "Unit") {
+                    maybeArgumentType = BasicConcreteTypes::Unit;
+                } else if (namedType == "Fn") {
+                    // TODO
+                } else {
+                    maybeArgumentType = namedType;
+                }
+            }
+
+            args.emplace(std::get<std::string>(name->value), maybeArgumentType);
+
+            if (match(COMMA)) {
+                auto _comma = advance();
+            } else {
+                break;
+            }
+        }
+
+        if (auto rp = expect(RPAREN); !rp)
+            return std::unexpected(rp.error());
+
+        // parse return type (-> Type)
+        MaybeType maybeReturnType;
+        if (match(RARROW)) {
+            auto _rarrow = advance();
+            auto argumentType = expect(IDENT);
+            if (!argumentType)
+                return std::unexpected(Error(argumentType.error()));
+            if (!std::holds_alternative<std::string>(argumentType->value))
+                return std::unexpected(Error(
+                    ErrorKind::ParseError,
+                    "function argument type must be identifier", peek().span));
+
+            auto namedType = std::get<std::string>(argumentType->value);
+
+            if (namedType == "Num") {
+                maybeReturnType = BasicConcreteTypes::Number;
+            } else if (namedType == "Str") {
+                maybeReturnType = BasicConcreteTypes::String;
+            } else if (namedType == "Bool") {
+                maybeReturnType = BasicConcreteTypes::Boolean;
+            } else if (namedType == "Unit") {
+                maybeReturnType = BasicConcreteTypes::Unit;
+            } else if (namedType == "Fn") {
+                // TODO
+            } else {
+                maybeReturnType = namedType;
+            }
+        }
+
+        if (auto lb = expect(LBRACE); !lb)
+            return std::unexpected(lb.error());
+
+        std::vector<Expr> stmts;
+        while (1) {
+            auto stmt = parse_stmt();
+            if (!stmt)
+                return std::unexpected(Error(stmt.error()));
+
+            // TODO
+            if (!(match(SEMIC) || match(NLINE))) {
+                return std::unexpected(Error(ErrorKind::ParseError,
+                                             "expected end of statement",
+                                             peek().span));
+            }
+
+            auto _terminator = advance();
+
+            // get rid of any trailing newlines
+            while (match(NLINE)) {
+                auto _trail = advance();
+            }
+
+            if (match(END))
+                return std::unexpected(Error(
+                    ErrorKind::ParseError, "eof during function", peek().span));
+
+            stmts.push_back(std::move(stmt.value()));
+
+            if (match(RBRACE)) {
+                auto _rbrace = advance();
+                break;
+            }
+        }
+
+        auto sequence = SequenceExpr(std::move(stmts));
+
+        // finally, we can construct our function type
+        return Expr(FnExpr(args, maybeReturnType,
+                           std::make_unique<Expr>(std::move(sequence))));
+    } else if (t.type == RETURN) {
+        auto e = parse_expr();
+        if (!e)
+            return std::unexpected(e.error());
+
+        return Expr(ReturnExpr(std::make_unique<Expr>(std::move(e.value()))));
     }
 
     return std::unexpected(
-        Error(ErrorKind::ParseError, "could not parse expression", t.span));
+        Error(ErrorKind::ParseError, "failed to parse expression", t.span));
 }
 
 std::expected<ast::Expr, Error> Parser::parse_expr_led(Token t, Expr l) {
