@@ -99,7 +99,7 @@ import Math.Genius.Ideas // ./Math/Genius/Ideas.Tachyon
 
 // Unit type
 x = ()
-y = fn(x) -> () {}
+y = fn(x) -> Unit {}
 
 /**
  * Type inference
