@@ -40,7 +40,7 @@ square'' = fn(x: Num) -> Num { return x ^ 2 }
 // h = f . g // same as 10x
 
 // First-class functions
-f(fn(x) { x })
+// f(fn(x) { x })
 // map([1 2 3], fn(x) { x * 2 })
 
 // Partial application of functions
