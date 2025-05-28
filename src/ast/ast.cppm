@@ -91,6 +91,11 @@ export struct LetRefExpr {
     std::string name;
 };
 
+export struct FnCallExpr {
+    LetRefExpr ref;
+    std::vector<Expr> args;
+};
+
 export struct ImportExpr {
     std::string path;
 };
@@ -105,7 +110,7 @@ export struct SequenceExpr {
 
 export using ExprKind =
     std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
-                 ImportExpr, ReturnExpr, SequenceExpr>;
+                 FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
  * @brief Top-level expression type.
@@ -187,6 +192,17 @@ export struct Printer {
 
     void operator()(const LetRefExpr &vref) const {
         std::print("{}", vref.name);
+    }
+
+    void operator()(const FnCallExpr &fnc) const {
+        std::print("call {} with: ", fnc.ref.name);
+        if (fnc.args.empty())
+            std::print("<empty>");
+        else
+            for (const auto &arg : fnc.args) {
+                std::visit(*this, arg.kind);
+                std::print(", ");
+            }
     }
 
     void operator()(const ImportExpr &imp) const {

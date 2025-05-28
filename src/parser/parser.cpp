@@ -46,11 +46,6 @@ std::expected<ast::Expr, Error> Parser::parse_stmt() {
         auto l = advance();
         if (!l)
             return std::unexpected(l.error());
-        if (!std::holds_alternative<std::string>(l->value)) {
-            return std::unexpected(Error(ErrorKind::ParseError,
-                                         "variable name should be text ",
-                                         l->span));
-        }
 
         auto _eq = advance();
 
@@ -67,12 +62,7 @@ std::expected<ast::Expr, Error> Parser::parse_stmt() {
         std::string path;
         while (true) {
             if (auto e = peek(); e.type == IDENT)
-                if (std::holds_alternative<std::string>(e.value))
-                    path += std::get<std::string>(e.value);
-                else
-                    return std::unexpected(Error(
-                        ErrorKind::ParseError,
-                        "import statement cannot read this path", e.span));
+                path += std::get<std::string>(e.value);
             else if (e.type == DOT)
                 path += ".";
             else if (e.type == SEMIC || e.type == NLINE)
@@ -134,11 +124,47 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
             return std::unexpected(
                 Error(ErrorKind::ParseError,
                       "expected one expression in parentheses", peek().span));
-        advance();
+        auto _rparen = advance();
         return e;
-    } else if (t.type == IDENT)
-        return Expr(LetRefExpr(std::get<std::string>(t.value)), t.span);
-    else if (t.type == FN) {
+    } else if (t.type == IDENT) {
+        auto value = std::get<std::string>(t.value);
+        auto ref = LetRefExpr(std::get<std::string>(t.value));
+
+        if (match(UNIT)) {
+            // we are working with a function call, no args
+            auto _parens = advance();
+            return Expr(FnCallExpr(std::move(ref), {}));
+        } else if (match(LPAREN) && match(RPAREN, 1)) {
+            // we are working with a function call, no args
+            auto _lparen = advance();
+            auto _rparen = advance();
+            return Expr(FnCallExpr(std::move(ref), {}));
+        } else if (match(LPAREN)) {
+            // we are working with a function call, with args
+            auto _lparen = advance();
+
+            std::vector<Expr> args;
+
+            while (1) {
+                auto e = parse_expr();
+                if (!e)
+                    return std::unexpected(e.error());
+                args.push_back(std::move(e.value()));
+
+                if (match(RPAREN))
+                    break;
+
+                if (auto comma = expect(COMMA); !comma)
+                    return std::unexpected(comma.error());
+            }
+
+            if (auto rparen = expect(RPAREN); !rparen)
+                return std::unexpected(rparen.error());
+
+            return Expr(FnCallExpr(std::move(ref), std::move(args)), t.span);
+        } else
+            return Expr(ref, t.span);
+    } else if (t.type == FN) {
         if (auto lp = expect(LPAREN); !lp)
             return std::unexpected(lp.error());
 
@@ -148,10 +174,6 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
             auto name = expect(IDENT);
             if (!name)
                 return std::unexpected(name.error());
-            if (!std::holds_alternative<std::string>(name->value))
-                return std::unexpected(Error(
-                    ErrorKind::ParseError,
-                    "function argument name must be identifer", peek().span));
 
             MaybeType maybeArgumentType;
             if (match(COLON)) {
@@ -160,11 +182,6 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
                 auto argumentType = expect(IDENT);
                 if (!argumentType)
                     return std::unexpected(Error(argumentType.error()));
-                if (!std::holds_alternative<std::string>(argumentType->value))
-                    return std::unexpected(
-                        Error(ErrorKind::ParseError,
-                              "function argument type must be identifier",
-                              peek().span));
 
                 auto namedType = std::get<std::string>(argumentType->value);
 
@@ -202,10 +219,6 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
             auto argumentType = expect(IDENT);
             if (!argumentType)
                 return std::unexpected(Error(argumentType.error()));
-            if (!std::holds_alternative<std::string>(argumentType->value))
-                return std::unexpected(Error(
-                    ErrorKind::ParseError,
-                    "function argument type must be identifier", peek().span));
 
             auto namedType = std::get<std::string>(argumentType->value);
 
