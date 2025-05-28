@@ -61,6 +61,31 @@ std::expected<ast::Expr, Error> Parser::parse_stmt() {
         return Expr(LetExpr(std::get<std::string>(l->value),
                             std::make_unique<Expr>(std::move(r.value()))),
                     l->span);
+    } else if (match(IMPORT)) {
+        auto _import = advance();
+
+        std::string path;
+        while (true) {
+            if (auto e = peek(); e.type == IDENT)
+                if (std::holds_alternative<std::string>(e.value))
+                    path += std::get<std::string>(e.value);
+                else
+                    return std::unexpected(Error(
+                        ErrorKind::ParseError,
+                        "import statement cannot read this path", e.span));
+            else if (e.type == DOT)
+                path += ".";
+            else if (e.type == SEMIC || e.type == NLINE)
+                break;
+            else
+                return std::unexpected(
+                    Error(ErrorKind::ParseError,
+                          "import statement cannot read this path", e.span));
+
+            auto _element = advance();
+        }
+
+        return Expr(ImportExpr(path));
     }
 
     return parse_expr();
