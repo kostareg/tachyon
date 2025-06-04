@@ -53,6 +53,7 @@ int run(char *fileName) {
     std::ifstream file(fileName, std::ios::binary);
     std::string file_contents(std::istreambuf_iterator<char>{file}, {});
 
+    // TODO: update this with other stuff
     auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
                  // .and_then(optimize)
@@ -67,7 +68,6 @@ int run(char *fileName) {
     return 0;
 }
 
-// TODO: handle multiple lines
 int repl() {
     vm::VM vm;
     std::string source, line;
@@ -89,12 +89,9 @@ int repl() {
         auto m =
             lexer::lex(source)
                 .and_then(parser::parse)
-                .and_then([](ast::Expr e) -> std::expected<ast::Expr, Error> {
-                    // logging
-                    std::visit(ast::Printer{}, e.kind);
-                    std::println();
-                    return e;
-                })
+                .and_then(ast::print)
+                .and_then(ast::infer)
+                .and_then(ast::print)
                 .and_then(ast::generate_proto)
                 .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
                     return vm.run_fn(&proto);

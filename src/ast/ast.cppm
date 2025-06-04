@@ -148,28 +148,47 @@ export struct Printer {
     void operator()(const SequenceExpr &seq) const;
 };
 
+export std::expected<Expr, Error> print(Expr e) {
+    auto printer = Printer{};
+    std::visit(printer, e.kind);
+    return e;
+}
+
 export struct TypeInferrer {
-    void operator()(const LiteralExpr &literal) const;
-    void operator()(const FnExpr &fn) const;
-    void operator()(const BinaryOperatorExpr &binop) const;
-    void operator()(const LetExpr &vdecl) const;
-    void operator()(const LetRefExpr &vref) const;
-    void operator()(const FnCallExpr &fnc) const;
-    void operator()(const ImportExpr &imp) const;
-    void operator()(const ReturnExpr &ret) const;
-    void operator()(const SequenceExpr &seq) const;
+    std::vector<Error> errors;
+    SourceSpan span;
+
+    TypeInferrer(SourceSpan span) : span(span) {};
+
+    void operator()(LiteralExpr &literal);
+    void operator()(FnExpr &fn);
+    void operator()(BinaryOperatorExpr &binop);
+    void operator()(LetExpr &vdecl);
+    void operator()(LetRefExpr &vref);
+    void operator()(FnCallExpr &fnc);
+    void operator()(ImportExpr &imp);
+    void operator()(ReturnExpr &ret);
+    void operator()(SequenceExpr &seq);
 };
 
+export std::expected<Expr, Error> infer(Expr e) {
+    auto inferred = TypeInferrer{e.span};
+    std::visit(inferred, e.kind);
+    if (!inferred.errors.empty())
+        return std::unexpected(Error(inferred.errors));
+    return e;
+}
+
 export struct BytecodeGenerator {
-    void operator()(const LiteralExpr &literal) const;
-    void operator()(const FnExpr &fn) const;
-    void operator()(const BinaryOperatorExpr &binop) const;
-    void operator()(const LetExpr &vdecl) const;
-    void operator()(const LetRefExpr &vref) const;
-    void operator()(const FnCallExpr &fnc) const;
-    void operator()(const ImportExpr &imp) const;
-    void operator()(const ReturnExpr &ret) const;
-    void operator()(const SequenceExpr &seq) const;
+    void operator()(const LiteralExpr &literal);
+    void operator()(const FnExpr &fn);
+    void operator()(const BinaryOperatorExpr &binop);
+    void operator()(const LetExpr &vdecl);
+    void operator()(const LetRefExpr &vref);
+    void operator()(const FnCallExpr &fnc);
+    void operator()(const ImportExpr &imp);
+    void operator()(const ReturnExpr &ret);
+    void operator()(const SequenceExpr &seq);
 };
 
 } // namespace ast

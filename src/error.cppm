@@ -16,6 +16,7 @@ export module error;
 export enum class ErrorKind {
     LexError,
     ParseError,
+    InferenceError,
 };
 
 /**
