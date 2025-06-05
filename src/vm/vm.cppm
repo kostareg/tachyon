@@ -17,6 +17,11 @@ export struct Proto;
 //  and get significant decrease (should be 16 bytes). and if we can store
 //  7 byte numbers, even if they need alignment, we will probably be at 8 bytes
 //  total size.
+// TODO: currently, Proto* is marked as const. However, that means that
+//  returning a "constant" from proto.constants is copy-only, since we can't
+//  move out of a const. Consider removing the const modifier here (also may
+//  have implications on VM::run) so that we can
+//  `std::move(proto.constants[...])`.
 export using Value =
     std::variant<std::monostate, double, std::string, bool, const Proto *>;
 
@@ -24,17 +29,30 @@ struct Proto {
     // TODO: uint8_t* + malloc
     std::vector<uint8_t> bytecode;
 
+    // TODO: it would be an optimisation to store all constants somewhere
+    //  else (eg in the VM) and call from there. There may be duplicate
+    //  constants, and since they're currently stored in each Proto,
+    //  duplicates within functions are not difficult but impossible to
+    //  optimise since there is no way to reference them. You can also
+    //  consider passing a value to the read constants instructions that
+    //  indicate the depth of the constant, but that probably doesn't make
+    //  sense.
     /**
      * @brief constant value lookup table
      */
     std::vector<Value> constants;
+
+    size_t arguments;
 
     // debug info
     std::string name;
     SourceSpan span;
 
     // TODO: when capturing vars from outer scope, just store a lookup table,
-    //       don't store names
+    //  don't store names
+    // TODO: consider having `bool returnsVoid;` that indicates whether the
+    //  0th register can stay the same (after the fn is called). Currently, it
+    //  will overwrite it with garbage.
 };
 
 class RegisterAllocator {
@@ -108,10 +126,10 @@ class RegisterAllocator {
 };
 
 struct CallFrame {
-    uint8_t returns;
-
     // TODO: maybe optimization point. store large values in their own regs?
     std::array<Value, 256> registers;
+
+    Value returns;
 };
 
 export class VM {
@@ -125,30 +143,30 @@ export class VM {
 
     std::expected<void, Error> run(const Proto &proto);
 
+    std::expected<void, Error> call(const Proto *fn);
     void diagnose() const;
 };
 
 /**
  * @brief bytecode values
  *
- * +--------------+-----------------+
- * | Start        | Operation class |
- * +--------------+-----------------+
- * | 0x0000       | Machine         |
- * | 0x0010       | Register        |
- * | 0x0020       | Stack           |
- * | 0x0030       | Comparison      |
- * | 0x0040       | Positional      |
- * | 0x0050       | Arithmetic      |
- * | 0x00F0       | Function        |
- * +--------------+-----------------+
+ * +-------+-----------------+
+ * | Start | Operation class |
+ * +-------+-----------------+
+ * | 0x00  | Machine         |
+ * | 0x10  | Register        |
+ * | 0x20  | Stack           |
+ * | 0x30  | Comparison      |
+ * | 0x40  | Positional      |
+ * | 0x50  | Arithmetic      |
+ * | 0xF0  | Function        |
+ * +-------+-----------------+
  */
 export enum Bytecode : uint8_t {
-    EXIT = 0x00, // exit
-    NOOP = 0x01, // no-op
-    RETV = 0x02, // return void
-    RETC = 0x03, // return constant
-    RETR = 0x04, // return register
+    RETV = 0x00, // return void
+    RETC = 0x01, // return constant
+    RETR = 0x02, // return register
+    NOOP = 0x0F, // no-op
 
     LOCR = 0x10, // load constant -> register
     LORR = 0x11, // load register -> register
@@ -189,8 +207,7 @@ export enum Bytecode : uint8_t {
 
     // TODO: negate and inverse, potentially shortcuts for square and cube
 
-    CALR = 0xF0, // call register
-    PUHC = 0xF1, // push constant to next function call
-    PUHR = 0xF2, // push register to next function call
+    CALC = 0xF0, // call constant fn
+    CALR = 0xF1, // call register fn
 };
 } // namespace vm

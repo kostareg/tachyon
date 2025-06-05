@@ -8,6 +8,24 @@ module;
 module vm;
 
 namespace vm {
+/**
+ * @brief small visitor for printing values
+ */
+void print_value(const Value &reg) {
+    std::visit(
+        [](const auto &val) {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                std::print("() ");
+            } else if constexpr (std::is_same_v<T, const Proto *>) {
+                std::print("proto ");
+            } else {
+                std::print("{} ", val);
+            }
+        },
+        reg);
+}
+
 std::expected<void, Error> VM::run(const Proto &proto) {
     size_t ptr = 0;
     while (ptr < proto.bytecode.size()) {
@@ -16,18 +34,27 @@ std::expected<void, Error> VM::run(const Proto &proto) {
 
         switch (op) {
         default:
-        case EXIT:
+        case RETV: {
             return {};
+        }
+        case RETC: {
+            auto src1 = proto.bytecode[++ptr];
+            call_stack.back().returns = proto.constants[src1];
+            return {};
+        }
+        case RETR: {
+            auto src1 = proto.bytecode[++ptr];
+            call_stack.back().returns = call_stack.back().registers[src1];
+            return {};
+        }
+        // TODO: if the section after this switch case remains blank, don't
+        //  continue, just break.
         case NOOP: {
             ++ptr;
             continue;
         }
-        case RETV:
-        case RETC:
-        case RETR: {
-            ++ptr;
-            continue; // TODO: implement
-        }
+        // TODO: consider putting a check here that makes sure constants exists.
+        //  otherwise, its a segfault.
         case LOCR: {
             auto src1 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
@@ -105,7 +132,7 @@ std::expected<void, Error> VM::run(const Proto &proto) {
         }
         // TODO: for now, just assume that math operations are only working on
         //  doubles. we can handle other issues either in the typechecker or by
-        //  allowing weak types.
+        //  allowing weak types. or, we can make it a runtime error.
         case MARC: {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
@@ -241,6 +268,23 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                     std::get<double>(call_stack.back().registers[src2]));
             break;
         }
+        case CALC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto fn = std::get<const Proto *>(proto.constants[src1]);
+
+            if (auto calledFn = call(fn); !calledFn)
+                return std::unexpected(calledFn.error());
+            break;
+        }
+        case CALR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto fn =
+                std::get<const Proto *>(call_stack.back().registers[src1]);
+
+            if (auto calledFn = call(fn); !calledFn)
+                return std::unexpected(calledFn.error());
+            break;
+        }
         }
         ++ptr;
     }
@@ -250,24 +294,41 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                                  0, 0, 0, 0));
 }
 
+std::expected<void, Error> VM::call(const Proto *fn) {
+    // create the next call frame and prepare it with the first few
+    // registers of the old ones.
+    std::array<Value, 256> registers;
+    for (size_t i = 0; i < fn->arguments; ++i) {
+        registers[i] = call_stack.back().registers[i];
+    }
+    CallFrame frame{std::move(registers)};
+    call_stack.push_back(frame);
+
+    if (auto postFn = run(*fn); !postFn)
+        return std::unexpected(postFn.error());
+
+    // load the return value of the function to register 0 of this
+    // call frame.
+    // TODO: consider just throwing this in the returns slot instead
+    //  of registers[0], so that the 0th slot can be used for other
+    //  things. blocked by bytecode generation.
+    call_stack[call_stack.size() - 2].registers[0] = call_stack.back().returns;
+
+    // remove call frame.
+    call_stack.pop_back();
+
+    return {};
+}
+
 void VM::diagnose() const {
     std::println("vm state:");
     for (auto &call : call_stack) {
         for (auto &reg : call.registers) {
-            std::visit(
-                [](const auto &val) {
-                    using T = std::decay_t<decltype(val)>;
-                    if constexpr (std::is_same_v<T, std::monostate>) {
-                        std::print("() ");
-                    } else if constexpr (std::is_same_v<T, const Proto *>) {
-                        std::print("proto ");
-                    } else {
-                        std::print("{} ", val);
-                    }
-                },
-                reg);
+            print_value(reg);
         }
-        std::println("\nreturned: {}", call.returns);
+        std::print("\nreturned: ");
+        print_value(call.returns);
+        std::println();
     }
 }
 } // namespace vm

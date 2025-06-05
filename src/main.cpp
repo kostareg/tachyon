@@ -109,30 +109,49 @@ int repl() {
 using namespace vm;
 
 int testvm() {
-    std::vector<uint8_t> bytecode = {
+    // --- define myfn --- //
+    std::vector<uint8_t> bytecode_myfn = {
         NOOP,          // no-op --------------------------------------
-        LOCR, 0, 1,    // load ABCDEF to reg 1
-        LOCR, 1, 3,    // load `123` to register 3
-        CREC, 3, 2, 0, // comparison
-        MACR, 2, 3, 0, // math
-        MSRR, 0, 3, 5, // math
-        EXIT};
-    std::vector<Value> constants;
+        MARR, 0, 1, 0, // add reg0 + reg1 -> reg0
+        MARC, 0, 1, 0, // add reg0 + 1 -> reg0
+        RETR, 0};
+    std::vector<Value> constants_myfn;
+    constants_myfn.emplace_back("ZYXWVU");
+    constants_myfn.emplace_back(1.0);
+    Proto myfnProto{std::move(bytecode_myfn), std::move(constants_myfn), 2,
+                    "myfn"};
+
+    // --- define main --- //
+    // can also CALC 4 directly
+    std::vector<uint8_t> bytecode_main = {
+        LOCR, 0,  1,     // load `ABCDEF` to reg 1
+        LOCR, 1,  3,     // load `123` to register 3
+        CREC, 3,  2,  0, // comparison
+        MACR, 2,  3,  0, // math
+        MSRR, 0,  3,  5, // math
+        LOCR, 1,  1,     // load `123` to register 1
+        LOCR, 4,  10,    // load myfn to reg10
+        CALR, 10,        // call reg10
+        RETV};
+    std::vector<Value> constants_main;
     const char *x = "ABCDEF";
-    constants.emplace_back(x);
-    constants.emplace_back(123.0);
-    constants.emplace_back(123.2);
-    constants.emplace_back(0.0);
+    constants_main.emplace_back(x);
+    constants_main.emplace_back(123.0);
+    constants_main.emplace_back(123.2);
+    constants_main.emplace_back(0.0);
+    constants_main.emplace_back(&myfnProto);
+    Proto mainProto{std::move(bytecode_main), std::move(constants_main), 0,
+                    "main"};
+
+    // vm
     VM vm;
-    Proto mainProto{std::move(bytecode), std::move(constants)};
-    auto ex = vm.run(mainProto);
-    // unwrap(ex, "AAAAAAAAAAAAAAAAAAAAAAA\nBBBBBBBBBBBBBB\n", false);
-    if (!ex) {
+    if (auto ex = vm.run(mainProto); !ex) {
         std::println("failed with error: {}", ex.error().getSource());
     }
+    // unwrap(ex, "AAAAAAAAAAAAAAAAAAAAAAA\nBBBBBBBBBBBBBB\n", false);
 
     vm.diagnose();
-    std::println("size: {}", sizeof(constants[0]));
+    std::println("size: {}", sizeof(constants_main[0]));
 
     return 0;
 }
