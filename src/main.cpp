@@ -114,10 +114,15 @@ int testvm() {
         NOOP,          // no-op --------------------------------------
         MARR, 0, 1, 0, // add reg0 + reg1 -> reg0
         MARC, 0, 1, 0, // add reg0 + 1 -> reg0
+        PRNC, 2,       // print `the answer is: `
+        PRNR, 0,       // print reg0
+        PRNC, 3,       // print `\n`
         RETR, 0};
     std::vector<Value> constants_myfn;
     constants_myfn.emplace_back("ZYXWVU");
     constants_myfn.emplace_back(1.0);
+    constants_myfn.emplace_back(">>> the answer is: ");
+    constants_myfn.emplace_back("\n");
     Proto myfnProto{std::move(bytecode_myfn), std::move(constants_myfn), 2,
                     "myfn"};
 

@@ -55,76 +55,6 @@ struct Proto {
     //  will overwrite it with garbage.
 };
 
-class RegisterAllocator {
-    /**
-     * @brief 16-bit registers.
-     */
-    uint16_t *registers;
-
-    /**
-     * @brief length of registers.
-     */
-    size_t reglast;
-
-    /**
-     * @brief register capacity.
-     */
-    size_t cap;
-
-  public:
-    RegisterAllocator(size_t initial_cap = 1024) : cap(initial_cap) {
-        registers = static_cast<uint16_t *>(malloc(cap * sizeof(uint16_t)));
-        reglast = 0;
-    }
-
-    uint16_t *new_fn() {
-        space_fn();
-
-        uint16_t *r = registers + reglast;
-        reglast += 256;
-        return r;
-    }
-
-    /**
-     * Pushes one value to the start of the next set of registers.
-     */
-    void early_push(size_t off, uint16_t val) {
-        space_fn();
-
-        registers[reglast + off] = val;
-    }
-
-    /*
-     * @brief Make sure there's enough space for an upcoming function.
-     */
-    void space_fn() {
-        if (reglast >= cap) {
-            cap *= 2;
-            registers = static_cast<uint16_t *>(
-                realloc(registers, cap * sizeof(uint16_t)));
-        }
-    }
-
-    void free_fn() {
-        reglast -= 256;
-
-        if (cap / 2 >= reglast) {
-            cap /= 2;
-            registers = static_cast<uint16_t *>(
-                realloc(registers, cap * sizeof(uint16_t)));
-        }
-    }
-
-    uint16_t &get_last_fn(size_t i) { return registers[reglast - 256 * 2 + i]; }
-
-    /**
-     * @brief Always point to the last 256 registers.
-     */
-    uint16_t &operator[](size_t i) { return registers[reglast - 256 + i]; }
-
-    ~RegisterAllocator() { free(registers); }
-};
-
 struct CallFrame {
     // TODO: maybe optimization point. store large values in their own regs?
     std::array<Value, 256> registers;
@@ -159,7 +89,8 @@ export class VM {
  * | 0x30  | Comparison      |
  * | 0x40  | Positional      |
  * | 0x50  | Arithmetic      |
- * | 0xF0  | Function        |
+ * | 0xE0  | Function        |
+ * | 0xF0  | Intrinsics      |
  * +-------+-----------------+
  */
 export enum Bytecode : uint8_t {
@@ -189,6 +120,7 @@ export enum Bytecode : uint8_t {
 
     // TODO: if statements
 
+    // TODO: pow but no nth root? impl in tachyon?
     MARC = 0x50, // register + constant -> register
     MSRC = 0x51, // register - constant -> register
     MMRC = 0x52, // register * constant -> register
@@ -205,9 +137,17 @@ export enum Bytecode : uint8_t {
     MDRR = 0x5D, // register / register -> register
     MPRR = 0x5E, // register ^ register -> register
 
-    // TODO: negate and inverse, potentially shortcuts for square and cube
+    // TODO: negate, inverse, nth root/sqrt, abs, floor, ceil, round, min?/max?,
+    //  trig functions, potentially shortcuts for square and cube. but i may
+    //  also just implement these manually? like the trig functions at least
+    //  are for sure doable. consider checking performance b/w cmath's trig
+    //  functions and a tachyon trig function.
 
-    CALC = 0xF0, // call constant fn
-    CALR = 0xF1, // call register fn
+    CALC = 0xE0, // call constant fn
+    CALR = 0xE1, // call register fn
+
+    // TODO: type(x) -> "num", sizeof(x), exit(), time()?, str()?
+    PRNC = 0xF0, // print constant
+    PRNR = 0xF1, // print register
 };
 } // namespace vm

@@ -16,11 +16,11 @@ void print_value(const Value &reg) {
         [](const auto &val) {
             using T = std::decay_t<decltype(val)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
-                std::print("() ");
+                std::print("()");
             } else if constexpr (std::is_same_v<T, const Proto *>) {
-                std::print("proto ");
+                std::print("proto");
             } else {
-                std::print("{} ", val);
+                std::print("{}", val);
             }
         },
         reg);
@@ -30,7 +30,7 @@ std::expected<void, Error> VM::run(const Proto &proto) {
     size_t ptr = 0;
     while (ptr < proto.bytecode.size()) {
         uint8_t op = proto.bytecode[ptr];
-        std::println("0x{:02X}", op);
+        // std::println("0x{:02X}", op);
 
         switch (op) {
         default:
@@ -285,6 +285,16 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                 return std::unexpected(calledFn.error());
             break;
         }
+        case PRNC: {
+            auto src1 = proto.bytecode[++ptr];
+            print_value(proto.constants[src1]);
+            break;
+        }
+        case PRNR: {
+            auto src1 = proto.bytecode[++ptr];
+            print_value(call_stack.back().registers[src1]);
+            break;
+        }
         }
         ++ptr;
     }
@@ -325,6 +335,7 @@ void VM::diagnose() const {
     for (auto &call : call_stack) {
         for (auto &reg : call.registers) {
             print_value(reg);
+            std::print(" ");
         }
         std::print("\nreturned: ");
         print_value(call.returns);
