@@ -2,7 +2,7 @@ module;
 
 #include <cstdint>
 #include <expected>
-#include <stack>
+#include <variant>
 #include <vector>
 
 export module vm;
@@ -10,31 +10,31 @@ export module vm;
 import error;
 
 namespace vm {
-/*
- * @brief Function prototype.
- */
-export struct Proto {
-    /// Function name.
+export struct Proto;
+
+// TODO: currently 32 bytes, can we get less?
+//  if we use char* copy = malloc(strlen(original) + 1), can store char* instead
+//  and get significant decrease (should be 16 bytes). and if we can store
+//  7 byte numbers, even if they need alignment, we will probably be at 8 bytes
+//  total size.
+export using Value =
+    std::variant<std::monostate, double, std::string, bool, const Proto *>;
+
+struct Proto {
+    // TODO: uint8_t* + malloc
+    std::vector<uint8_t> bytecode;
+
+    /**
+     * @brief constant value lookup table
+     */
+    std::vector<Value> constants;
+
+    // debug info
     std::string name;
+    SourceSpan span;
 
-    /// Compiled virtual bytecode.
-    uint16_t *bc;
-
-    /// Whether the function returns anything.
-    bool returns =
-        true; // TODO: remove this and make it declared in the AST or IR.
-
-    /// List of children.
-    std::vector<std::unique_ptr<Proto>> children;
-
-    Proto(std::string name, uint16_t *bc) : name(name), bc(bc) {};
-    Proto(std::string name, uint16_t *bc,
-          std::vector<std::unique_ptr<Proto>> children)
-        : name(name), bc(bc), children(std::move(children)) {};
-    Proto(std::string name, uint16_t *bc,
-          std::vector<std::unique_ptr<Proto>> children, bool returns)
-        : name(name), bc(bc), returns(returns),
-          children(std::move(children)) {};
+    // TODO: when capturing vars from outer scope, just store a lookup table,
+    //       don't store names
 };
 
 class RegisterAllocator {
@@ -107,91 +107,90 @@ class RegisterAllocator {
     ~RegisterAllocator() { free(registers); }
 };
 
-/**
- * @brief Just-in-time virtual machine.
- */
-export class VM {
-    /**
-     * @brief Holds a pointer to all registers and reallocs/frees when needed.
-     * @sa RegisterAllocator
-     */
-    RegisterAllocator registers;
+struct CallFrame {
+    uint8_t returns;
 
-    /**
-     * @brief The stack.
-     * @see VM::run() for details on pushing and popping from stack.
-     */
-    std::stack<uint16_t> stack;
-
-    std::vector<std::unique_ptr<Proto>> fns;
-
-  public:
-    /**
-     * @brief Run the virtual machine interpreter.
-     *
-     * +--------------+-----------------+
-     * | Start        | Operation class |
-     * +--------------+-----------------+
-     * | 0x0000       | Machine         |
-     * | 0x0010       | Register        |
-     * | 0x0020       | Stack           |
-     * | 0x0030       | Comparison      |
-     * | 0x0040       | Positional      |
-     * | 0x0050       | Arithmetic      |
-     * | 0x0100       | Function        |
-     * +--------------+-----------------+
-     */
-    std::expected<void, Error> run_fn(Proto *proto);
+    // TODO: maybe optimization point. store large values in their own regs?
+    std::array<Value, 256> registers;
 };
 
-enum Bytecode {
-    EXIT = 0x0000,
-    NOOP = 0x0001,
-    RETV = 0x0002,
-    RETC = 0x0003,
-    RETR = 0x0004,
+export class VM {
+    std::vector<CallFrame> call_stack;
 
-    LORC = 0x0010,
-    LORR = 0x0011,
-    LORS = 0x0012,
+  public:
+    VM() {
+        auto initial_frame = CallFrame{};
+        call_stack.push_back(std::move(initial_frame));
+    }
 
-    PUSC = 0x0020,
-    PUSR = 0x0021,
-    POPS = 0x002E,
+    std::expected<void, Error> run(const Proto &proto);
 
-    CRLC = 0x0030,
-    CRGC = 0x0031,
-    CRLR = 0x0032,
-    CRGR = 0x0033,
-    CREC = 0x0034,
-    CRER = 0x0035,
+    void diagnose() const;
+};
 
-    JMPC = 0x0040,
-    JMPR = 0x0041,
-    JMPS = 0x0042,
+/**
+ * @brief bytecode values
+ *
+ * +--------------+-----------------+
+ * | Start        | Operation class |
+ * +--------------+-----------------+
+ * | 0x0000       | Machine         |
+ * | 0x0010       | Register        |
+ * | 0x0020       | Stack           |
+ * | 0x0030       | Comparison      |
+ * | 0x0040       | Positional      |
+ * | 0x0050       | Arithmetic      |
+ * | 0x00F0       | Function        |
+ * +--------------+-----------------+
+ */
+export enum Bytecode : uint8_t {
+    EXIT = 0x00, // exit
+    NOOP = 0x01, // no-op
+    RETV = 0x02, // return void
+    RETC = 0x03, // return constant
+    RETR = 0x04, // return register
+
+    LOCR = 0x10, // load constant -> register
+    LORR = 0x11, // load register -> register
+    // LORS = 0x12, // load register <- stack
+
+    // PUSC = 0x20, // push stack <- constant
+    // PUSR = 0x21, // push stack <- register
+    // POPS = 0x2E, // pop stack
+
+    CRLC = 0x30, // (register  < constant) -> register
+    CRGC = 0x31, // (register  > constant) -> register
+    CRLR = 0x32, // (register  < register) -> register
+    CRGR = 0x33, // (register  > register) -> register
+    CREC = 0x34, // (register == constant) -> register
+    CRER = 0x35, // (register == register) -> register
+
+    JMPC = 0x40, // jump to constant address
+    JMPR = 0x41, // jump to register address
+    // JMPS = 0x42, // jump to stack address
 
     // TODO: if statements
 
-    MARC = 0x0050,
-    MSRC = 0x0051,
-    MMRC = 0x0052,
-    MDRC = 0x0053,
-    MPRC = 0x0054,
-    MACR = 0x0055,
-    MSCR = 0x0056,
-    MMCR = 0x0057,
-    MDCR = 0x0058,
-    MPCR = 0x0059,
-    MARR = 0x005A,
-    MSRR = 0x005B,
-    MMRR = 0x005C,
-    MDRR = 0x005D,
-    MPRR = 0x005E,
+    MARC = 0x50, // register + constant -> register
+    MSRC = 0x51, // register - constant -> register
+    MMRC = 0x52, // register * constant -> register
+    MDRC = 0x53, // register / constant -> register
+    MPRC = 0x54, // register ^ constant -> register
+    MACR = 0x55, // constant + register -> register
+    MSCR = 0x56, // constant - register -> register
+    MMCR = 0x57, // constant * register -> register
+    MDCR = 0x58, // constant / register -> register
+    MPCR = 0x59, // constant ^ register -> register
+    MARR = 0x5A, // register + register -> register
+    MSRR = 0x5B, // register - register -> register
+    MMRR = 0x5C, // register * register -> register
+    MDRR = 0x5D, // register / register -> register
+    MPRR = 0x5E, // register ^ register -> register
 
     // TODO: negate and inverse, potentially shortcuts for square and cube
 
-    CALR = 0x0100,
-    PUHC = 0x0110,
-    PUHR = 0x0111,
+    CALR = 0xF0, // call register
+    PUHC = 0xF1, // push constant to next function call
+    PUHR = 0xF2, // push register to next function call
 };
 } // namespace vm

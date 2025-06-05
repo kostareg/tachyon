@@ -60,7 +60,7 @@ int run(char *fileName) {
                  .and_then(ast::generate_proto)
                  .and_then([](vm::Proto proto) -> std::expected<void, Error> {
                      vm::VM vm;
-                     return vm.run_fn(&proto);
+                     return vm.run(proto);
                  });
 
     unwrap(m, file_contents, true);
@@ -94,7 +94,7 @@ int repl() {
                 .and_then(ast::print)
                 .and_then(ast::generate_proto)
                 .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
-                    return vm.run_fn(&proto);
+                    return vm.run(proto);
                 });
 
         unwrap(m, source, false);
@@ -102,6 +102,37 @@ int repl() {
         source = "";
         prefix = "> ";
     }
+
+    return 0;
+}
+
+using namespace vm;
+
+int testvm() {
+    std::vector<uint8_t> bytecode = {
+        NOOP,          // no-op --------------------------------------
+        LOCR, 0, 1,    // load ABCDEF to reg 1
+        LOCR, 1, 3,    // load `123` to register 3
+        CREC, 3, 2, 0, // comparison
+        MACR, 2, 3, 0, // math
+        MSRR, 0, 3, 5, // math
+        EXIT};
+    std::vector<Value> constants;
+    const char *x = "ABCDEF";
+    constants.emplace_back(x);
+    constants.emplace_back(123.0);
+    constants.emplace_back(123.2);
+    constants.emplace_back(0.0);
+    VM vm;
+    Proto mainProto{std::move(bytecode), std::move(constants)};
+    auto ex = vm.run(mainProto);
+    // unwrap(ex, "AAAAAAAAAAAAAAAAAAAAAAA\nBBBBBBBBBBBBBB\n", false);
+    if (!ex) {
+        std::println("failed with error: {}", ex.error().getSource());
+    }
+
+    vm.diagnose();
+    std::println("size: {}", sizeof(constants[0]));
 
     return 0;
 }
@@ -116,6 +147,8 @@ int main(int argc, char **argv) {
             return 1;
         }
         return run(argv[2]);
+    } else if (strcmp(argv[1], "testvm") == 0) {
+        return testvm();
     } else {
         std::println(std::cerr, "unknown command: {}", argv[1]);
         return 1;

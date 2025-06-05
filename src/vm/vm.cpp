@@ -8,305 +8,266 @@ module;
 module vm;
 
 namespace vm {
-std::expected<void, Error> VM::run_fn(Proto *proto) {
-    size_t numChildren = proto->children.size();
-
-    // load protos to vm
-    if (numChildren) {
-        fns.insert(fns.end(), std::make_move_iterator(proto->children.begin()),
-                   std::make_move_iterator(proto->children.end()));
-        proto->children.clear();
-    }
-
-    registers.new_fn();
-    uint16_t pc = 0;
-
-    if (!proto->bc) {
-        std::cerr << "ice bytecode uninitialized" << std::endl;
-        return {};
-    }
-
-    while (1) {
-        uint16_t op = proto->bc[pc];
-        ++pc;
+std::expected<void, Error> VM::run(const Proto &proto) {
+    size_t ptr = 0;
+    while (ptr < proto.bytecode.size()) {
+        uint8_t op = proto.bytecode[ptr];
+        std::println("0x{:02X}", op);
 
         switch (op) {
-        // exit (defined in while condition)
-        case EXIT:
-        // no-op
-        case NOOP:
-        // return void
-        case RETV:
-            break;
-        // return const
-        case RETC:
-            registers[0] = proto->bc[pc];
-            break;
-        // return reg
-        case RETR:
-            registers[0] = registers[proto->bc[pc]];
-            break;
-        // load reg from const
-        case LORC: {
-            uint16_t reg = proto->bc[pc++];
-            uint16_t val = proto->bc[pc++];
-            registers[reg] = val;
-            break;
-        };
-        // load reg from reg
-        case LORR: {
-            uint16_t reg = proto->bc[pc++];
-            uint16_t val = registers[proto->bc[pc++]];
-            registers[reg] = val;
-            break;
-        };
-        // load reg from top of stack
-        case LORS: {
-            uint16_t reg = proto->bc[pc++];
-            uint16_t val = stack.top();
-            registers[reg] = val;
-            break;
-        };
-        // push const to stack
-        case PUSC: {
-            uint16_t val = proto->bc[pc++];
-            stack.push(val);
-            break;
-        };
-        // push reg to stack
-        case PUSR: {
-            uint16_t val = registers[proto->bc[pc++]];
-            stack.push(val);
-            break;
-        };
-        // pop stack
-        case POPS: {
-            stack.pop();
-            break;
-        }
-        // reg < const -> reg
-        case CRLC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l < r;
-            break;
-        };
-        // reg > const -> reg
-        case CRGC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l > r;
-            break;
-        };
-        // reg < reg -> reg
-        case CRLR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l < r;
-            break;
-        };
-        // reg > reg -> reg
-        case CRGR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l > r;
-            break;
-        };
-        // reg == const -> reg
-        case CREC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l == r;
-            break;
-        };
-        // reg == reg -> reg
-        case CRER: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l == r;
-            break;
-        };
-        // jump const
-        case JMPC: {
-            pc = proto->bc[pc];
-            break;
-        };
-        // jump reg
-        case JMPR: {
-            pc = registers[proto->bc[pc]];
-            break;
-        };
-        // jump from top stack
-        case JMPS: {
-            pc = stack.top();
-            break;
-        };
-        // TODO: if reg then jump
-        // reg + const -> reg
-        case MARC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l + r;
-            break;
-        };
-        // reg - const -> reg
-        case MSRC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l - r;
-            break;
-        };
-        // reg * const -> reg
-        case MMRC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l * r;
-            break;
-        };
-        // reg / const -> reg
-        case MDRC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = l / r;
-            break;
-        };
-        // reg ^ const -> reg
-        case MPRC: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = proto->bc[pc++];
-            registers[proto->bc[pc++]] = pow(l, r);
-            break;
-        };
-        // const + reg -> reg
-        case MACR: {
-            uint16_t l = proto->bc[pc++];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l + r;
-            break;
-        };
-        // const - reg -> reg
-        case MSCR: {
-            uint16_t l = proto->bc[pc++];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l - r;
-            break;
-        };
-        // const * reg -> reg
-        case MMCR: {
-            uint16_t l = proto->bc[pc++];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l * r;
-            break;
-        };
-        // const / reg -> reg
-        case MDCR: {
-            uint16_t l = proto->bc[pc++];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l / r;
-            break;
-        };
-        // const ^ reg -> reg
-        case MPCR: {
-            uint16_t l = proto->bc[pc++];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = pow(l, r);
-            break;
-        };
-        // reg + reg -> reg
-        case MARR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l + r;
-            break;
-        };
-        // reg - reg -> reg
-        case MSRR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l - r;
-            break;
-        };
-        // reg * reg -> reg
-        case MMRR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l * r;
-            break;
-        };
-        // reg / reg -> reg
-        case MDRR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = l / r;
-            break;
-        };
-        // reg ^ reg -> reg
-        case MPRR: {
-            uint16_t l = registers[proto->bc[pc++]];
-            uint16_t r = registers[proto->bc[pc++]];
-            registers[proto->bc[pc++]] = pow(l, r);
-            break;
-        };
-        // call reg
-        case CALR: {
-            uint16_t idx = registers[proto->bc[pc++]];
-
-            if (idx == 0xFFFF) {
-                // special case: print register (param)
-                std::cout << registers[256] << std::endl;
-                break;
-            } else if (idx >= fns.size()) {
-                // if its not a parent or child function
-                throw std::runtime_error("ice: unknown fn register");
-                break;
-            }
-
-            auto fn = fns[idx].get();
-            auto r = run_fn(fn);
-            if (!r.has_value()) {
-                return std::unexpected(r.error());
-            }
-
-            if (fn->returns)
-                registers.get_last_fn(0) = registers[0];
-
-            registers.free_fn();
-
-            break;
-        };
-        // push const fn param
-        case PUHC: {
-            uint16_t idx = proto->bc[pc++];
-            size_t val = proto->bc[pc++];
-            registers.early_push(idx, val);
-            break;
-        };
-        // push reg fn param
-        case PUHR: {
-            uint16_t idx = proto->bc[pc++];
-            size_t val = registers[proto->bc[pc++]];
-            registers.early_push(idx, val);
-            break;
-        };
         default:
-            std::cerr << "unknown instruction " << op << std::endl;
+        case EXIT:
+            return {};
+        case NOOP: {
+            ++ptr;
+            continue;
+        }
+        case RETV:
+        case RETC:
+        case RETR: {
+            ++ptr;
+            continue; // TODO: implement
+        }
+        case LOCR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] = proto.constants[src1];
             break;
         }
-
-        // if returning from the fn, break
-        if (op == 0x0000 || op == 0x0001 || op == 0x0002 || op == 0x0003 ||
-            op == 0x0004)
+        case LORR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1];
             break;
+        }
+        case CRLC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1] < proto.constants[src2];
+            break;
+        }
+        case CRGC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1] > proto.constants[src2];
+            break;
+        }
+        case CRLR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1] <
+                call_stack.back().registers[src2];
+            break;
+        }
+        case CRGR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1] >
+                call_stack.back().registers[src2];
+            break;
+        }
+        case CREC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1] == proto.constants[src2];
+            break;
+        }
+        case CRER: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                call_stack.back().registers[src1] ==
+                call_stack.back().registers[src2];
+            break;
+        }
+        // TODO: if you implement integer type, use that in JMPC/JMPR instead
+        case JMPC: {
+            auto src1 = proto.bytecode[++ptr];
+            ptr = std::get<double>(proto.constants[src1]);
+            continue; // do not increment
+        }
+        case JMPR: {
+            auto src1 = proto.bytecode[++ptr];
+            ptr = std::get<double>(call_stack.back().registers[src1]);
+            continue;
+        }
+        // TODO: for now, just assume that math operations are only working on
+        //  doubles. we can handle other issues either in the typechecker or by
+        //  allowing weak types.
+        case MARC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) +
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MSRC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) -
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MMRC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) *
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MDRC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) /
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MPRC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                pow(std::get<double>(call_stack.back().registers[src1]),
+                    std::get<double>(proto.constants[src2]));
+            break;
+        }
+        case MACR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) +
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MSCR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) -
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MMCR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) *
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MDCR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) /
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MPCR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                pow(std::get<double>(proto.constants[src1]),
+                    std::get<double>(call_stack.back().registers[src2]));
+            break;
+        }
+        case MARR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) +
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MSRR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) -
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MMRR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) *
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MDRR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(call_stack.back().registers[src1]) /
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MPRR: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                pow(std::get<double>(call_stack.back().registers[src1]),
+                    std::get<double>(call_stack.back().registers[src2]));
+            break;
+        }
+        }
+        ++ptr;
     }
 
-    // move children back for next use
-    if (numChildren) {
-        proto->children.insert(proto->children.end(),
-                               std::make_move_iterator(fns.end() - numChildren),
-                               std::make_move_iterator(fns.end()));
-        fns.erase(fns.end() - numChildren, fns.end());
-    }
+    return std::unexpected(Error(ErrorKind::InternalError,
+                                 "should not reach end of vm::run without exit",
+                                 0, 0, 0, 0));
+}
 
-    return {};
+void VM::diagnose() const {
+    std::println("vm state:");
+    for (auto &call : call_stack) {
+        for (auto &reg : call.registers) {
+            std::visit(
+                [](const auto &val) {
+                    using T = std::decay_t<decltype(val)>;
+                    if constexpr (std::is_same_v<T, std::monostate>) {
+                        std::print("() ");
+                    } else if constexpr (std::is_same_v<T, const Proto *>) {
+                        std::print("proto ");
+                    } else {
+                        std::print("{} ", val);
+                    }
+                },
+                reg);
+        }
+        std::println("\nreturned: {}", call.returns);
+    }
 }
 } // namespace vm
