@@ -45,6 +45,7 @@ struct Proto {
     size_t arguments;
 
     // debug info
+    // TODO: actually using this
     std::string name;
     SourceSpan span;
 
@@ -120,28 +121,28 @@ export enum Bytecode : uint8_t {
 
     // TODO: if statements
 
-    // TODO: pow but no nth root? impl in tachyon?
-    MARC = 0x50, // register + constant -> register
-    MSRC = 0x51, // register - constant -> register
-    MMRC = 0x52, // register * constant -> register
-    MDRC = 0x53, // register / constant -> register
-    MPRC = 0x54, // register ^ constant -> register
-    MACR = 0x55, // constant + register -> register
-    MSCR = 0x56, // constant - register -> register
-    MMCR = 0x57, // constant * register -> register
-    MDCR = 0x58, // constant / register -> register
-    MPCR = 0x59, // constant ^ register -> register
-    MARR = 0x5A, // register + register -> register
-    MSRR = 0x5B, // register - register -> register
-    MMRR = 0x5C, // register * register -> register
-    MDRR = 0x5D, // register / register -> register
-    MPRR = 0x5E, // register ^ register -> register
+    MACC = 0x50, // constant + constant -> register
+    MSCC = 0x51, // constant - constant -> register
+    MMCC = 0x52, // constant * constant -> register
+    MDCC = 0x53, // constant / constant -> register
+    MARC = 0x54, // register + constant -> register
+    MSRC = 0x55, // register - constant -> register
+    MMRC = 0x56, // register * constant -> register
+    MDRC = 0x57, // register / constant -> register
+    MACR = 0x58, // constant + register -> register
+    MSCR = 0x59, // constant - register -> register
+    MMCR = 0x5A, // constant * register -> register
+    MDCR = 0x5B, // constant / register -> register
+    MARR = 0x5C, // register + register -> register
+    MSRR = 0x5D, // register - register -> register
+    MMRR = 0x5E, // register * register -> register
+    MDRR = 0x5F, // register / register -> register
 
-    // TODO: negate, inverse, nth root/sqrt, abs, floor, ceil, round, min?/max?,
-    //  trig functions, potentially shortcuts for square and cube. but i may
-    //  also just implement these manually? like the trig functions at least
-    //  are for sure doable. consider checking performance b/w cmath's trig
-    //  functions and a tachyon trig function.
+    // TODO: negate, inverse, pow, nth root/sqrt, abs, floor, ceil, round,
+    //  min?/max?, trig functions, potentially shortcuts for square and cube.
+    //  but i may also just implement these manually? like the trig functions at
+    //  least are for sure doable. consider checking performance b/w cmath's
+    //  trig functions and a tachyon trig function.
 
     CALC = 0xE0, // call constant fn
     CALR = 0xE1, // call register fn

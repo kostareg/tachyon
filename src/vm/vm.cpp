@@ -133,6 +133,42 @@ std::expected<void, Error> VM::run(const Proto &proto) {
         // TODO: for now, just assume that math operations are only working on
         //  doubles. we can handle other issues either in the typechecker or by
         //  allowing weak types. or, we can make it a runtime error.
+        case MACC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) +
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MSCC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) -
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MMCC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) *
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MDCC: {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                std::get<double>(proto.constants[src1]) /
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
         case MARC: {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
@@ -167,15 +203,6 @@ std::expected<void, Error> VM::run(const Proto &proto) {
             call_stack.back().registers[dst] =
                 std::get<double>(call_stack.back().registers[src1]) /
                 std::get<double>(proto.constants[src2]);
-            break;
-        }
-        case MPRC: {
-            auto src1 = proto.bytecode[++ptr];
-            auto src2 = proto.bytecode[++ptr];
-            auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                pow(std::get<double>(call_stack.back().registers[src1]),
-                    std::get<double>(proto.constants[src2]));
             break;
         }
         case MACR: {
@@ -214,15 +241,6 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                 std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MPCR: {
-            auto src1 = proto.bytecode[++ptr];
-            auto src2 = proto.bytecode[++ptr];
-            auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                pow(std::get<double>(proto.constants[src1]),
-                    std::get<double>(call_stack.back().registers[src2]));
-            break;
-        }
         case MARR: {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
@@ -257,15 +275,6 @@ std::expected<void, Error> VM::run(const Proto &proto) {
             call_stack.back().registers[dst] =
                 std::get<double>(call_stack.back().registers[src1]) /
                 std::get<double>(call_stack.back().registers[src2]);
-            break;
-        }
-        case MPRR: {
-            auto src1 = proto.bytecode[++ptr];
-            auto src2 = proto.bytecode[++ptr];
-            auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                pow(std::get<double>(call_stack.back().registers[src1]),
-                    std::get<double>(call_stack.back().registers[src2]));
             break;
         }
         case CALC: {

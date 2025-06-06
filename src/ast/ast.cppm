@@ -155,31 +155,6 @@ export std::expected<Expr, Error> print(Expr e) {
     return e;
 }
 
-export struct TypeInferrer {
-    std::vector<Error> errors;
-    SourceSpan span;
-
-    TypeInferrer(SourceSpan span) : span(span) {};
-
-    void operator()(LiteralExpr &literal);
-    void operator()(FnExpr &fn);
-    void operator()(BinaryOperatorExpr &binop);
-    void operator()(LetExpr &vdecl);
-    void operator()(LetRefExpr &vref);
-    void operator()(FnCallExpr &fnc);
-    void operator()(ImportExpr &imp);
-    void operator()(ReturnExpr &ret);
-    void operator()(SequenceExpr &seq);
-};
-
-export std::expected<Expr, Error> infer(Expr e) {
-    auto inferred = TypeInferrer{e.span};
-    std::visit(inferred, e.kind);
-    if (!inferred.errors.empty())
-        return std::unexpected(Error(inferred.errors));
-    return e;
-}
-
 export struct BytecodeGenerator {
     void operator()(const LiteralExpr &literal);
     void operator()(const FnExpr &fn);
@@ -191,5 +166,4 @@ export struct BytecodeGenerator {
     void operator()(const ReturnExpr &ret);
     void operator()(const SequenceExpr &seq);
 };
-
 } // namespace ast

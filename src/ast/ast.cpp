@@ -115,61 +115,6 @@ void Printer::operator()(const SequenceExpr &seq) const {
     }
 };
 
-void TypeInferrer::operator()(LiteralExpr &literal) {};
-
-void TypeInferrer::operator()(FnExpr &fn) {
-    for (auto &arg : fn.arguments) {
-        if (!arg.second)
-            errors.push_back(Error(ErrorKind::InferenceError,
-                                   "type inference not supported", span.pos,
-                                   span.line, span.column, span.length));
-    }
-
-    if (!fn.returns)
-        errors.push_back(Error(ErrorKind::InferenceError,
-                               "type inference not supported", span.pos,
-                               span.line, span.column, span.length));
-
-    span = fn.body->span;
-    std::visit(*this, fn.body->kind);
-};
-
-void TypeInferrer::operator()(BinaryOperatorExpr &binop) {
-    span = binop.left->span;
-    std::visit(*this, binop.left->kind);
-    span = binop.right->span;
-    std::visit(*this, binop.right->kind);
-};
-
-void TypeInferrer::operator()(LetExpr &vdecl) {
-    span = vdecl.value->span;
-    std::visit(*this, vdecl.value->kind);
-};
-
-void TypeInferrer::operator()(LetRefExpr &vref) {};
-
-void TypeInferrer::operator()(FnCallExpr &fnc) {
-    (*this)(fnc.ref);
-    for (auto &arg : fnc.args) {
-        span = arg.span;
-        std::visit(*this, arg.kind);
-    }
-};
-
-void TypeInferrer::operator()(ImportExpr &imp) {};
-
-void TypeInferrer::operator()(ReturnExpr &ret) {
-    span = ret.returns->span;
-    std::visit(*this, ret.returns->kind);
-};
-
-void TypeInferrer::operator()(SequenceExpr &seq) {
-    for (auto &elem : seq.sequence) {
-        span = elem.span;
-        std::visit(*this, elem.kind);
-    }
-};
-
 void BytecodeGenerator::operator()(const LiteralExpr &literal) {};
 void BytecodeGenerator::operator()(const FnExpr &fn) {};
 void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {};
