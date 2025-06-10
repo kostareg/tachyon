@@ -1,5 +1,5 @@
-increment = fn(x) { return x + 1; }
-double = fn(x) { return x * 2; }
-print(double(increment(double(5))))
+sin = fn(x) { return x - x * x; }
+
+print(sin(1))
 
 return 0

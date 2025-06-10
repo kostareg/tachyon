@@ -107,6 +107,7 @@ void Printer::operator()(const ReturnExpr &ret) const {
 
 void Printer::operator()(const SequenceExpr &seq) const {
     for (const Expr &e : seq.sequence) {
+        std::print("seq> ");
         std::visit(*this, e.kind);
         std::println();
     }
@@ -158,7 +159,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
             bc.push_back(lhs);
             bc.push_back(rhs);
             bc.push_back(0); // target
-        } else if (std::holds_alternative<LetRefExpr>(binop.right->kind)) {
+        } else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                   std::holds_alternative<BinaryOperatorExpr>(
+                       binop.right->kind)) {
             // constant <op> reference
             std::visit(*this, binop.left->kind);
             uint8_t lhs = curr;
@@ -171,7 +174,8 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
         } else if (std::holds_alternative<FnCallExpr>(binop.right->kind)) {
             // constant <op> fn_call()
         }
-    } else if (std::holds_alternative<LetRefExpr>(binop.left->kind)) {
+    } else if (std::holds_alternative<LetRefExpr>(binop.left->kind) ||
+               std::holds_alternative<BinaryOperatorExpr>(binop.right->kind)) {
         // reference lhs
         if (std::holds_alternative<LiteralExpr>(binop.right->kind)) {
             // reference <op> constant
@@ -183,7 +187,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
             bc.push_back(lhs);
             bc.push_back(rhs);
             bc.push_back(0); // target
-        } else if (std::holds_alternative<LetRefExpr>(binop.right->kind)) {
+        } else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                   std::holds_alternative<BinaryOperatorExpr>(
+                       binop.right->kind)) {
             // reference <op> reference
             std::visit(*this, binop.left->kind);
             auto lhs = curr;
@@ -200,7 +206,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
         // fn_call() lhs
         if (std::holds_alternative<LiteralExpr>(binop.right->kind)) {
             // fn_call() <op> constant
-        } else if (std::holds_alternative<LetRefExpr>(binop.right->kind)) {
+        } else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                   std::holds_alternative<BinaryOperatorExpr>(
+                       binop.right->kind)) {
             // fn_call() <op> reference
         } else if (std::holds_alternative<FnCallExpr>(binop.right->kind)) {
             // fn_call() <op> fn_call()
