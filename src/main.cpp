@@ -100,7 +100,8 @@ int repl() {
             lexer::lex(source)
                 .and_then(parser::parse)
                 .and_then(ast::print)
-                .and_then(ast::generate_proto)
+                .and_then(
+                    [](ast::Expr e) { return generate_proto(std::move(e)); })
                 .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
                     return vm.run(proto);
                 });
@@ -169,6 +170,28 @@ int testvm() {
     return 0;
 }
 
+int testgen() {
+    vm::VM vm;
+    unwrap(
+        lexer::lex("x = 13 * 13; print(\">>> this is from the vm\n>>> \"); "
+                   "print(x); return 0;")
+            .and_then(parser::parse)
+            .and_then(ast::generate_proto)
+            .and_then([](vm::Proto proto) -> std::expected<vm::Proto, Error> {
+                // std::println("function {}", proto.name);
+                // for (auto bc : proto.bytecode) {
+                //     std::println("{}", bc);
+                // }
+                return proto;
+            })
+            .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
+                return vm.run(proto);
+            }),
+        "1 + 1", false);
+
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc == 1) {
         return repl();
@@ -181,6 +204,8 @@ int main(int argc, char **argv) {
         return run(argv[2]);
     } else if (strcmp(argv[1], "testvm") == 0) {
         return testvm();
+    } else if (strcmp(argv[1], "testgen") == 0) {
+        return testgen();
     } else {
         std::println(std::cerr, "unknown command: {}", argv[1]);
         return 1;

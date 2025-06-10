@@ -170,11 +170,11 @@ std::expected<Tokens, Error> lex(const std::string &s) {
     }
 
     // log
-    for (auto tok : tokens) {
-        tok.print();
-        std::printf("\n");
-    }
-    std::cout << std::endl;
+    // for (auto tok : tokens) {
+    //     tok.print();
+    //     std::printf("\n");
+    // }
+    // std::cout << std::endl;
 
     return tokens;
 }

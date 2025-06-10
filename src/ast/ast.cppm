@@ -68,7 +68,7 @@ export struct FunctionConcreteTypes {
  * side of the AST, types can be left blank to be inferred (std::nullopt).
  */
 export struct FnExpr {
-    std::unordered_map<std::string, MaybeType> arguments;
+    std::vector<std::pair<std::string, MaybeType>> arguments;
     MaybeType returns;
     ExprRef body;
 };
@@ -101,6 +101,7 @@ export struct ImportExpr {
     std::string path;
 };
 
+// TODO: retv
 export struct ReturnExpr {
     ExprRef returns;
 };
@@ -121,7 +122,9 @@ export struct Expr {
     SourceSpan span;
 };
 
-export std::expected<vm::Proto, Error> generate_proto(Expr);
+// TODO: type checking, inference. May also use type erasure just before
+//  bytecode generation, that way BytecodeGenerator for FnExpr doesn't even know
+//  the type of the arguments for example.
 
 // visitors
 struct PrintLiteral {
@@ -156,7 +159,19 @@ export std::expected<Expr, Error> print(Expr e) {
 }
 
 export struct BytecodeGenerator {
-    void operator()(const LiteralExpr &literal);
+    std::vector<uint8_t> bc;
+    std::vector<vm::Value> constants;
+    // TODO: is this the best way to do this? consider how it is finding vars by
+    //  name. also, since its unique consider std::set.
+    std::vector<std::string> vars;
+    uint8_t curr;
+    std::vector<Error> errors;
+
+    BytecodeGenerator() {};
+    explicit BytecodeGenerator(std::vector<std::string> vars)
+        : vars(std::move(vars)) {};
+
+    void operator()(const LiteralExpr &lit);
     void operator()(const FnExpr &fn);
     void operator()(const BinaryOperatorExpr &binop);
     void operator()(const LetExpr &vdecl);
@@ -166,4 +181,26 @@ export struct BytecodeGenerator {
     void operator()(const ReturnExpr &ret);
     void operator()(const SequenceExpr &seq);
 };
+
+export std::expected<vm::Proto, Error> generate_proto(Expr e) {
+    auto generator = BytecodeGenerator{};
+    std::visit(generator, e.kind);
+    if (!generator.errors.empty())
+        return std::unexpected(Error(generator.errors));
+    return vm::Proto(generator.bc, std::move(generator.constants), 0,
+                     "<anonymous>", e.span);
+}
+
+// TODO: I wanted to do this with function overloading or defaults but the
+//  and_then calls were not working. clean this up.
+export std::expected<vm::Proto, Error>
+generate_proto_with_args(Expr e, std::vector<std::string> args) {
+    auto generator = BytecodeGenerator(std::move(args));
+    std::visit(generator, e.kind);
+    if (!generator.errors.empty())
+        return std::unexpected(Error(generator.errors));
+    return vm::Proto(generator.bc, std::move(generator.constants), args.size(),
+                     "<anonymous>", e.span);
+}
+
 } // namespace ast

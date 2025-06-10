@@ -169,7 +169,7 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
             return std::unexpected(lp.error());
 
         // parse arguments (x, y: Type, z)
-        std::unordered_map<std::string, MaybeType> args;
+        std::vector<std::pair<std::string, MaybeType>> args;
         while (true) {
             auto name = expect(IDENT);
             if (!name)
@@ -200,7 +200,8 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t) {
                 }
             }
 
-            args.emplace(std::get<std::string>(name->value), maybeArgumentType);
+            args.emplace_back(std::get<std::string>(name->value),
+                              maybeArgumentType);
 
             if (match(COMMA)) {
                 auto _comma = advance();

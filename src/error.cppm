@@ -17,6 +17,7 @@ export enum class ErrorKind {
     LexError,
     ParseError,
     InferenceError,
+    BytecodeGenerationError,
     InternalError, // TODO: special note for internal error
 };
 

@@ -22,6 +22,8 @@ export struct Proto;
 //  move out of a const. Consider removing the const modifier here (also may
 //  have implications on VM::run) so that we can
 //  `std::move(proto.constants[...])`.
+// TODO: can I/should I unify this value with the AST value, so that it's all
+//  the same type?
 export using Value =
     std::variant<std::monostate, double, std::string, bool, const Proto *>;
 
