@@ -195,11 +195,12 @@ export std::expected<vm::Proto, Error> generate_proto(Expr e) {
 //  and_then calls were not working. clean this up.
 export std::expected<vm::Proto, Error>
 generate_proto_with_args(Expr e, std::vector<std::string> args) {
+    auto size = args.size();
     auto generator = BytecodeGenerator(std::move(args));
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error(generator.errors));
-    return vm::Proto(generator.bc, std::move(generator.constants), args.size(),
+    return vm::Proto(generator.bc, std::move(generator.constants), size,
                      "<anonymous>", e.span);
 }
 

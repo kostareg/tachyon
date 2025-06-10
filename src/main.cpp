@@ -68,6 +68,14 @@ int run(char *fileName) {
                  .and_then(parser::parse)
                  // .and_then(optimize)
                  .and_then(ast::generate_proto)
+                 // .and_then([](vm::Proto proto) -> std::expected<vm::Proto,
+                 // Error> {
+                 //     std::println("function {}", proto.name);
+                 //     for (auto bc : proto.bytecode) {
+                 //         std::println("{}", bc);
+                 //     }
+                 //     return proto;
+                 // })
                  .and_then([](vm::Proto proto) -> std::expected<void, Error> {
                      vm::VM vm;
                      return vm.run(proto);
@@ -153,7 +161,7 @@ int testvm() {
     constants_main.emplace_back(123.0);
     constants_main.emplace_back(123.2);
     constants_main.emplace_back(0.0);
-    constants_main.emplace_back(&myfnProto);
+    constants_main.emplace_back(std::make_shared<vm::Proto>(myfnProto));
     Proto mainProto{std::move(bytecode_main), std::move(constants_main), 0,
                     "main"};
 

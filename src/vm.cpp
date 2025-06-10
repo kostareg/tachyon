@@ -17,7 +17,7 @@ void print_value(const Value &reg) {
             using T = std::decay_t<decltype(val)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
                 std::print("()");
-            } else if constexpr (std::is_same_v<T, const Proto *>) {
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>) {
                 std::print("proto");
             } else {
                 std::print("{}", val);
@@ -279,18 +279,20 @@ std::expected<void, Error> VM::run(const Proto &proto) {
         }
         case CALC: {
             auto src1 = proto.bytecode[++ptr];
-            auto fn = std::get<const Proto *>(proto.constants[src1]);
+            auto offset = proto.bytecode[++ptr];
+            auto fn = std::get<std::shared_ptr<Proto>>(proto.constants[src1]);
 
-            if (auto calledFn = call(fn); !calledFn)
+            if (auto calledFn = call(fn, offset); !calledFn)
                 return std::unexpected(calledFn.error());
             break;
         }
         case CALR: {
             auto src1 = proto.bytecode[++ptr];
-            auto fn =
-                std::get<const Proto *>(call_stack.back().registers[src1]);
+            auto offset = proto.bytecode[++ptr];
+            auto fn = std::get<std::shared_ptr<Proto>>(
+                call_stack.back().registers[src1]);
 
-            if (auto calledFn = call(fn); !calledFn)
+            if (auto calledFn = call(fn, offset); !calledFn)
                 return std::unexpected(calledFn.error());
             break;
         }
@@ -313,12 +315,13 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                                  0, 0, 0, 0));
 }
 
-std::expected<void, Error> VM::call(const Proto *fn) {
+std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset) {
     // create the next call frame and prepare it with the first few
     // registers of the old ones.
     std::array<Value, 256> registers;
     for (size_t i = 0; i < fn->arguments; ++i) {
-        registers[i] = call_stack.back().registers[i];
+        // start at +1 + i <- offset + i
+        registers[i + 1] = call_stack.back().registers[i + offset];
     }
     CallFrame frame{std::move(registers)};
     call_stack.push_back(frame);

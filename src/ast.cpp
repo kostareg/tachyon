@@ -123,7 +123,7 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit) {
 void BytecodeGenerator::operator()(const FnExpr &fn) {
     // TODO: see generate_proto_with_args definition.
     std::expected<vm::Proto, Error> maybeProto;
-    if (fn.arguments.size() > 0)
+    if (fn.arguments.size() == 0)
         maybeProto = generate_proto(std::move(*fn.body));
     else {
         std::vector<std::string> arguments;
@@ -135,11 +135,9 @@ void BytecodeGenerator::operator()(const FnExpr &fn) {
 
     if (!maybeProto)
         errors.push_back(maybeProto.error());
-    auto proto = std::move(maybeProto.value());
 
-    // TODO: segfaults?
-    vm::Value val = &proto;
-    constants.push_back(val);
+    constants.emplace_back<std::shared_ptr<vm::Proto>>(
+        std::make_shared<vm::Proto>(std::move(maybeProto.value())));
 
     curr = constants.size() - 1;
 };
@@ -238,7 +236,7 @@ void BytecodeGenerator::operator()(const LetExpr &vdecl) {
 void BytecodeGenerator::operator()(const LetRefExpr &vref) {
     if (auto it = std::find(vars.begin(), vars.end(), vref.name);
         it != vars.end()) {
-        curr = std::distance(vars.begin(), it);
+        curr = std::distance(vars.begin(), it) + 1; // starts at +1
     } else {
         curr = 255; // error
     }
@@ -248,7 +246,10 @@ void BytecodeGenerator::operator()(const LetRefExpr &vref) {
 void BytecodeGenerator::operator()(const FnCallExpr &fnc) {
     // to run a function, we load the arguments in the first [1, n] registers,
     // then call CALC/CALR with a pointer to the prototype.
-    auto i = 1;
+    auto start = vars.size() + 1; // start after vars
+    auto i = start;
+    // TODO: do we need two loops here? once to std::visit, once to
+    //  bc.push_back.
     for (auto &arg : fnc.args) {
         std::visit(*this, arg.kind);
         if (std::holds_alternative<BinaryOperatorExpr>(arg.kind)) {
@@ -278,22 +279,22 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc) {
             bc.push_back(curr);
             bc.push_back(i);
         } else {
-            errors.push_back(Error(ErrorKind::BytecodeGenerationError,
-                                   "could not generate function call", 0, 0, 0,
-                                   0));
+            errors.emplace_back(ErrorKind::BytecodeGenerationError,
+                                "could not generate function call", 0, 0, 0, 0);
         }
         ++i; // TODO: i dont like this?
     }
 
     if (fnc.ref.name == "print") {
         bc.push_back(vm::PRNR);
-        bc.push_back(1);
+        bc.push_back(start); // just one arg
         return;
     }
 
     (*this)(fnc.ref);
     bc.push_back(vm::CALR);
     bc.push_back(curr);
+    bc.push_back(start);
 
     // writes output to register 0.
     curr = 0;
@@ -308,7 +309,8 @@ void BytecodeGenerator::operator()(const ImportExpr &imp) {};
 void BytecodeGenerator::operator()(const ReturnExpr &ret) {
     std::visit(*this, ret.returns->kind);
     if (std::holds_alternative<LetRefExpr>(ret.returns->kind) ||
-        std::holds_alternative<FnCallExpr>(ret.returns->kind)) {
+        std::holds_alternative<FnCallExpr>(ret.returns->kind) ||
+        std::holds_alternative<BinaryOperatorExpr>(ret.returns->kind)) {
         // curr holds a register address, use RETR
         bc.push_back(vm::RETR);
         bc.push_back(curr);

@@ -24,8 +24,8 @@ export struct Proto;
 //  `std::move(proto.constants[...])`.
 // TODO: can I/should I unify this value with the AST value, so that it's all
 //  the same type?
-export using Value =
-    std::variant<std::monostate, double, std::string, bool, const Proto *>;
+export using Value = std::variant<std::monostate, double, std::string, bool,
+                                  std::shared_ptr<Proto>>;
 
 struct Proto {
     // TODO: uint8_t* + malloc
@@ -75,8 +75,7 @@ export class VM {
     }
 
     std::expected<void, Error> run(const Proto &proto);
-
-    std::expected<void, Error> call(const Proto *fn);
+    std::expected<void, Error> call(std::shared_ptr<Proto> fn, uint8_t offset);
     void diagnose() const;
 };
 
