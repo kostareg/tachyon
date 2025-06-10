@@ -46,6 +46,48 @@ void unwrap(std::expected<void, Error> t, const std::string &src, bool quit) {
     }
 };
 
+// TODO: for now:
+std::string unescape(const std::string &input) {
+    std::string result;
+    result.reserve(input.size());
+
+    for (size_t i = 0; i < input.size(); ++i) {
+        if (input[i] == '\\' && i + 1 < input.size()) {
+            switch (input[++i]) {
+            case 'n':
+                result += '\n';
+                break;
+            case 't':
+                result += '\t';
+                break;
+            case 'r':
+                result += '\r';
+                break;
+            case '\\':
+                result += '\\';
+                break;
+            case '"':
+                result += '"';
+                break;
+            case '\'':
+                result += '\'';
+                break;
+            case '0':
+                result += '\0';
+                break;
+                // Add more cases if needed
+            default:
+                result += '\\';
+                result += input[i];
+            }
+        } else {
+            result += input[i];
+        }
+    }
+
+    return result;
+}
+
 // TODO: consider moving optimisations to IR.
 // std::expected<ast::ExprRefs, Error> optimize(ast::ExprRefs);
 
@@ -62,6 +104,7 @@ int run(char *fileName) {
     // load file contents
     std::ifstream file(fileName, std::ios::binary);
     std::string file_contents(std::istreambuf_iterator<char>{file}, {});
+    file_contents = unescape(file_contents);
 
     // TODO: update this with other stuff
     auto m = lexer::lex(file_contents)

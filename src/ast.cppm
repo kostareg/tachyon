@@ -164,6 +164,11 @@ export struct BytecodeGenerator {
     // TODO: is this the best way to do this? consider how it is finding vars by
     //  name. also, since its unique consider std::set.
     std::vector<std::string> vars;
+    // TODO: this certainly does not work because even if we set the value
+    //  during construction, it still won't be valid if you declare a new
+    //  variable and then use it (will point to newest var). and not the
+    //  simplest fix because what if you use it, *then* create the new vars,
+    //  then use it again?
     size_t nextFreeRegister = 1;
     uint8_t curr;
     std::vector<Error> errors;
