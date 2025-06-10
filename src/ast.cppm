@@ -164,12 +164,15 @@ export struct BytecodeGenerator {
     // TODO: is this the best way to do this? consider how it is finding vars by
     //  name. also, since its unique consider std::set.
     std::vector<std::string> vars;
+    size_t nextFreeRegister = 1;
     uint8_t curr;
     std::vector<Error> errors;
 
     BytecodeGenerator() {};
     explicit BytecodeGenerator(std::vector<std::string> vars)
-        : vars(std::move(vars)) {};
+        : vars(std::move(vars)) {
+        nextFreeRegister = vars.size() + 1;
+    };
 
     void operator()(const LiteralExpr &lit);
     void operator()(const FnExpr &fn);

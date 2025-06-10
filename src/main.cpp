@@ -66,7 +66,7 @@ int run(char *fileName) {
     // TODO: update this with other stuff
     auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
-                 // .and_then(ast::print)
+                 .and_then(ast::print)
                  // .and_then(optimize)
                  .and_then(ast::generate_proto)
                  // .and_then([](vm::Proto proto) -> std::expected<vm::Proto,

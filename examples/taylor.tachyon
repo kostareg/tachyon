@@ -1,4 +1,4 @@
-sin = fn(x) { return x - x * x; }
+sin = fn(x) { return (x - ((x * x * x) / 6)) + ((x * x * x * x * x) / 120); }
 
 print(sin(1))
 

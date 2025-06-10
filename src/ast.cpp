@@ -144,7 +144,6 @@ void BytecodeGenerator::operator()(const FnExpr &fn) {
 };
 
 // TODO: handle fn calls
-// by convention, stores the result of the arithmetic expression in register 0.
 void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
     uint8_t op = op_to_uint8_t(binop.op);
     if (std::holds_alternative<LiteralExpr>(binop.left->kind)) {
@@ -158,7 +157,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
             bc.push_back(op);
             bc.push_back(lhs);
             bc.push_back(rhs);
-            bc.push_back(0); // target
+            bc.push_back(nextFreeRegister); // target
         } else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
                    std::holds_alternative<BinaryOperatorExpr>(
                        binop.right->kind)) {
@@ -170,12 +169,12 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
             bc.push_back(op + 8);
             bc.push_back(lhs);
             bc.push_back(rhs);
-            bc.push_back(0); // target
+            bc.push_back(nextFreeRegister); // target
         } else if (std::holds_alternative<FnCallExpr>(binop.right->kind)) {
             // constant <op> fn_call()
         }
     } else if (std::holds_alternative<LetRefExpr>(binop.left->kind) ||
-               std::holds_alternative<BinaryOperatorExpr>(binop.right->kind)) {
+               std::holds_alternative<BinaryOperatorExpr>(binop.left->kind)) {
         // reference lhs
         if (std::holds_alternative<LiteralExpr>(binop.right->kind)) {
             // reference <op> constant
@@ -186,7 +185,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
             bc.push_back(op + 4);
             bc.push_back(lhs);
             bc.push_back(rhs);
-            bc.push_back(0); // target
+            bc.push_back(nextFreeRegister); // target
         } else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
                    std::holds_alternative<BinaryOperatorExpr>(
                        binop.right->kind)) {
@@ -198,7 +197,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
             bc.push_back(op + 12);
             bc.push_back(lhs);
             bc.push_back(rhs);
-            bc.push_back(0); // target
+            bc.push_back(nextFreeRegister); // target
         } else if (std::holds_alternative<FnCallExpr>(binop.right->kind)) {
             // reference <op> fn_call()
         }
@@ -215,7 +214,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
         }
     }
 
-    curr = 0;
+    curr = nextFreeRegister++;
 };
 
 // TODO: does not check for duplicate variables, this should probably be a step
@@ -260,11 +259,11 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc) {
     //  bc.push_back.
     for (auto &arg : fnc.args) {
         std::visit(*this, arg.kind);
-        if (std::holds_alternative<BinaryOperatorExpr>(arg.kind)) {
-            // since the answer is currently in register 0, we need to move it
-            // to the appropriate register.
+        if (std::holds_alternative<BinaryOperatorExpr>(arg.kind) ||
+            std::holds_alternative<LetRefExpr>(arg.kind)) {
+            // we have the register index.
             bc.push_back(vm::LORR);
-            bc.push_back(0);
+            bc.push_back(curr);
             bc.push_back(i);
         } else if (std::holds_alternative<LiteralExpr>(arg.kind)) {
             // we have the constant index so we should load that.
@@ -279,11 +278,6 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc) {
         } else if (std::holds_alternative<FnExpr>(arg.kind)) {
             // we have the constant index.
             bc.push_back(vm::LOCR);
-            bc.push_back(curr);
-            bc.push_back(i);
-        } else if (std::holds_alternative<LetRefExpr>(arg.kind)) {
-            // we have the register index.
-            bc.push_back(vm::LORR);
             bc.push_back(curr);
             bc.push_back(i);
         } else {
