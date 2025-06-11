@@ -16,21 +16,24 @@ import error;
 // TODO: redo whole errors system. consider keeping just position+length in
 //  sourcespan.
 
-void unwrap(std::expected<void, Error> t, const std::string &src, bool quit) {
-    if (!t.has_value()) {
+void unwrap(std::expected<void, Error> t, const std::string &src, bool quit)
+{
+    if (!t.has_value())
+    {
         auto e = t.error();
         constexpr auto message = "\033[31merror{}\033[0m: {} on L{}C{}.\n"
                                  "{}";
 
         auto code = e.code.empty() ? "" : "(" + e.code + ")";
 
-        // TODO: for now:
+        // TODO: for now: //
         e.source = get_line_at(src, e.span.pos);
 
-        std::cout << std::format(message, code, e.messageLong, e.span.line,
-                                 e.span.column, e.getSource());
+        std::cout << std::format(message, code, e.message_long, e.span.line, e.span.column,
+                                 e.getSource());
 
-        for (auto &i : e.additional) {
+        for (auto &i : e.additional)
+        {
             unwrap(std::unexpected(i), src, false);
         }
 
@@ -40,13 +43,17 @@ void unwrap(std::expected<void, Error> t, const std::string &src, bool quit) {
 };
 
 // TODO: for now:
-std::string unescape(const std::string &input) {
+std::string unescape(const std::string &input)
+{
     std::string result;
     result.reserve(input.size());
 
-    for (size_t i = 0; i < input.size(); ++i) {
-        if (input[i] == '\\' && i + 1 < input.size()) {
-            switch (input[++i]) {
+    for (size_t i = 0; i < input.size(); ++i)
+    {
+        if (input[i] == '\\' && i + 1 < input.size())
+        {
+            switch (input[++i])
+            {
             case 'n':
                 result += '\n';
                 break;
@@ -73,7 +80,9 @@ std::string unescape(const std::string &input) {
                 result += '\\';
                 result += input[i];
             }
-        } else {
+        }
+        else
+        {
             result += input[i];
         }
     }
@@ -84,13 +93,12 @@ std::string unescape(const std::string &input) {
 // TODO: consider moving optimisations to IR.
 // std::expected<ast::ExprRefs, Error> optimize(ast::ExprRefs);
 
-int run(char *fileName) {
+int run(char *fileName)
+{
     // if bad file...
-    if (!std::filesystem::exists(fileName) ||
-        !std::filesystem::is_regular_file(fileName)) {
-        std::println(std::cerr,
-                     "specified file ({}) does not exist or is a directory.",
-                     fileName);
+    if (!std::filesystem::exists(fileName) || !std::filesystem::is_regular_file(fileName))
+    {
+        std::println(std::cerr, "specified file ({}) does not exist or is a directory.", fileName);
         return 1;
     }
 
@@ -104,7 +112,7 @@ int run(char *fileName) {
                  .and_then(parser::parse)
                  .and_then(ast::print)
                  // .and_then(optimize)
-                 .and_then(ast::generate_proto)
+                 .and_then(ast::generateProto)
                  // .and_then([](vm::Proto proto) -> std::expected<vm::Proto,
                  // Error> {
                  //     std::println("function {}", proto.name);
@@ -113,23 +121,28 @@ int run(char *fileName) {
                  //     }
                  //     return proto;
                  // })
-                 .and_then([](vm::Proto proto) -> std::expected<void, Error> {
-                     vm::VM vm;
-                     return vm.run(proto);
-                 });
+                 .and_then(
+                     [](vm::Proto proto) -> std::expected<void, Error>
+                     {
+                         vm::VM vm;
+                         return vm.run(proto);
+                     });
 
     unwrap(m, file_contents, true);
 
     return 0;
 }
 
-int repl() {
+int repl()
+{
     vm::VM vm;
     std::string source, line;
     auto prefix = "> ";
 
-    while (std::printf("%s", prefix) && std::getline(std::cin, line)) {
-        if (line.ends_with(";;")) {
+    while (std::printf("%s", prefix) && std::getline(std::cin, line))
+    {
+        if (line.ends_with(";;"))
+        {
             // add the line to the source, without the ;;.
             source += line.substr(0, line.size() - 2) + '\n';
             prefix = "  ";
@@ -141,15 +154,12 @@ int repl() {
         if (source.empty())
             continue;
 
-        auto m =
-            lexer::lex(source)
-                .and_then(parser::parse)
-                .and_then(ast::print)
-                .and_then(
-                    [](ast::Expr e) { return generate_proto(std::move(e)); })
-                .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
-                    return vm.run(proto);
-                });
+        auto m = lexer::lex(source)
+                     .and_then(parser::parse)
+                     .and_then(ast::print)
+                     .and_then([](ast::Expr e) { return generateProto(std::move(e)); })
+                     .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
+                               { return vm.run(proto); });
 
         unwrap(m, source, false);
 
@@ -162,49 +172,47 @@ int repl() {
 
 using namespace vm;
 
-int testvm() {
+int testvm()
+{
     // --- define myfn --- //
-    std::vector<uint8_t> bytecode_myfn = {
-        NOOP,          // no-op --------------------------------------
-        MARR, 0, 1, 0, // add reg0 + reg1 -> reg0
-        MARC, 0, 1, 0, // add reg0 + 1 -> reg0
-        PRNC, 2,       // print `the answer is: `
-        PRNR, 0,       // print reg0
-        PRNC, 3,       // print `\n`
-        RETR, 0};
+    std::vector<uint8_t> bytecode_myfn = {NOOP, // no-op --------------------------------------
+                                          MARR, 0, 1, 0, // add reg0 + reg1 -> reg0
+                                          MARC, 0, 1, 0, // add reg0 + 1 -> reg0
+                                          PRNC, 2,       // print `the answer is: `
+                                          PRNR, 0,       // print reg0
+                                          PRNC, 3,       // print `\n`
+                                          RETR, 0};
     std::vector<Value> constants_myfn;
     constants_myfn.emplace_back("ZYXWVU");
     constants_myfn.emplace_back(1.0);
     constants_myfn.emplace_back(">>> the answer is: ");
     constants_myfn.emplace_back("\n");
-    Proto myfnProto{std::move(bytecode_myfn), std::move(constants_myfn), 2,
-                    "myfn"};
+    Proto myfn_proto{std::move(bytecode_myfn), std::move(constants_myfn), 2, "myfn"};
 
     // --- define main --- //
     // can also CALC 4 directly
-    std::vector<uint8_t> bytecode_main = {
-        LOCR, 0,  1,     // load `ABCDEF` to reg 1
-        LOCR, 1,  3,     // load `123` to register 3
-        CREC, 3,  2,  0, // comparison
-        MACR, 2,  3,  0, // math
-        MSRR, 0,  3,  5, // math
-        LOCR, 1,  1,     // load `123` to register 1
-        LOCR, 4,  10,    // load myfn to reg10
-        CALR, 10,        // call reg10
-        RETV};
+    std::vector<uint8_t> bytecode_main = {LOCR, 0,  1,     // load `ABCDEF` to reg 1
+                                          LOCR, 1,  3,     // load `123` to register 3
+                                          CREC, 3,  2,  0, // comparison
+                                          MACR, 2,  3,  0, // math
+                                          MSRR, 0,  3,  5, // math
+                                          LOCR, 1,  1,     // load `123` to register 1
+                                          LOCR, 4,  10,    // load myfn to reg10
+                                          CALR, 10,        // call reg10
+                                          RETV};
     std::vector<Value> constants_main;
     const char *x = "ABCDEF";
     constants_main.emplace_back(x);
     constants_main.emplace_back(123.0);
     constants_main.emplace_back(123.2);
     constants_main.emplace_back(0.0);
-    constants_main.emplace_back(std::make_shared<vm::Proto>(myfnProto));
-    Proto mainProto{std::move(bytecode_main), std::move(constants_main), 0,
-                    "main"};
+    constants_main.emplace_back(std::make_shared<vm::Proto>(myfn_proto));
+    Proto main_proto{std::move(bytecode_main), std::move(constants_main), 0, "main"};
 
     // vm
     VM vm;
-    if (auto ex = vm.run(mainProto); !ex) {
+    if (auto ex = vm.run(main_proto); !ex)
+    {
         std::println("failed with error: {}", ex.error().getSource());
     }
     // unwrap(ex, "AAAAAAAAAAAAAAAAAAAAAAA\nBBBBBBBBBBBBBB\n", false);
@@ -215,43 +223,55 @@ int testvm() {
     return 0;
 }
 
-int testgen() {
+int testgen()
+{
     vm::VM vm;
-    unwrap(
-        lexer::lex("x = 13 * 13; print(\">>> this is from the vm\n>>> \"); "
-                   "print(x); return 0;")
-            .and_then(parser::parse)
-            .and_then(ast::generate_proto)
-            .and_then([](vm::Proto proto) -> std::expected<vm::Proto, Error> {
-                // std::println("function {}", proto.name);
-                // for (auto bc : proto.bytecode) {
-                //     std::println("{}", bc);
-                // }
-                return proto;
-            })
-            .and_then([&vm](vm::Proto proto) -> std::expected<void, Error> {
-                return vm.run(proto);
-            }),
-        "1 + 1", false);
+    unwrap(lexer::lex("x = 13 * 13; print(\">>> this is from the vm\n>>> \"); "
+                      "print(x); return 0;")
+               .and_then(parser::parse)
+               .and_then(ast::generateProto)
+               .and_then(
+                   [](vm::Proto proto) -> std::expected<vm::Proto, Error>
+                   {
+                       // std::println("function {}", proto.name);
+                       // for (auto bc : proto.bytecode) {
+                       //     std::println("{}", bc);
+                       // }
+                       return proto;
+                   })
+               .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
+                         { return vm.run(proto); }),
+           "1 + 1", false);
 
     return 0;
 }
 
-int main(int argc, char **argv) {
-    if (argc == 1) {
+int main(int argc, char **argv)
+{
+    if (argc == 1)
+    {
         return repl();
-    } else if (strcmp(argv[1], "run") == 0) {
-        if (argc == 2) {
+    }
+    else if (strcmp(argv[1], "run") == 0)
+    {
+        if (argc == 2)
+        {
             std::println(std::cerr, "specify a file to run.\n> "
                                     "tachyon run myfile.tachyon");
             return 1;
         }
         return run(argv[2]);
-    } else if (strcmp(argv[1], "testvm") == 0) {
+    }
+    else if (strcmp(argv[1], "testvm") == 0)
+    {
         return testvm();
-    } else if (strcmp(argv[1], "testgen") == 0) {
+    }
+    else if (strcmp(argv[1], "testgen") == 0)
+    {
         return testgen();
-    } else {
+    }
+    else
+    {
         std::println(std::cerr, "unknown command: {}", argv[1]);
         return 1;
     }

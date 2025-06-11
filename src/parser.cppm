@@ -11,8 +11,10 @@ import error;
 using namespace ast;
 using namespace lexer;
 
-namespace parser {
-export class Parser {
+namespace parser
+{
+export class Parser
+{
     /// index of the current token
     size_t i = 0;
     Tokens ts;
@@ -59,7 +61,8 @@ export class Parser {
  * @brief builds a Parser and wraps around Parser::parse
  * @see Parser::parse
  */
-export inline std::expected<ast::Expr, Error> parse(const Tokens &ts) {
+export inline std::expected<ast::Expr, Error> parse(const Tokens &ts)
+{
     Parser parser(ts);
     return parser.parse();
 }

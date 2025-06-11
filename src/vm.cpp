@@ -7,68 +7,85 @@ module;
 
 module vm;
 
-namespace vm {
+namespace vm
+{
 /**
  * @brief small visitor for printing values
  */
-void print_value(const Value &reg) {
+void print_value(const Value &reg)
+{
     std::visit(
-        [](const auto &val) {
+        [](const auto &val)
+        {
             using T = std::decay_t<decltype(val)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
+            if constexpr (std::is_same_v<T, std::monostate>)
+            {
                 std::print("()");
-            } else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>) {
+            }
+            else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>)
+            {
                 std::print("proto");
-            } else {
+            }
+            else
+            {
                 std::print("{}", val);
             }
         },
         reg);
 }
 
-std::expected<void, Error> VM::run(const Proto &proto) {
+std::expected<void, Error> VM::run(const Proto &proto)
+{
     size_t ptr = 0;
-    while (ptr < proto.bytecode.size()) {
+    while (ptr < proto.bytecode.size())
+    {
         uint8_t op = proto.bytecode[ptr];
         // std::println("0x{:02X}", op);
 
-        switch (op) {
+        switch (op)
+        {
         default:
-        case RETV: {
+        case RETV:
+        {
             return {};
         }
-        case RETC: {
+        case RETC:
+        {
             auto src1 = proto.bytecode[++ptr];
             call_stack.back().returns = proto.constants[src1];
             return {};
         }
-        case RETR: {
+        case RETR:
+        {
             auto src1 = proto.bytecode[++ptr];
             call_stack.back().returns = call_stack.back().registers[src1];
             return {};
         }
         // TODO: if the section after this switch case remains blank, don't
         //  continue, just break.
-        case NOOP: {
+        case NOOP:
+        {
             ++ptr;
             continue;
         }
         // TODO: consider putting a check here that makes sure constants exists.
         //  otherwise, its a segfault.
-        case LOCR: {
+        case LOCR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] = proto.constants[src1];
             break;
         }
-        case LORR: {
+        case LORR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1];
+            call_stack.back().registers[dst] = call_stack.back().registers[src1];
             break;
         }
-        case CRLC: {
+        case CRLC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
@@ -76,7 +93,8 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                 call_stack.back().registers[src1] < proto.constants[src2];
             break;
         }
-        case CRGC: {
+        case CRGC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
@@ -84,25 +102,26 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                 call_stack.back().registers[src1] > proto.constants[src2];
             break;
         }
-        case CRLR: {
+        case CRLR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] <
-                call_stack.back().registers[src2];
+                call_stack.back().registers[src1] < call_stack.back().registers[src2];
             break;
         }
-        case CRGR: {
+        case CRGR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] >
-                call_stack.back().registers[src2];
+                call_stack.back().registers[src1] > call_stack.back().registers[src2];
             break;
         }
-        case CREC: {
+        case CREC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
@@ -110,22 +129,24 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                 call_stack.back().registers[src1] == proto.constants[src2];
             break;
         }
-        case CRER: {
+        case CRER:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] ==
-                call_stack.back().registers[src2];
+                call_stack.back().registers[src1] == call_stack.back().registers[src2];
             break;
         }
         // TODO: if you implement integer type, use that in JMPC/JMPR instead
-        case JMPC: {
+        case JMPC:
+        {
             auto src1 = proto.bytecode[++ptr];
             ptr = std::get<double>(proto.constants[src1]);
             continue; // do not increment
         }
-        case JMPR: {
+        case JMPR:
+        {
             auto src1 = proto.bytecode[++ptr];
             ptr = std::get<double>(call_stack.back().registers[src1]);
             continue;
@@ -133,151 +154,152 @@ std::expected<void, Error> VM::run(const Proto &proto) {
         // TODO: for now, just assume that math operations are only working on
         //  doubles. we can handle other issues either in the typechecker or by
         //  allowing weak types. or, we can make it a runtime error.
-        case MACC: {
+        case MACC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) +
-                std::get<double>(proto.constants[src2]);
+                std::get<double>(proto.constants[src1]) + std::get<double>(proto.constants[src2]);
             break;
         }
-        case MSCC: {
+        case MSCC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) -
-                std::get<double>(proto.constants[src2]);
+                std::get<double>(proto.constants[src1]) - std::get<double>(proto.constants[src2]);
             break;
         }
-        case MMCC: {
+        case MMCC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) *
-                std::get<double>(proto.constants[src2]);
+                std::get<double>(proto.constants[src1]) * std::get<double>(proto.constants[src2]);
             break;
         }
-        case MDCC: {
+        case MDCC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) /
-                std::get<double>(proto.constants[src2]);
+                std::get<double>(proto.constants[src1]) / std::get<double>(proto.constants[src2]);
             break;
         }
-        case MARC: {
+        case MARC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) +
-                std::get<double>(proto.constants[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) +
+                                               std::get<double>(proto.constants[src2]);
             break;
         }
-        case MSRC: {
+        case MSRC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) -
-                std::get<double>(proto.constants[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) -
+                                               std::get<double>(proto.constants[src2]);
             break;
         }
-        case MMRC: {
+        case MMRC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) *
-                std::get<double>(proto.constants[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) *
+                                               std::get<double>(proto.constants[src2]);
             break;
         }
-        case MDRC: {
+        case MDRC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) /
-                std::get<double>(proto.constants[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) /
+                                               std::get<double>(proto.constants[src2]);
             break;
         }
-        case MACR: {
+        case MACR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) +
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) +
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MSCR: {
+        case MSCR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) -
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) -
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MMCR: {
+        case MMCR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) *
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) *
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MDCR: {
+        case MDCR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) /
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) /
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MARR: {
+        case MARR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) +
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) +
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MSRR: {
+        case MSRR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) -
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) -
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MMRR: {
+        case MMRR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) *
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) *
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case MDRR: {
+        case MDRR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
             auto dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(call_stack.back().registers[src1]) /
-                std::get<double>(call_stack.back().registers[src2]);
+            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) /
+                                               std::get<double>(call_stack.back().registers[src2]);
             break;
         }
-        case CALC: {
+        case CALC:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto offset = proto.bytecode[++ptr];
             auto fn = std::get<std::shared_ptr<Proto>>(proto.constants[src1]);
@@ -286,22 +308,24 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                 return std::unexpected(calledFn.error());
             break;
         }
-        case CALR: {
+        case CALR:
+        {
             auto src1 = proto.bytecode[++ptr];
             auto offset = proto.bytecode[++ptr];
-            auto fn = std::get<std::shared_ptr<Proto>>(
-                call_stack.back().registers[src1]);
+            auto fn = std::get<std::shared_ptr<Proto>>(call_stack.back().registers[src1]);
 
             if (auto calledFn = call(fn, offset); !calledFn)
                 return std::unexpected(calledFn.error());
             break;
         }
-        case PRNC: {
+        case PRNC:
+        {
             auto src1 = proto.bytecode[++ptr];
             print_value(proto.constants[src1]);
             break;
         }
-        case PRNR: {
+        case PRNR:
+        {
             auto src1 = proto.bytecode[++ptr];
             print_value(call_stack.back().registers[src1]);
             break;
@@ -311,15 +335,16 @@ std::expected<void, Error> VM::run(const Proto &proto) {
     }
 
     return std::unexpected(Error(ErrorKind::InternalError,
-                                 "should not reach end of vm::run without exit",
-                                 0, 0, 0, 0));
+                                 "should not reach end of vm::run without exit", 0, 0, 0, 0));
 }
 
-std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset) {
+std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
+{
     // create the next call frame and prepare it with the first few
     // registers of the old ones.
     std::array<Value, 256> registers;
-    for (size_t i = 0; i < fn->arguments; ++i) {
+    for (size_t i = 0; i < fn->arguments; ++i)
+    {
         // start at +1 + i <- offset + i
         registers[i + 1] = call_stack.back().registers[i + offset];
     }
@@ -342,10 +367,13 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset) {
     return {};
 }
 
-void VM::diagnose() const {
+void VM::diagnose() const
+{
     std::println("vm state:");
-    for (auto &call : call_stack) {
-        for (auto &reg : call.registers) {
+    for (auto &call : call_stack)
+    {
+        for (auto &reg : call.registers)
+        {
             print_value(reg);
             std::print(" ");
         }

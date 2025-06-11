@@ -11,7 +11,8 @@ export module lexer;
 import error;
 import op;
 
-namespace lexer {
+namespace lexer
+{
 export enum class TokenType {
     IDENT,
     NUMBER,
@@ -43,7 +44,8 @@ export enum class TokenType {
 
 using enum TokenType;
 
-export inline std::string tok_to_str(TokenType t) {
+export inline std::string tokToStr(TokenType t)
+{
     if (t == IDENT)
         return "IDENT";
     else if (t == NUMBER)
@@ -100,7 +102,8 @@ export inline std::string tok_to_str(TokenType t) {
         return "unknown token";
 }
 
-export inline std::string tok_to_str_pretty(TokenType t) {
+export inline std::string tokToStrPretty(TokenType t)
+{
     if (t == IDENT)
         return "an identifier";
     else if (t == NUMBER)
@@ -157,11 +160,13 @@ export inline std::string tok_to_str_pretty(TokenType t) {
         return "an unknown token";
 }
 
-export inline bool isoperator(TokenType t) {
+export inline bool isOperator(TokenType t)
+{
     return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
 };
 
-export inline Op tok_to_op(TokenType t) {
+export inline Op tokToOp(TokenType t)
+{
     if (t == PLUS)
         return Op::Add;
     else if (t == MINUS)
@@ -181,8 +186,10 @@ export inline Op tok_to_op(TokenType t) {
  *
  * Represents the precedence of a token.
  */
-export inline int get_lbp(TokenType t) {
-    switch (t) {
+export inline int getLbp(TokenType t)
+{
+    switch (t)
+    {
     case PLUS:
     case MINUS:
         return 10;
@@ -196,25 +203,32 @@ export inline int get_lbp(TokenType t) {
     }
 }
 
-export struct Token {
+export struct Token
+{
     TokenType type;
     std::variant<std::monostate, double, bool, std::string> value;
     SourceSpan span;
 
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
-        : type(type), span(pos, line, col, len) {}
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
-          double value)
-        : type(type), value(value), span(pos, line, col, len) {}
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
-          bool value)
-        : type(type), value(value), span(pos, line, col, len) {}
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len,
-          std::string value)
-        : type(type), value(value), span(pos, line, col, len) {}
+        : type(type), span(pos, line, col, len)
+    {
+    }
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, double value)
+        : type(type), value(value), span(pos, line, col, len)
+    {
+    }
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, bool value)
+        : type(type), value(value), span(pos, line, col, len)
+    {
+    }
+    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, std::string value)
+        : type(type), value(value), span(pos, line, col, len)
+    {
+    }
 
-    void print() {
-        std::cout << tok_to_str(type);
+    void print()
+    {
+        std::cout << tokToStr(type);
         if (std::holds_alternative<double>(value))
             std::cout << " " << std::get<double>(value);
         if (std::holds_alternative<bool>(value))
@@ -226,11 +240,13 @@ export struct Token {
 
 export using Tokens = std::vector<Token>;
 
-export struct LexerMeta {
+export struct LexerMeta
+{
     size_t line = 1;
     size_t col = 1;
 
-    void nline() {
+    void nline()
+    {
         ++line;
         col = 0;
     }

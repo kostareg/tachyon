@@ -9,7 +9,8 @@ export module vm;
 
 import error;
 
-namespace vm {
+namespace vm
+{
 export struct Proto;
 
 // TODO: currently 32 bytes, can we get less?
@@ -24,10 +25,11 @@ export struct Proto;
 //  `std::move(proto.constants[...])`.
 // TODO: can I/should I unify this value with the AST value, so that it's all
 //  the same type?
-export using Value = std::variant<std::monostate, double, std::string, bool,
-                                  std::shared_ptr<Proto>>;
+export using Value =
+    std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
 
-struct Proto {
+struct Proto
+{
     // TODO: uint8_t* + malloc
     std::vector<uint8_t> bytecode;
 
@@ -58,18 +60,21 @@ struct Proto {
     //  will overwrite it with garbage.
 };
 
-struct CallFrame {
+struct CallFrame
+{
     // TODO: maybe optimization point. store large values in their own regs?
     std::array<Value, 256> registers;
 
     Value returns;
 };
 
-export class VM {
+export class VM
+{
     std::vector<CallFrame> call_stack;
 
   public:
-    VM() {
+    VM()
+    {
         auto initial_frame = CallFrame{};
         call_stack.push_back(std::move(initial_frame));
     }
