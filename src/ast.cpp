@@ -1,11 +1,9 @@
-module;
-
 #include <expected>
 #include <print>
 #include <ranges>
 #include <variant>
 
-module ast;
+#include "ast.h"
 
 namespace ast
 {

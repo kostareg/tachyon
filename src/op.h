@@ -1,20 +1,25 @@
-module;
+#pragma once
 
 #include <cstdint>
 #include <stdexcept>
 
-export module op;
-
 /**
  * @brief Mathematical operators.
  */
-export enum class Op { Add, Sub, Mul, Div, Pow };
+enum class Op
+{
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Pow
+};
 
 /**
  * @brief For printing operators.
  * @sa Op
  */
-export inline const char *op_to_str(Op op)
+inline const char *op_to_str(Op op)
 {
     switch (op)
     {
@@ -36,7 +41,7 @@ export inline const char *op_to_str(Op op)
 /**
  * @brief convert op to vm bytecode constant operations.
  */
-export inline const uint8_t op_to_uint8_t(Op op)
+inline const uint8_t op_to_uint8_t(Op op)
 {
     if (op == Op::Pow)
         throw std::runtime_error("power operator not yet supported");

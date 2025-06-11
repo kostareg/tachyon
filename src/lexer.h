@@ -1,4 +1,4 @@
-module;
+#pragma once
 
 #include <expected>
 #include <iostream>
@@ -6,14 +6,13 @@ module;
 #include <variant>
 #include <vector>
 
-export module lexer;
-
-import error;
-import op;
+#include "error.h"
+#include "op.h"
 
 namespace lexer
 {
-export enum class TokenType {
+enum class TokenType
+{
     IDENT,
     NUMBER,
     STRING,
@@ -44,7 +43,7 @@ export enum class TokenType {
 
 using enum TokenType;
 
-export inline std::string tokToStr(TokenType t)
+inline std::string tokToStr(TokenType t)
 {
     if (t == IDENT)
         return "IDENT";
@@ -102,7 +101,7 @@ export inline std::string tokToStr(TokenType t)
         return "unknown token";
 }
 
-export inline std::string tokToStrPretty(TokenType t)
+inline std::string tokToStrPretty(TokenType t)
 {
     if (t == IDENT)
         return "an identifier";
@@ -160,12 +159,12 @@ export inline std::string tokToStrPretty(TokenType t)
         return "an unknown token";
 }
 
-export inline bool isOperator(TokenType t)
+inline bool isOperator(TokenType t)
 {
     return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
 };
 
-export inline Op tokToOp(TokenType t)
+inline Op tokToOp(TokenType t)
 {
     if (t == PLUS)
         return Op::Add;
@@ -186,7 +185,7 @@ export inline Op tokToOp(TokenType t)
  *
  * Represents the precedence of a token.
  */
-export inline int getLbp(TokenType t)
+inline int getLbp(TokenType t)
 {
     switch (t)
     {
@@ -203,7 +202,7 @@ export inline int getLbp(TokenType t)
     }
 }
 
-export struct Token
+struct Token
 {
     TokenType type;
     std::variant<std::monostate, double, bool, std::string> value;
@@ -238,9 +237,9 @@ export struct Token
     };
 };
 
-export using Tokens = std::vector<Token>;
+using Tokens = std::vector<Token>;
 
-export struct LexerMeta
+struct LexerMeta
 {
     size_t line = 1;
     size_t col = 1;
@@ -252,5 +251,5 @@ export struct LexerMeta
     }
 };
 
-export std::expected<Tokens, Error> lex(const std::string &);
+std::expected<Tokens, Error> lex(const std::string &);
 } // namespace lexer

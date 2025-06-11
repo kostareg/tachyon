@@ -1,4 +1,4 @@
-module;
+#pragma once
 
 #include <cmath>
 #include <format>
@@ -8,14 +8,11 @@ module;
 #include <utility>
 #include <vector>
 
-// TODO: finalize cppm/cpp structure
-// TODO: tachyon.x
-export module error;
-
 /**
  * @brief kind of errors that can occur
  */
-export enum class ErrorKind {
+enum class ErrorKind
+{
     LexError,
     ParseError,
     InferenceError,
@@ -27,7 +24,7 @@ export enum class ErrorKind {
 /**
  * @brief given a string and a position index, get its whole line
  */
-export inline std::string getLineAt(const std::string &s, size_t pos)
+inline std::string getLineAt(const std::string &s, size_t pos)
 {
     size_t start = s.rfind('\n', pos);
     size_t end = s.find('\n', pos);
@@ -43,7 +40,7 @@ export inline std::string getLineAt(const std::string &s, size_t pos)
 /**
  * @brief represents a span of source code
  */
-export struct SourceSpan final
+struct SourceSpan final
 {
     /// source byte offset
     size_t position;
@@ -61,7 +58,7 @@ export struct SourceSpan final
  *
  * @see ErrorKind
  */
-export struct [[nodiscard]] Error final
+struct [[nodiscard]] Error final
 {
     ErrorKind kind;
     SourceSpan span;
@@ -282,7 +279,7 @@ export struct [[nodiscard]] Error final
     friend std::ostream &operator<<(std::ostream &os, const Error &s);
 };
 
-export std::ostream &operator<<(std::ostream &os, const Error &s)
+inline std::ostream &operator<<(std::ostream &os, const Error &s)
 {
     s.format(os);
     return os;

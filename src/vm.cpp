@@ -1,11 +1,9 @@
-module;
-
 #include <cmath>
 #include <expected>
 #include <iostream>
 #include <iterator>
 
-module vm;
+#include "vm.h"
 
 namespace vm
 {

@@ -1,10 +1,8 @@
-module;
-
 #include <expected>
 #include <iostream>
 #include <string>
 
-module lexer;
+#include "lexer.h"
 
 namespace lexer
 {

@@ -7,11 +7,11 @@
 #include <string>
 #include <variant>
 
-import parser;
-import ast;
-import lexer;
-import vm;
-import error;
+#include "ast.h"
+#include "error.h"
+#include "lexer.h"
+#include "parser.h"
+#include "vm.h"
 
 // TODO: for now:
 std::string unescape(const std::string &input)
@@ -61,9 +61,6 @@ std::string unescape(const std::string &input)
     return result;
 }
 
-// TODO: consider moving optimisations to IR.
-// std::expected<ast::ExprRefs, Error> optimize(ast::ExprRefs);
-
 int run(char *fileName)
 {
     // if bad file...
@@ -78,11 +75,10 @@ int run(char *fileName)
     std::string file_contents(std::istreambuf_iterator<char>{file}, {});
     file_contents = unescape(file_contents);
 
-    // TODO: update this with other stuff
+    // pipeline
     auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
-                 .and_then(ast::print)
-                 // .and_then(optimize)
+                 // .and_then(ast::print)
                  .and_then(ast::generateProto)
                  // .and_then([](vm::Proto proto) -> std::expected<vm::Proto,
                  // Error> {
@@ -103,7 +99,7 @@ int run(char *fileName)
     {
         Error e = m.error();
         e.source = file_contents;
-        std::cerr << e;
+        std::cerr << e << std::flush;
         return 1;
     }
 
@@ -131,10 +127,11 @@ int repl()
         if (source.empty())
             continue;
 
+        // pipeline
         auto m = lexer::lex(source)
                      .and_then(parser::parse)
                      .and_then(ast::print)
-                     .and_then([](ast::Expr e) { return generateProto(std::move(e)); })
+                     .and_then(ast::generateProto)
                      .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
                                { return vm.run(proto); });
 
@@ -142,8 +139,7 @@ int repl()
         {
             Error e = m.error();
             e.source = source;
-            std::cerr << e;
-            return 1;
+            std::cerr << e << std::flush;
         }
 
         source = "";
@@ -153,49 +149,47 @@ int repl()
     return 0;
 }
 
-using namespace vm;
-
 int testvm()
 {
     // --- define myfn --- //
-    std::vector<uint8_t> bytecode_myfn = {NOOP, // no-op --------------------------------------
-                                          MARR, 0, 1, 0, // add reg0 + reg1 -> reg0
-                                          MARC, 0, 1, 0, // add reg0 + 1 -> reg0
-                                          PRNC, 2,       // print `the answer is: `
-                                          PRNR, 0,       // print reg0
-                                          PRNC, 3,       // print `\n`
-                                          RETR, 0};
-    std::vector<Value> constants_myfn;
+    std::vector<uint8_t> bytecode_myfn = {vm::NOOP, // no-op --------------------------------------
+                                          vm::MARR, 0, 1, 0, // add reg0 + reg1 -> reg0
+                                          vm::MARC, 0, 1, 0, // add reg0 + 1 -> reg0
+                                          vm::PRNC, 2,       // print `the answer is: `
+                                          vm::PRNR, 0,       // print reg0
+                                          vm::PRNC, 3,       // print `\n`
+                                          vm::RETR, 0};
+    std::vector<vm::Value> constants_myfn;
     constants_myfn.emplace_back("ZYXWVU");
     constants_myfn.emplace_back(1.0);
     constants_myfn.emplace_back(">>> the answer is: ");
     constants_myfn.emplace_back("\n");
-    Proto myfn_proto{std::move(bytecode_myfn), std::move(constants_myfn), 2, "myfn",
-                     SourceSpan(0, 0)};
+    vm::Proto myfn_proto{std::move(bytecode_myfn), std::move(constants_myfn), 2, "myfn",
+                         SourceSpan(0, 0)};
 
     // --- define main --- //
     // can also CALC 4 directly
-    std::vector<uint8_t> bytecode_main = {LOCR, 0,  1,     // load `ABCDEF` to reg 1
-                                          LOCR, 1,  3,     // load `123` to register 3
-                                          CREC, 3,  2,  0, // comparison
-                                          MACR, 2,  3,  0, // math
-                                          MSRR, 0,  3,  5, // math
-                                          LOCR, 1,  1,     // load `123` to register 1
-                                          LOCR, 4,  10,    // load myfn to reg10
-                                          CALR, 10,        // call reg10
-                                          RETV};
-    std::vector<Value> constants_main;
+    std::vector<uint8_t> bytecode_main = {vm::LOCR, 0,  1,     // load `ABCDEF` to reg 1
+                                          vm::LOCR, 1,  3,     // load `123` to register 3
+                                          vm::CREC, 3,  2,  0, // comparison
+                                          vm::MACR, 2,  3,  0, // math
+                                          vm::MSRR, 0,  3,  5, // math
+                                          vm::LOCR, 1,  1,     // load `123` to register 1
+                                          vm::LOCR, 4,  10,    // load myfn to reg10
+                                          vm::CALR, 10,        // call reg10
+                                          vm::RETV};
+    std::vector<vm::Value> constants_main;
     const char *x = "ABCDEF";
     constants_main.emplace_back(x);
     constants_main.emplace_back(123.0);
     constants_main.emplace_back(123.2);
     constants_main.emplace_back(0.0);
     constants_main.emplace_back(std::make_shared<vm::Proto>(myfn_proto));
-    Proto main_proto{std::move(bytecode_main), std::move(constants_main), 0, "main",
-                     SourceSpan(0, 0)};
+    vm::Proto main_proto{std::move(bytecode_main), std::move(constants_main), 0, "main",
+                         SourceSpan(0, 0)};
 
     // vm
-    VM vm;
+    vm::VM vm;
     if (auto ex = vm.run(main_proto); !ex)
     {
         std::println("failed with error: {} inspect error() for more details",
@@ -217,15 +211,15 @@ int testgen()
     auto m = lexer::lex(source)
                  .and_then(parser::parse)
                  .and_then(ast::generateProto)
-                 .and_then(
-                     [](vm::Proto proto) -> std::expected<vm::Proto, Error>
-                     {
-                         // std::println("function {}", proto.name);
-                         // for (auto bc : proto.bytecode) {
-                         //     std::println("{}", bc);
-                         // }
-                         return proto;
-                     })
+                 // .and_then(
+                 //     [](vm::Proto proto) -> std::expected<vm::Proto, Error>
+                 //     {
+                 // std::println("function {}", proto.name);
+                 // for (auto bc : proto.bytecode) {
+                 //     std::println("{}", bc);
+                 // }
+                 // return proto;
+                 // })
                  .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
                            { return vm.run(proto); });
 
@@ -233,7 +227,7 @@ int testgen()
     {
         Error e = m.error();
         e.source = source;
-        std::cerr << e;
+        std::cerr << e << std::flush;
         return 1;
     }
 
@@ -251,7 +245,7 @@ int testerr()
                       .withAdditional(Error::create(ErrorKind::InferenceError, SourceSpan(11, 2),
                                                     "some message 2"));
     error.source = source;
-    std::cerr << error;
+    std::cerr << error << std::flush;
     return 0;
 }
 

@@ -1,26 +1,14 @@
-#cmake_minimum_required(VERSION 3.28)
-#set(CMAKE_CXX_SCAN_FOR_MODULES ON)
-#project(tachyon LANGUAGES CXX)
-
-#set(CMAKE_CXX_STANDARD 23)
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
-#set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Enable modules
-# set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
-
 cmake_minimum_required(VERSION 3.28)
 project(Tachyon)
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE MODULE_SOURCES "src/*.cppm")
 file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE HEADERS "src/*.h")
 
 add_executable(tachyon)
-target_sources(tachyon 
-    PUBLIC FILE_SET CXX_MODULES FILES ${MODULE_SOURCES}
-    PRIVATE ${SOURCES}
+target_sources(tachyon
+        PUBLIC FILE_SET CXX_MODULES FILES ${MODULE_SOURCES}
+        PRIVATE ${SOURCES}
 )

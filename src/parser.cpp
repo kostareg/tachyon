@@ -1,5 +1,3 @@
-module;
-
 #include <expected>
 #include <format>
 #include <memory>
@@ -7,9 +5,8 @@ module;
 #include <unordered_map>
 #include <variant>
 
-module parser;
+#include "parser.h"
 
-import lexer;
 using enum TokenType;
 
 namespace parser

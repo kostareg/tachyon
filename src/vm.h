@@ -1,17 +1,15 @@
-module;
+#pragma once
 
 #include <cstdint>
 #include <expected>
 #include <variant>
 #include <vector>
 
-export module vm;
-
-import error;
+#include "error.h"
 
 namespace vm
 {
-export struct Proto;
+struct Proto;
 
 // TODO: currently 32 bytes, can we get less?
 //  if we use char* copy = malloc(strlen(original) + 1), can store char* instead
@@ -25,8 +23,7 @@ export struct Proto;
 //  `std::move(proto.constants[...])`.
 // TODO: can I/should I unify this value with the AST value, so that it's all
 //  the same type?
-export using Value =
-    std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
+using Value = std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
 
 struct Proto
 {
@@ -68,7 +65,7 @@ struct CallFrame
     Value returns;
 };
 
-export class VM
+class VM
 {
     std::vector<CallFrame> call_stack;
 
@@ -100,7 +97,8 @@ export class VM
  * | 0xF0  | Intrinsics      |
  * +-------+-----------------+
  */
-export enum Bytecode : uint8_t {
+enum Bytecode : uint8_t
+{
     RETV = 0x00, // return void
     RETC = 0x01, // return constant
     RETR = 0x02, // return register

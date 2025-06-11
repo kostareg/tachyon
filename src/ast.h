@@ -1,4 +1,4 @@
-module;
+#pragma once
 
 #include <expected>
 #include <memory>
@@ -7,11 +7,9 @@ module;
 #include <variant>
 #include <vector>
 
-export module ast;
-
-import error;
-import op;
-import vm;
+#include "error.h"
+#include "op.h"
+#include "vm.h"
 
 /**
  * @namespace ast
@@ -20,16 +18,16 @@ import vm;
 namespace ast
 {
 // fwd-decl
-export struct Expr;
-export using ExprRef = std::unique_ptr<Expr>;
-export using Exprs = std::vector<Expr>;
+struct Expr;
+using ExprRef = std::unique_ptr<Expr>;
+using Exprs = std::vector<Expr>;
 
 /**
  * @brief literal values, ie unit, numbers, strings, booleans
  */
-export using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
+using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
 
-export struct LiteralExpr
+struct LiteralExpr
 {
     LiteralValue value;
 };
@@ -37,7 +35,8 @@ export struct LiteralExpr
 /**
  * @brief four basic concrete types.
  */
-export enum class BasicConcreteTypes {
+enum class BasicConcreteTypes
+{
     Number,
     String,
     Boolean,
@@ -45,16 +44,16 @@ export enum class BasicConcreteTypes {
 };
 
 // fwd-decl
-export struct FunctionConcreteTypes;
+struct FunctionConcreteTypes;
 
 /**
  * @brief the "Type" value, ie a reference to a concrete type or enum/struct
  */
-export using Type = std::variant<BasicConcreteTypes, FunctionConcreteTypes, std::string>;
+using Type = std::variant<BasicConcreteTypes, FunctionConcreteTypes, std::string>;
 
-export using MaybeType = std::optional<Type>;
+using MaybeType = std::optional<Type>;
 
-export struct FunctionConcreteTypes
+struct FunctionConcreteTypes
 {
     std::unordered_map<std::string, Type> arguments;
 };
@@ -67,7 +66,7 @@ export struct FunctionConcreteTypes
  * type. Since this is the weak side of the AST, types can be left blank to be inferred
  * (std::nullopt).
  */
-export struct FnExpr
+struct FnExpr
 {
     std::vector<std::pair<std::string, MaybeType>> arguments;
     MaybeType returns;
@@ -77,54 +76,54 @@ export struct FnExpr
 /**
  * @brief <expr> +, -, *, /, ^ <expr>
  */
-export struct BinaryOperatorExpr
+struct BinaryOperatorExpr
 {
     Op op;
     ExprRef left;
     ExprRef right;
 };
 
-export struct LetExpr
+struct LetExpr
 {
     std::string name;
     ExprRef value;
 };
 
-export struct LetRefExpr
+struct LetRefExpr
 {
     std::string name;
 };
 
 // TODO: captures
-export struct FnCallExpr
+struct FnCallExpr
 {
     LetRefExpr ref;
     std::vector<Expr> args;
 };
 
-export struct ImportExpr
+struct ImportExpr
 {
     std::string path;
 };
 
 // TODO: retv
-export struct ReturnExpr
+struct ReturnExpr
 {
     ExprRef returns;
 };
 
-export struct SequenceExpr
+struct SequenceExpr
 {
     Exprs sequence;
 };
 
-export using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
-                                     FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
+using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
+                              FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
  * @brief Top-level expression type.
  */
-export struct Expr
+struct Expr
 {
     ExprKind kind;
     SourceSpan span;
@@ -154,7 +153,7 @@ struct PrintType
     void operator()(const std::string &otyp) const;
 };
 
-export struct Printer
+struct Printer
 {
     void operator()(const LiteralExpr &literal) const;
     void operator()(const FnExpr &fn) const;
@@ -167,14 +166,14 @@ export struct Printer
     void operator()(const SequenceExpr &seq) const;
 };
 
-export std::expected<Expr, Error> print(Expr e)
+inline std::expected<Expr, Error> print(Expr e)
 {
     auto printer = Printer{};
     std::visit(printer, e.kind);
     return e;
 }
 
-export struct BytecodeGenerator
+struct BytecodeGenerator
 {
     std::vector<uint8_t> bc;
     std::vector<vm::Value> constants;
@@ -207,7 +206,7 @@ export struct BytecodeGenerator
     void operator()(const SequenceExpr &seq);
 };
 
-export std::expected<vm::Proto, Error> generateProto(Expr e)
+inline std::expected<vm::Proto, Error> generateProto(Expr e)
 {
     auto generator = BytecodeGenerator{};
     std::visit(generator, e.kind);
@@ -218,7 +217,7 @@ export std::expected<vm::Proto, Error> generateProto(Expr e)
 
 // TODO: I wanted to do this with function overloading or defaults but the
 //  and_then calls were not working. clean this up.
-export std::expected<vm::Proto, Error> generateProtoWithArgs(Expr e, std::vector<std::string> args)
+inline std::expected<vm::Proto, Error> generateProtoWithArgs(Expr e, std::vector<std::string> args)
 {
     auto size = args.size();
     auto generator = BytecodeGenerator(std::move(args));
