@@ -16,6 +16,11 @@ namespace parser {
 std::expected<ast::Expr, Error> Parser::parse() {
     std::vector<ast::Expr> stmts;
     while (true) {
+        // get rid of any leading newlines
+        while (match(NLINE)) {
+            auto _trail = advance();
+        }
+
         auto stmt = parse_stmt();
         if (!stmt)
             return std::unexpected(stmt.error());

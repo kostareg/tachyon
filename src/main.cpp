@@ -16,13 +16,6 @@ import error;
 // TODO: redo whole errors system. consider keeping just position+length in
 //  sourcespan.
 
-// TODO: would be nice to have a UI that is able to break down each step of the
-//  program, ie tokens/ast/ir/bc/vm state.
-
-// TODO: another thing that would be really nice to have is something for
-//  profiling the runtime. These two things (above) would help me understand
-//  just how useful an optimisation is.
-
 void unwrap(std::expected<void, Error> t, const std::string &src, bool quit) {
     if (!t.has_value()) {
         auto e = t.error();

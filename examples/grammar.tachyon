@@ -1,13 +1,4 @@
-// TODO: double check all usages of commas, semicolons, etc.
-// TODO: \sum or @sum?
-// TODO: {...} = (...).
-// TODO: @lim?
-
-// Implementation order:
-//  -> basic stuff
-//  -> control flow, conditionals
-//  -> enums and structs
-//  -> ...more
+// TODO: runs
 
 // This file defines basic grammar for the Tachyon programming language.
 // Single-line comments start with two forward slashes.
@@ -27,13 +18,13 @@ b = False
 // Unary and binary operators
 // neg = -x
 // not_b = !b
-z = x * (y + 2) - 5 / 2 ^ 3
+z = x * (y + 2) - 5 / (2 * 2 * 2)
 // l = 3x + (5)(3) // precede x by a number, or ()(), to multiply it
 
 // Anonymous functions, last line of function is return value
-// square = fn(x) { x ^ 2 }
-square' = fn(x) { return x ^ 2 }
-square'' = fn(x: Num) -> Num { return x ^ 2 }
+// square = fn(x) { x * x }
+square' = fn(x) { return x * x; }
+square'' = fn(x: Num) -> Num { return x * x; }
 
 // Function composition
 // f = fn(x) { 2x }
@@ -72,7 +63,7 @@ square'' = fn(x: Num) -> Num { return x ^ 2 }
 
 // Modules
 import Math // can now use Math.PI
-import Math.Genius.Ideas // ./Math/Genius/Ideas.Tachyon
+// import Math.Genius.Ideas // ./Math/Genius/Ideas.Tachyon
 
 // Expression-only
 // x = if a > 0 { a } else { -a }
@@ -100,7 +91,7 @@ import Math.Genius.Ideas // ./Math/Genius/Ideas.Tachyon
 
 // Unit type
 x = ()
-y = fn(x) -> Unit {}
+y = fn(x) -> Unit { return (); }
 
 /**
  * Type inference
@@ -116,7 +107,7 @@ y = fn(x) -> Unit {}
 // Algebraic systems
 mysys = @system x, y {
     x + y = 10
-    x^2 = 25
+    x * x = 25
 }
 
 x = @solve mysys
@@ -141,6 +132,10 @@ myode = @ode x | t {
 // @system {
 //   x = e^(-t)
 // }
+
+// Limits macro
+x = @lim x -> 0 of x         //   determinate: simply x=0
+x = @lim x -> 0 of sin x / x // indeterminate: apply l'hopitals rule = cos x / 1
 
 // Plotting macro
 @plot fn(x) { sin(x) } over x = -pi..pi

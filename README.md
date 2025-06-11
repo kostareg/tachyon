@@ -41,3 +41,5 @@ The next steps for this project are, in no particular order:
     * ~highest priority
 * Research implementation of matrices not as 2D arrays
     * C++23 `std::mdspan`, `std::submdspan` not released.
+* Runtime profiling program
+    * This will help massively with showing how performance gains are found.
