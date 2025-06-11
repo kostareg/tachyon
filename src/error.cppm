@@ -61,7 +61,7 @@ export struct SourceSpan final
  *
  * @see ErrorKind
  */
-export struct Error final
+export struct [[nodiscard]] Error final
 {
     ErrorKind kind;
     SourceSpan span;
@@ -227,65 +227,9 @@ export struct Error final
         }
     };
 
-    // std::string getSource()
-    // {
-    //     // the error line is stored in source - however, we have to highlight
-    //     // the relevant issue.
-    //     auto source = this->source;
-    //     auto line_digits = span.line == 0 ? 1 : static_cast<size_t>(std::log10(span.line)) + 1;
-    //
-    //     // colors
-    //     // source.insert(span.column - 1 + span.length, "\033[00m");
-    //     // source.insert(span.column - 1, "\033[31m");
-    //
-    //     // arrow
-    //     source.append("\n ");
-    //     for (size_t i = 0; i < line_digits; ++i)
-    //     {
-    //         source.append(" ");
-    //     }
-    //     source.append(" | ");
-    //     for (size_t i = 0; i < span.column; ++i)
-    //     {
-    //         source.append(" ");
-    //     }
-    //     source.append("\033[31m");
-    //     for (size_t i = 0; i < span.length; ++i)
-    //     {
-    //         source.append("^");
-    //     }
-    //     source.append(" " + message_short);
-    //     source.append("\033[00m");
-    //     source.append("\n ");
-    //     for (size_t i = 0; i < line_digits; ++i)
-    //     {
-    //         source.append(" ");
-    //     }
-    //     source.append(" |\n");
-    //
-    //     for (const auto &hint : hints)
-    //     {
-    //         // space it out
-    //         source.append(" ");
-    //         for (size_t i = 0; i < line_digits; ++i)
-    //         {
-    //             source.append(" ");
-    //         }
-    //         source.append(" +-> \033[1mhint\033[00m: " + hint + "\n");
-    //     }
-    //
-    //     // line number formatting (arrow line is done)
-    //     std::string num_placeholder;
-    //     for (size_t i = 0; i < line_digits; ++i)
-    //     {
-    //         num_placeholder.append(" ");
-    //     }
-    //     return std::format(" {} |\n {} | {}", num_placeholder, span.line, source);
-    // }
-
     static Error create(ErrorKind kind, SourceSpan span, std::string message_short)
     {
-        return Error(kind, span, std::move(message_short), "", "", {}, {});
+        return {kind, span, std::move(message_short), "", "", {}, {}};
     }
 
     static Error createMultiple(std::vector<Error> errors)
@@ -331,7 +275,7 @@ export struct Error final
      * format function with `os << additional_error`.
      *
      * @param os stream
-     * @param err error
+     * @param s error
      * @return stream
      * @see Error::format
      */
