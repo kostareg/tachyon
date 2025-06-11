@@ -128,6 +128,10 @@ export struct Expr
 {
     ExprKind kind;
     SourceSpan span;
+
+    // TODO: remove
+    Expr(ExprKind kind) : kind(std::move(kind)), span(0, 0) {}
+    Expr(ExprKind kind, SourceSpan span) : kind(std::move(kind)), span(span) {}
 };
 
 // TODO: type checking, inference. May also use type erasure just before
@@ -208,7 +212,7 @@ export std::expected<vm::Proto, Error> generateProto(Expr e)
     auto generator = BytecodeGenerator{};
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
-        return std::unexpected(Error(generator.errors));
+        return std::unexpected(Error::createMultiple(generator.errors));
     return vm::Proto(generator.bc, std::move(generator.constants), 0, "<anonymous>", e.span);
 }
 
@@ -220,7 +224,7 @@ export std::expected<vm::Proto, Error> generateProtoWithArgs(Expr e, std::vector
     auto generator = BytecodeGenerator(std::move(args));
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
-        return std::unexpected(Error(generator.errors));
+        return std::unexpected(Error::createMultiple(generator.errors));
     return vm::Proto(generator.bc, std::move(generator.constants), size, "<anonymous>", e.span);
 }
 

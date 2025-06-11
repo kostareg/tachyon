@@ -145,7 +145,7 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit)
 void BytecodeGenerator::operator()(const FnExpr &fn)
 {
     // TODO: see generateProto_with_args definition.
-    std::expected<vm::Proto, Error> maybe_proto;
+    std::expected<vm::Proto, Error> maybe_proto = vm::Proto{.span = fn.body->span};
     if (fn.arguments.size() == 0)
         maybe_proto = generateProto(std::move(*fn.body));
     else
@@ -340,8 +340,8 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
         }
         else
         {
-            errors.emplace_back(ErrorKind::BytecodeGenerationError,
-                                "could not generate function call", 0, 0, 0, 0);
+            errors.push_back(Error::create(ErrorKind::BytecodeGenerationError, SourceSpan(0, 0),
+                                           "could not generate function call"));
         }
         ++i; // TODO: i dont like this?
     }

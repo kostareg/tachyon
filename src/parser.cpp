@@ -30,8 +30,9 @@ std::expected<ast::Expr, Error> Parser::parse()
             return std::unexpected(stmt.error());
 
         if (!(match(NLINE) || match(SEMIC)))
-            return std::unexpected(
-                Error(ErrorKind::ParseError, "expected end of statement", peek().span));
+            return std::unexpected(Error::create(ErrorKind::ParseError,
+                                                 SourceSpan(peek().span.position, 1),
+                                                 "expected end of statement"));
 
         auto _terminator = advance();
 
@@ -82,8 +83,8 @@ std::expected<ast::Expr, Error> Parser::parse_stmt()
             else if (e.type == SEMIC || e.type == NLINE)
                 break;
             else
-                return std::unexpected(
-                    Error(ErrorKind::ParseError, "import statement cannot read this path", e.span));
+                return std::unexpected(Error::create(ErrorKind::ParseError, e.span,
+                                                     "import statement cannot read this path"));
 
             auto _element = advance();
         }
@@ -136,8 +137,8 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
     {
         auto e = parse_expr();
         if (!match(RPAREN))
-            return std::unexpected(Error(ErrorKind::ParseError,
-                                         "expected one expression in parentheses", peek().span));
+            return std::unexpected(Error::create(ErrorKind::ParseError, peek().span,
+                                                 "expected one expression in parentheses"));
         auto _rparen = advance();
         return e;
     }
@@ -208,34 +209,24 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
                 auto _colon = advance();
                 auto argumentType = expect(IDENT);
                 if (!argumentType)
-                    return std::unexpected(Error(argumentType.error()));
+                    return std::unexpected(argumentType.error());
 
                 auto namedType = std::get<std::string>(argumentType->value);
 
                 if (namedType == "Num")
-                {
                     maybeArgumentType = BasicConcreteTypes::Number;
-                }
                 else if (namedType == "Str")
-                {
                     maybeArgumentType = BasicConcreteTypes::String;
-                }
                 else if (namedType == "Bool")
-                {
                     maybeArgumentType = BasicConcreteTypes::Boolean;
-                }
                 else if (namedType == "Unit")
-                {
                     maybeArgumentType = BasicConcreteTypes::Unit;
-                }
                 else if (namedType == "Fn")
                 {
                     // TODO
                 }
                 else
-                {
                     maybeArgumentType = namedType;
-                }
             }
 
             args.emplace_back(std::get<std::string>(name->value), maybeArgumentType);
@@ -260,34 +251,24 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
             auto _rarrow = advance();
             auto argumentType = expect(IDENT);
             if (!argumentType)
-                return std::unexpected(Error(argumentType.error()));
+                return std::unexpected(argumentType.error());
 
             auto namedType = std::get<std::string>(argumentType->value);
 
             if (namedType == "Num")
-            {
                 maybeReturnType = BasicConcreteTypes::Number;
-            }
             else if (namedType == "Str")
-            {
                 maybeReturnType = BasicConcreteTypes::String;
-            }
             else if (namedType == "Bool")
-            {
                 maybeReturnType = BasicConcreteTypes::Boolean;
-            }
             else if (namedType == "Unit")
-            {
                 maybeReturnType = BasicConcreteTypes::Unit;
-            }
             else if (namedType == "Fn")
             {
                 // TODO
             }
             else
-            {
                 maybeReturnType = namedType;
-            }
         }
 
         if (auto lb = expect(LBRACE); !lb)
@@ -298,13 +279,14 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
         {
             auto stmt = parse_stmt();
             if (!stmt)
-                return std::unexpected(Error(stmt.error()));
+                return std::unexpected(stmt.error());
 
             // TODO
             if (!(match(SEMIC) || match(NLINE)))
             {
-                return std::unexpected(
-                    Error(ErrorKind::ParseError, "expected end of statement", peek().span));
+                return std::unexpected(Error::create(ErrorKind::ParseError,
+                                                     SourceSpan(peek().span.position, 1),
+                                                     "expected end of statement"));
             }
 
             auto _terminator = advance();
@@ -317,7 +299,7 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
 
             if (match(END))
                 return std::unexpected(
-                    Error(ErrorKind::ParseError, "eof during function", peek().span));
+                    Error::create(ErrorKind::ParseError, peek().span, "eof during function"));
 
             stmts.push_back(std::move(stmt.value()));
 
@@ -342,7 +324,8 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
         return Expr(ReturnExpr(std::make_unique<Expr>(std::move(e.value()))));
     }
 
-    return std::unexpected(Error(ErrorKind::ParseError, "failed to parse expression", t.span));
+    return std::unexpected(
+        Error::create(ErrorKind::ParseError, t.span, "failed to parse expression"));
 }
 
 std::expected<ast::Expr, Error> Parser::parse_expr_led(Token t, Expr l)
@@ -362,7 +345,7 @@ Token Parser::peek()
 std::expected<Token, Error> Parser::advance()
 {
     if (i + 1 >= ts.size())
-        return std::unexpected(Error(ErrorKind::ParseError, "", ts[i].span));
+        return std::unexpected(Error::create(ErrorKind::ParseError, ts[i].span, ""));
     return ts[i++];
 }
 
@@ -380,7 +363,7 @@ std::expected<Token, Error> Parser::expect(TokenType tt)
     if (match(tt))
         return advance();
     else
-        return std::unexpected(Error(ErrorKind::ParseError,
-                                     std::format("expected {}", tokToStrPretty(tt)), peek().span));
+        return std::unexpected(Error::create(ErrorKind::ParseError, peek().span,
+                                             std::format("expected {}", tokToStrPretty(tt))));
 }
 } // namespace parser

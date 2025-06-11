@@ -210,19 +210,19 @@ export struct Token
     SourceSpan span;
 
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
-        : type(type), span(pos, line, col, len)
+        : type(type), span(pos, len)
     {
     }
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, double value)
-        : type(type), value(value), span(pos, line, col, len)
+        : type(type), value(value), span(pos, len)
     {
     }
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, bool value)
-        : type(type), value(value), span(pos, line, col, len)
+        : type(type), value(value), span(pos, len)
     {
     }
     Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, std::string value)
-        : type(type), value(value), span(pos, line, col, len)
+        : type(type), value(value), span(pos, len)
     {
     }
 

@@ -45,8 +45,9 @@ std::expected<Tokens, Error> lex(const std::string &s)
                 // EOF
                 if (pos >= s.size())
                 {
-                    return std::unexpected(Error(ErrorKind::LexError, "comment left open",
-                                                 start_pos, start_line, start_col, 2)
+                    return std::unexpected(Error::create(ErrorKind::LexError,
+                                                         SourceSpan(start_pos, 2),
+                                                         "comment left open")
                                                .withCode("E0002")
                                                .withHint("complete the comment with `*/`."));
                 }
@@ -198,8 +199,9 @@ std::expected<Tokens, Error> lex(const std::string &s)
             --pos;
         }
         else
-            errors.push_back(Error(ErrorKind::LexError, "unknown character", pos, m.line, m.col, 1)
-                                 .withCode("E0001"));
+            errors.push_back(
+                Error::create(ErrorKind::LexError, SourceSpan(pos, 1), "unknown character")
+                    .withCode("E0001"));
 
         ++pos;
         ++m.col;
@@ -207,7 +209,7 @@ std::expected<Tokens, Error> lex(const std::string &s)
 
     if (!errors.empty())
     {
-        return std::unexpected(Error(errors));
+        return std::unexpected(Error::createMultiple(errors));
     }
 
     // log

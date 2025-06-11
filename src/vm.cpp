@@ -334,8 +334,8 @@ std::expected<void, Error> VM::run(const Proto &proto)
         ++ptr;
     }
 
-    return std::unexpected(Error(ErrorKind::InternalError,
-                                 "should not reach end of vm::run without exit", 0, 0, 0, 0));
+    return std::unexpected(Error::create(ErrorKind::InternalError, SourceSpan(0, 0),
+                                         "should not reach end of vm::run without exit"));
 }
 
 std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)

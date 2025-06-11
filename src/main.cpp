@@ -13,35 +13,6 @@ import lexer;
 import vm;
 import error;
 
-// TODO: redo whole errors system. consider keeping just position+length in
-//  sourcespan.
-
-void unwrap(std::expected<void, Error> t, const std::string &src, bool quit)
-{
-    if (!t.has_value())
-    {
-        auto e = t.error();
-        constexpr auto message = "\033[31merror{}\033[0m: {} on L{}C{}.\n"
-                                 "{}";
-
-        auto code = e.code.empty() ? "" : "(" + e.code + ")";
-
-        // TODO: for now: //
-        e.source = get_line_at(src, e.span.pos);
-
-        std::cout << std::format(message, code, e.message_long, e.span.line, e.span.column,
-                                 e.getSource());
-
-        for (auto &i : e.additional)
-        {
-            unwrap(std::unexpected(i), src, false);
-        }
-
-        if (quit)
-            exit(1);
-    }
-};
-
 // TODO: for now:
 std::string unescape(const std::string &input)
 {
@@ -128,7 +99,13 @@ int run(char *fileName)
                          return vm.run(proto);
                      });
 
-    unwrap(m, file_contents, true);
+    if (!m)
+    {
+        Error e = m.error();
+        e.source = file_contents;
+        std::cerr << e;
+        return 1;
+    }
 
     return 0;
 }
@@ -161,7 +138,13 @@ int repl()
                      .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
                                { return vm.run(proto); });
 
-        unwrap(m, source, false);
+        if (!m)
+        {
+            Error e = m.error();
+            e.source = source;
+            std::cerr << e;
+            return 1;
+        }
 
         source = "";
         prefix = "> ";
@@ -187,7 +170,8 @@ int testvm()
     constants_myfn.emplace_back(1.0);
     constants_myfn.emplace_back(">>> the answer is: ");
     constants_myfn.emplace_back("\n");
-    Proto myfn_proto{std::move(bytecode_myfn), std::move(constants_myfn), 2, "myfn"};
+    Proto myfn_proto{std::move(bytecode_myfn), std::move(constants_myfn), 2, "myfn",
+                     SourceSpan(0, 0)};
 
     // --- define main --- //
     // can also CALC 4 directly
@@ -207,15 +191,16 @@ int testvm()
     constants_main.emplace_back(123.2);
     constants_main.emplace_back(0.0);
     constants_main.emplace_back(std::make_shared<vm::Proto>(myfn_proto));
-    Proto main_proto{std::move(bytecode_main), std::move(constants_main), 0, "main"};
+    Proto main_proto{std::move(bytecode_main), std::move(constants_main), 0, "main",
+                     SourceSpan(0, 0)};
 
     // vm
     VM vm;
     if (auto ex = vm.run(main_proto); !ex)
     {
-        std::println("failed with error: {}", ex.error().getSource());
+        std::println("failed with error: {} inspect error() for more details",
+                     ex.error().message_short);
     }
-    // unwrap(ex, "AAAAAAAAAAAAAAAAAAAAAAA\nBBBBBBBBBBBBBB\n", false);
 
     vm.diagnose();
     std::println("size: {}", sizeof(constants_main[0]));
@@ -225,24 +210,48 @@ int testvm()
 
 int testgen()
 {
-    vm::VM vm;
-    unwrap(lexer::lex("x = 13 * 13; print(\">>> this is from the vm\n>>> \"); "
-                      "print(x); return 0;")
-               .and_then(parser::parse)
-               .and_then(ast::generateProto)
-               .and_then(
-                   [](vm::Proto proto) -> std::expected<vm::Proto, Error>
-                   {
-                       // std::println("function {}", proto.name);
-                       // for (auto bc : proto.bytecode) {
-                       //     std::println("{}", bc);
-                       // }
-                       return proto;
-                   })
-               .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
-                         { return vm.run(proto); }),
-           "1 + 1", false);
+    std::string source =
+        "x = 13 * 13; print(\">>> this is from the vm\n>>> \"); print(x); return 0;";
 
+    vm::VM vm;
+    auto m = lexer::lex(source)
+                 .and_then(parser::parse)
+                 .and_then(ast::generateProto)
+                 .and_then(
+                     [](vm::Proto proto) -> std::expected<vm::Proto, Error>
+                     {
+                         // std::println("function {}", proto.name);
+                         // for (auto bc : proto.bytecode) {
+                         //     std::println("{}", bc);
+                         // }
+                         return proto;
+                     })
+                 .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
+                           { return vm.run(proto); });
+
+    if (!m)
+    {
+        Error e = m.error();
+        e.source = source;
+        std::cerr << e;
+        return 1;
+    }
+
+    return 0;
+}
+
+int testerr()
+{
+    SourceSpan span(3, 3);
+    std::string source = "123456789ABC\nDEFG\nHIJKLMNO";
+    Error error = Error::create(ErrorKind::BytecodeGenerationError, span, "some message")
+                      .withLongMessage("this is a longer version of that message.")
+                      .withHint("this is a hint!")
+                      .withHint("another hint :)")
+                      .withAdditional(Error::create(ErrorKind::InferenceError, SourceSpan(11, 2),
+                                                    "some message 2"));
+    error.source = source;
+    std::cerr << error;
     return 0;
 }
 
@@ -269,6 +278,10 @@ int main(int argc, char **argv)
     else if (strcmp(argv[1], "testgen") == 0)
     {
         return testgen();
+    }
+    else if (strcmp(argv[1], "testerr") == 0)
+    {
+        return testerr();
     }
     else
     {
