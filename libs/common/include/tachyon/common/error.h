@@ -203,6 +203,14 @@ struct [[nodiscard]] Error final
             os << " |-> \033[34mhint:\033[0m " << hint << std::endl;
         }
 
+        if (kind == ErrorKind::InternalError)
+        {
+            os << std::endl
+               << "\033[31mTHIS IS AN INTERNAL ERROR AND IS A BUG IN TACHYON. PLEASE REPORT THIS AT"
+                  " www.github.com/kostareg/tachyon/issues.\033[0m"
+               << std::endl;
+        }
+
         // print additional errors
         for (size_t i = 0; i < additional_errors.size(); ++i)
         {

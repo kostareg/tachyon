@@ -12,26 +12,24 @@ target_include_directories(tachyon_common
 add_library(tachyon::common ALIAS tachyon_common)
 
 # Tests for this library
-#if (TACHYON_BUILD_TESTS)
-#    add_executable(common_tests
-#            tests/common_test.cpp
-#            tests/token_test.cpp
-#            tests/unicode_test.cpp
-#    )
-#
-#    target_link_libraries(common_tests
-#            PRIVATE
-#            tachyon_common
-#            gtest
-#            gtest_main
-#    )
-#
-#     Add to test suite
-#    add_test(NAME LexerTests COMMAND common_tests)
-#
-#     Test data files
-#    file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
-#endif ()
+if (TACHYON_BUILD_TESTS)
+    add_executable(common_tests
+            tests/error_test.cpp
+    )
+
+    target_link_libraries(common_tests
+            PRIVATE
+            tachyon_common
+            gtest
+            gtest_main
+    )
+
+    # Add to test suite
+    add_test(NAME CommonTests COMMAND common_tests)
+
+    # Test data files
+    # file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
+endif ()
 
 # Benchmarks for this library
 #if (TACHYON_BUILD_BENCHMARKS)
