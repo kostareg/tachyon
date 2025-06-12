@@ -26,11 +26,11 @@ add_library(tachyon::common ALIAS tachyon_common)
 #            gtest_main
 #    )
 #
-#    # Add to test suite
+#     Add to test suite
 #    add_test(NAME LexerTests COMMAND common_tests)
 #
-#    # Test data files
-#    #file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
+#     Test data files
+#    file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
 #endif ()
 
 # Benchmarks for this library

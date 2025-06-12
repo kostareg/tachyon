@@ -32,26 +32,27 @@ target_link_libraries(tachyon_lexer
 add_library(tachyon::lexer ALIAS tachyon_lexer)
 
 # Tests for this library
-#if (TACHYON_BUILD_TESTS)
-#    add_executable(lexer_tests
-#            tests/lexer_test.cpp
-#            tests/token_test.cpp
-#            tests/unicode_test.cpp
-#    )
-#
-#    target_link_libraries(lexer_tests
-#            PRIVATE
-#            tachyon_lexer
-#            gtest
-#            gtest_main
-#    )
-#
-#    # Add to test suite
-#    add_test(NAME LexerTests COMMAND lexer_tests)
-#
-#    # Test data files
-#    #file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
-#endif ()
+if (TACHYON_BUILD_TESTS)
+    add_executable(lexer_tests
+            #            tests/lexer_test.cpp
+            tests/lexer_test.cpp
+            #            tests/unicode_test.cpp
+    )
+
+    target_link_libraries(lexer_tests
+            PRIVATE
+            tachyon_lexer
+            tachyon_common
+            gtest
+            gtest_main
+    )
+
+    # Add to test suite
+    add_test(NAME LexerTests COMMAND lexer_tests)
+
+    # Test data files
+    #file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
+endif ()
 
 # Benchmarks for this library
 #if (TACHYON_BUILD_BENCHMARKS)

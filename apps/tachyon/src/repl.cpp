@@ -31,7 +31,6 @@ int repl()
         // pipeline
         auto m = tachyon::lexer::lex(source)
                      .and_then(parser::parse)
-                     .and_then(ast::print)
                      .and_then(ast::generateProto)
                      .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
                                { return vm.run(proto); });

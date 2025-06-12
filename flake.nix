@@ -1,44 +1,38 @@
 {
+  description = "Development environment with clang and libc++";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = inputs @ {
+  outputs = {
+    self,
     nixpkgs,
-    flake-parts,
-    ...
+    flake-utils,
   }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = ["x86_64-linux"];
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      devShells.default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          llvmPackages.clangUseLLVM
+          libcxx
+          llvm
+          lld
+          cmake
+          ninja
+          pkg-config
+          llvmPackages.libunwind
+        ];
 
-      perSystem = {
-        pkgs,
-        system,
-        ...
-      }: let
-        llvm = pkgs.llvmPackages_19;
-        stdenv = llvm.stdenv;
-        libcxx = llvm.libcxx;
-      in {
-        devShells.default = pkgs.mkShell.override {inherit stdenv;} {
-          packages = [
-            pkgs.cmake
-            pkgs.ninja
-            llvm.libcxx
-            llvm.libcxx.dev
-            llvm.libcxxClang
-            llvm.bintools
-            llvm.compiler-rt
-            llvm.libunwind
-            pkgs.glibc
-            pkgs.glibc.dev
-            pkgs.pandoc
-          ];
-
-          CXXFLAGS = "-nostdinc++ -isystem ${libcxx.dev}/include/c++/v1 -isystem ${pkgs.glibc.dev}/include";
-          LDFLAGS = "-L${libcxx.out}/lib -lc++ -lc++abi -L${llvm.compiler-rt}/lib -lunwind -rtlib=compiler-rt -unwindlib=libunwind -Wl,--unresolved-symbols=ignore-in-object-files";
-        };
+        shellHook = ''
+          export CXX=clang++
+          export CC=clang
+          export CXXFLAGS="-stdlib=libc++"
+          export LDFLAGS="-stdlib=libc++"
+          export LD=lld
+        '';
       };
-    };
+    });
 }
