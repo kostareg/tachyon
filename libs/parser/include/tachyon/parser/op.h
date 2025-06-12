@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <stdexcept>
 
+namespace tachyon::parser
+{
 /**
  * @brief Mathematical operators.
  */
@@ -47,3 +49,4 @@ inline uint8_t op_to_uint8_t(Op op)
         throw std::runtime_error("power operator not yet supported");
     return static_cast<uint8_t>(op) + 0x50;
 }
+} // namespace tachyon::parser

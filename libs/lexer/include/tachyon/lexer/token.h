@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tachyon/common/op.h"
+#include "../../../../parser/include/tachyon/parser/op.h"
 #include "tachyon/common/source_span.h"
 #include "tachyon/lexer/token.h"
 
@@ -163,18 +163,18 @@ inline bool isOperator(TokenType t)
     return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
 };
 
-inline Op tokToOp(TokenType t)
+inline parser::Op tokToOp(TokenType t)
 {
     if (t == PLUS)
-        return Op::Add;
+        return parser::Op::Add;
     else if (t == MINUS)
-        return Op::Sub;
+        return parser::Op::Sub;
     else if (t == STAR)
-        return Op::Mul;
+        return parser::Op::Mul;
     else if (t == FSLASH)
-        return Op::Div;
+        return parser::Op::Div;
     else if (t == CARET)
-        return Op::Pow;
+        return parser::Op::Pow;
     else
         throw std::runtime_error("ice: unknown operator");
 };

@@ -9,7 +9,7 @@
 
 #include "tachyon/common/source_span.h"
 
-namespace vm
+namespace tachyon::runtime
 {
 struct Proto;
 
@@ -157,4 +157,4 @@ enum Bytecode : uint8_t
     PRNC = 0xF0, // print constant
     PRNR = 0xF1, // print register
 };
-} // namespace vm
+} // namespace tachyon::runtime

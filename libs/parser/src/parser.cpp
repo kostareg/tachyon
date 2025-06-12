@@ -13,120 +13,18 @@
 
 using enum tachyon::lexer::TokenType;
 
-namespace parser
+namespace tachyon::parser
 {
-using namespace ast;
-
-std::expected<ast::Expr, Error> Parser::parse()
+std::expected<Expr, Error> Parser::parse_expr_led(Token t, Expr l)
 {
-    std::vector<ast::Expr> stmts;
-    while (true)
-    {
-        // get rid of any leading newlines
-        while (match(NLINE))
-        {
-            auto _trail = advance();
-        }
-
-        auto stmt = parse_stmt();
-        if (!stmt)
-            return std::unexpected(stmt.error());
-
-        if (!(match(NLINE) || match(SEMIC)))
-            return std::unexpected(Error::create(ErrorKind::ParseError,
-                                                 SourceSpan(peek().span.position, 1),
-                                                 "expected end of statement"));
-
-        auto _terminator = advance();
-
-        // get rid of any trailing newlines
-        while (match(NLINE))
-        {
-            auto _trail = advance();
-        }
-
-        stmts.push_back(std::move(stmt.value()));
-
-        if (match(END))
-            break;
-    }
-
-    return Expr(SequenceExpr(std::move(stmts)));
+    auto r = parse_expr(getLbp(t.type));
+    if (!r)
+        return std::unexpected(r.error());
+    return Expr(BinaryOperatorExpr(tokToOp(t.type), std::make_unique<Expr>(std::move(l)),
+                                   std::make_unique<Expr>(std::move(r.value()))));
 }
 
-std::expected<ast::Expr, Error> Parser::parse_stmt()
-{
-    if (match(IDENT) && match(EQ, 1))
-    {
-        auto l = advance();
-        if (!l)
-            return std::unexpected(l.error());
-
-        auto _eq = advance();
-
-        auto r = parse_expr();
-        if (!r)
-            return std::unexpected(r.error());
-
-        return Expr(
-            LetExpr(std::get<std::string>(l->value), std::make_unique<Expr>(std::move(r.value()))),
-            l->span);
-    }
-    else if (match(IMPORT))
-    {
-        auto _import = advance();
-
-        std::string path;
-        while (true)
-        {
-            if (auto e = peek(); e.type == IDENT)
-                path += std::get<std::string>(e.value);
-            else if (e.type == DOT)
-                path += ".";
-            else if (e.type == SEMIC || e.type == NLINE)
-                break;
-            else
-                return std::unexpected(Error::create(ErrorKind::ParseError, e.span,
-                                                     "import statement cannot read this path"));
-
-            auto _element = advance();
-        }
-
-        return Expr(ImportExpr(path));
-    }
-
-    return parse_expr();
-}
-
-std::expected<ast::Expr, Error> Parser::parse_expr(int rbp)
-{
-    auto t = advance();
-    if (!t)
-        return std::unexpected(t.error());
-
-    auto l = parse_expr_nud(t.value());
-    if (!l)
-        return std::unexpected(l.error());
-
-    while (true)
-    {
-        auto next = peek();
-        if (rbp >= getLbp(next.type))
-            break;
-
-        t = advance();
-        if (!t)
-            return std::unexpected(t.error());
-
-        l = parse_expr_led(t.value(), std::move(l.value()));
-        if (!l)
-            return std::unexpected(l.error());
-    }
-
-    return l;
-}
-
-std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
+std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
 {
     if (t.type == NUMBER)
         return Expr(LiteralExpr(LiteralValue(std::get<double>(t.value))), t.span);
@@ -331,13 +229,76 @@ std::expected<ast::Expr, Error> Parser::parse_expr_nud(Token t)
         Error::create(ErrorKind::ParseError, t.span, "failed to parse expression"));
 }
 
-std::expected<ast::Expr, Error> Parser::parse_expr_led(Token t, Expr l)
+std::expected<Expr, Error> Parser::parse_expr(int rbp)
 {
-    auto r = parse_expr(getLbp(t.type));
-    if (!r)
-        return std::unexpected(r.error());
-    return Expr(BinaryOperatorExpr(tokToOp(t.type), std::make_unique<Expr>(std::move(l)),
-                                   std::make_unique<Expr>(std::move(r.value()))));
+    auto t = advance();
+    if (!t)
+        return std::unexpected(t.error());
+
+    auto l = parse_expr_nud(t.value());
+    if (!l)
+        return std::unexpected(l.error());
+
+    while (true)
+    {
+        auto next = peek();
+        if (rbp >= getLbp(next.type))
+            break;
+
+        t = advance();
+        if (!t)
+            return std::unexpected(t.error());
+
+        l = parse_expr_led(t.value(), std::move(l.value()));
+        if (!l)
+            return std::unexpected(l.error());
+    }
+
+    return l;
+}
+
+std::expected<Expr, Error> Parser::parse_stmt()
+{
+    if (match(IDENT) && match(EQ, 1))
+    {
+        auto l = advance();
+        if (!l)
+            return std::unexpected(l.error());
+
+        auto _eq = advance();
+
+        auto r = parse_expr();
+        if (!r)
+            return std::unexpected(r.error());
+
+        return Expr(
+            LetExpr(std::get<std::string>(l->value), std::make_unique<Expr>(std::move(r.value()))),
+            l->span);
+    }
+    else if (match(IMPORT))
+    {
+        auto _import = advance();
+
+        std::string path;
+        while (true)
+        {
+            if (auto e = peek(); e.type == IDENT)
+                path += std::get<std::string>(e.value);
+            else if (e.type == DOT)
+                path += ".";
+            else if (e.type == SEMIC || e.type == NLINE)
+                break;
+            else
+                return std::unexpected(Error::create(ErrorKind::ParseError, e.span,
+                                                     "import statement cannot read this path"));
+
+            auto _element = advance();
+        }
+
+        return Expr(ImportExpr(path));
+    }
+
+    return parse_expr();
 }
 
 Token Parser::peek()
@@ -369,4 +330,42 @@ std::expected<Token, Error> Parser::expect(TokenType tt)
         return std::unexpected(Error::create(ErrorKind::ParseError, peek().span,
                                              std::format("expected {}", tokToStrPretty(tt))));
 }
-} // namespace parser
+
+std::expected<Expr, Error> Parser::parse()
+{
+    std::vector<Expr> stmts;
+    while (true)
+    {
+        // get rid of any leading newlines
+        while (match(NLINE))
+        {
+            auto _trail = advance();
+        }
+
+        auto stmt = parse_stmt();
+        if (!stmt)
+            return std::unexpected(stmt.error());
+
+        if (!(match(NLINE) || match(SEMIC)))
+            return std::unexpected(Error::create(ErrorKind::ParseError,
+                                                 SourceSpan(peek().span.position, 1),
+                                                 "expected end of statement"));
+
+        auto _terminator = advance();
+
+        // get rid of any trailing newlines
+        while (match(NLINE))
+        {
+            auto _trail = advance();
+        }
+
+        stmts.push_back(std::move(stmt.value()));
+
+        if (match(END))
+            break;
+    }
+
+    return Expr(SequenceExpr(std::move(stmts)));
+}
+
+} // namespace tachyon::parser

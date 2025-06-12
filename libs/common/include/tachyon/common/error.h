@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+namespace tachyon
+{
 /**
  * @brief kind of errors that can occur
  */
@@ -18,7 +20,6 @@ enum class ErrorKind
     ParseError,
     InferenceError,
     BytecodeGenerationError,
-    // TODO: special note for internal error
     InternalError,
 };
 
@@ -280,3 +281,4 @@ inline std::ostream &operator<<(std::ostream &os, const Error &s)
     s.format(os);
     return os;
 }
+} // namespace tachyon

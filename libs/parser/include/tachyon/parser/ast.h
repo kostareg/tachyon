@@ -2,6 +2,9 @@
 
 #include "tachyon/common/error.h"
 
+#include "op.h"
+#include "tachyon/runtime/vm.h"
+
 #include <expected>
 #include <memory>
 #include <string>
@@ -9,14 +12,7 @@
 #include <variant>
 #include <vector>
 
-#include "tachyon/common/op.h"
-#include "tachyon/runtime/vm.h"
-
-/**
- * @namespace ast
- * @brief abstract syntax tree nodes
- */
-namespace ast
+namespace tachyon::parser
 {
 // fwd-decl
 struct Expr;
@@ -138,46 +134,11 @@ struct Expr
 //  bytecode generation, that way BytecodeGenerator for FnExpr doesn't even know
 //  the type of the arguments for example.
 
-// visitors
-struct PrintLiteral
-{
-    void operator()(std::monostate _) const;
-    void operator()(double dbl) const;
-    void operator()(const std::string &str) const;
-    void operator()(bool bl) const;
-};
-
-struct PrintType
-{
-    void operator()(const BasicConcreteTypes &btyp) const;
-    void operator()(const FunctionConcreteTypes &ftyp) const;
-    void operator()(const std::string &otyp) const;
-};
-
-struct Printer
-{
-    void operator()(const LiteralExpr &literal) const;
-    void operator()(const FnExpr &fn) const;
-    void operator()(const BinaryOperatorExpr &binop) const;
-    void operator()(const LetExpr &vdecl) const;
-    void operator()(const LetRefExpr &vref) const;
-    void operator()(const FnCallExpr &fnc) const;
-    void operator()(const ImportExpr &imp) const;
-    void operator()(const ReturnExpr &ret) const;
-    void operator()(const SequenceExpr &seq) const;
-};
-
-inline std::expected<Expr, Error> print(Expr e)
-{
-    auto printer = Printer{};
-    std::visit(printer, e.kind);
-    return e;
-}
-
+// TODO: move to codegen
 struct BytecodeGenerator
 {
     std::vector<uint8_t> bc;
-    std::vector<vm::Value> constants;
+    std::vector<runtime::Value> constants;
     // TODO: is this the best way to do this? consider how it is finding vars by
     //  name. also, since its unique consider std::set.
     std::vector<std::string> vars;
@@ -207,25 +168,27 @@ struct BytecodeGenerator
     void operator()(const SequenceExpr &seq);
 };
 
-inline std::expected<vm::Proto, Error> generateProto(Expr e)
+inline std::expected<runtime::Proto, Error> generateProto(Expr e)
 {
     auto generator = BytecodeGenerator{};
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error::createMultiple(generator.errors));
-    return vm::Proto(generator.bc, std::move(generator.constants), 0, "<anonymous>", e.span);
+    return runtime::Proto(generator.bc, std::move(generator.constants), 0, "<anonymous>", e.span);
 }
 
 // TODO: I wanted to do this with function overloading or defaults but the
 //  and_then calls were not working. clean this up.
-inline std::expected<vm::Proto, Error> generateProtoWithArgs(Expr e, std::vector<std::string> args)
+inline std::expected<runtime::Proto, Error> generateProtoWithArgs(Expr e,
+                                                                  std::vector<std::string> args)
 {
     auto size = args.size();
     auto generator = BytecodeGenerator(std::move(args));
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error::createMultiple(generator.errors));
-    return vm::Proto(generator.bc, std::move(generator.constants), size, "<anonymous>", e.span);
+    return runtime::Proto(generator.bc, std::move(generator.constants), size, "<anonymous>",
+                          e.span);
 }
 
-} // namespace ast
+} // namespace tachyon::parser

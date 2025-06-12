@@ -5,137 +5,12 @@
 
 #include "tachyon/parser/ast.h"
 
-namespace ast
+namespace tachyon::parser
 {
-void PrintLiteral::operator()(const std::monostate _) const
-{
-    std::print("()");
-};
-
-void PrintLiteral::operator()(const double dbl) const
-{
-    std::print("{}", dbl);
-};
-
-void PrintLiteral::operator()(const std::string &str) const
-{
-    std::print("{}", str);
-};
-
-void PrintLiteral::operator()(const bool bl) const
-{
-    std::print("{}", bl ? "true" : "false");
-};
-
-void PrintType::operator()(const BasicConcreteTypes &btyp) const
-{
-    if (btyp == BasicConcreteTypes::Number)
-        std::print("Num");
-    else if (btyp == BasicConcreteTypes::String)
-        std::print("Str");
-    else if (btyp == BasicConcreteTypes::Boolean)
-        std::print("Bool");
-    else if (btyp == BasicConcreteTypes::Unit)
-        std::print("()");
-};
-
-void PrintType::operator()(const FunctionConcreteTypes &ftyp) const
-{
-    for (auto pair : ftyp.arguments)
-    {
-        std::visit(*this, pair.second);
-    }
-};
-
-void PrintType::operator()(const std::string &otyp) const
-{
-    std::print("{}", otyp);
-};
-
-void Printer::operator()(const LiteralExpr &lit) const
-{
-    std::visit(PrintLiteral{}, lit.value);
-};
-
-void Printer::operator()(const FnExpr &fn) const
-{
-    std::print("fn (");
-    for (auto pair : fn.arguments)
-    {
-        std::print("{}: ", pair.first);
-        if (pair.second)
-            std::visit(PrintType{}, pair.second.value());
-        else
-            std::print("<unknown type>");
-    }
-    std::print(") -> ");
-    if (fn.returns)
-        std::visit(PrintType{}, fn.returns.value());
-    else
-        std::print("<unknown type>");
-    std::print(" {{\n");
-    std::visit(*this, fn.body->kind);
-    std::print("}}");
-};
-
-void Printer::operator()(const BinaryOperatorExpr &binop) const
-{
-    std::print("{} (", op_to_str(binop.op));
-    std::visit(*this, binop.left->kind);
-    std::print(", ");
-    std::visit(*this, binop.right->kind);
-    std::print(")");
-};
-
-void Printer::operator()(const LetExpr &vdecl) const
-{
-    std::print("variable {} = ", vdecl.name);
-    std::visit(*this, vdecl.value->kind);
-}
-
-void Printer::operator()(const LetRefExpr &vref) const
-{
-    std::print("{}", vref.name);
-};
-
-void Printer::operator()(const FnCallExpr &fnc) const
-{
-    std::print("call {} with: ", fnc.ref.name);
-    if (fnc.args.empty())
-        std::print("<empty>");
-    else
-        for (const auto &arg : fnc.args)
-        {
-            std::visit(*this, arg.kind);
-            std::print(", ");
-        }
-};
-
-void Printer::operator()(const ImportExpr &imp) const
-{
-    std::print("import {}", imp.path);
-};
-
-void Printer::operator()(const ReturnExpr &ret) const
-{
-    std::print("return ");
-    std::visit(*this, ret.returns->kind);
-};
-
-void Printer::operator()(const SequenceExpr &seq) const
-{
-    for (const Expr &e : seq.sequence)
-    {
-        std::print("seq> ");
-        std::visit(*this, e.kind);
-        std::println();
-    }
-};
-
 void BytecodeGenerator::operator()(const LiteralExpr &lit)
 {
     // convert to value, push to constants, reference that.
-    vm::Value val = std::visit([](auto &&val) -> vm::Value { return val; }, lit.value);
+    runtime::Value val = std::visit([](auto &&val) -> runtime::Value { return val; }, lit.value);
     constants.push_back(val);
     curr = constants.size() - 1;
 };
@@ -143,7 +18,7 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit)
 void BytecodeGenerator::operator()(const FnExpr &fn)
 {
     // TODO: see generateProto_with_args definition.
-    std::expected<vm::Proto, Error> maybe_proto = vm::Proto{
+    std::expected<runtime::Proto, Error> maybe_proto = runtime::Proto{
         .bytecode = {},
         .constants = {},
         .arguments = 0,
@@ -164,8 +39,8 @@ void BytecodeGenerator::operator()(const FnExpr &fn)
     if (!maybe_proto)
         errors.push_back(maybe_proto.error());
 
-    constants.emplace_back<std::shared_ptr<vm::Proto>>(
-        std::make_shared<vm::Proto>(std::move(maybe_proto.value())));
+    constants.emplace_back<std::shared_ptr<runtime::Proto>>(
+        std::make_shared<runtime::Proto>(std::move(maybe_proto.value())));
 
     curr = constants.size() - 1;
 };
@@ -273,14 +148,14 @@ void BytecodeGenerator::operator()(const LetExpr &vdecl)
         std::holds_alternative<FnExpr>(vdecl.value->kind))
     {
         // curr is set to the constant address, use LOCR
-        bc.push_back(vm::LOCR);
+        bc.push_back(runtime::LOCR);
         bc.push_back(curr);
         bc.push_back(index);
     }
     else
     {
         // curr holds a register address, use LORR
-        bc.push_back(vm::LORR);
+        bc.push_back(runtime::LORR);
         bc.push_back(curr);
         bc.push_back(index);
     }
@@ -317,28 +192,28 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
             std::holds_alternative<LetRefExpr>(arg.kind))
         {
             // we have the register index.
-            bc.push_back(vm::LORR);
+            bc.push_back(runtime::LORR);
             bc.push_back(curr);
             bc.push_back(i);
         }
         else if (std::holds_alternative<LiteralExpr>(arg.kind))
         {
             // we have the constant index so we should load that.
-            bc.push_back(vm::LOCR);
+            bc.push_back(runtime::LOCR);
             bc.push_back(curr);
             bc.push_back(i);
         }
         else if (std::holds_alternative<FnCallExpr>(arg.kind))
         {
             // answer is in register 0.
-            bc.push_back(vm::LORR);
+            bc.push_back(runtime::LORR);
             bc.push_back(0);
             bc.push_back(i);
         }
         else if (std::holds_alternative<FnExpr>(arg.kind))
         {
             // we have the constant index.
-            bc.push_back(vm::LOCR);
+            bc.push_back(runtime::LOCR);
             bc.push_back(curr);
             bc.push_back(i);
         }
@@ -352,13 +227,13 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
 
     if (fnc.ref.name == "print")
     {
-        bc.push_back(vm::PRNR);
+        bc.push_back(runtime::PRNR);
         bc.push_back(start); // just one arg
         return;
     }
 
     (*this)(fnc.ref);
-    bc.push_back(vm::CALR);
+    bc.push_back(runtime::CALR);
     bc.push_back(curr);
     bc.push_back(start);
 
@@ -380,14 +255,14 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
         std::holds_alternative<BinaryOperatorExpr>(ret.returns->kind))
     {
         // curr holds a register address, use RETR
-        bc.push_back(vm::RETR);
+        bc.push_back(runtime::RETR);
         bc.push_back(curr);
     }
     else if (std::holds_alternative<LiteralExpr>(ret.returns->kind) ||
              std::holds_alternative<FnExpr>(ret.returns->kind))
     {
         // curr holds a constant address, use RETC
-        bc.push_back(vm::RETC);
+        bc.push_back(runtime::RETC);
         bc.push_back(curr);
     }
 };
@@ -400,4 +275,4 @@ void BytecodeGenerator::operator()(const SequenceExpr &seq)
     }
 };
 
-} // namespace ast
+} // namespace tachyon::parser

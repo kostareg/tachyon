@@ -9,6 +9,8 @@
 #include <print>
 #include <string>
 
+using namespace tachyon;
+
 // TODO: this is temporary. currently it applies to the whole file but it should really just apply
 //  to strings and that's it.
 /**
@@ -78,10 +80,10 @@ int run(char *fileName)
     file_contents = unescape(file_contents);
 
     // pipeline
-    auto m = tachyon::lexer::lex(file_contents)
+    auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
                  // .and_then(ast::print)
-                 .and_then(ast::generateProto)
+                 .and_then(parser::generateProto)
                  // .and_then(
                  // [](vm::Proto proto) -> std::expected<vm::Proto, Error>
                  // {
@@ -93,9 +95,9 @@ int run(char *fileName)
                  // return proto;
                  // })
                  .and_then(
-                     [](vm::Proto proto) -> std::expected<void, Error>
+                     [](runtime::Proto proto) -> std::expected<void, Error>
                      {
-                         vm::VM vm;
+                         runtime::VM vm;
                          return vm.run(proto);
                      });
 

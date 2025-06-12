@@ -5,7 +5,7 @@
 #include <iostream>
 #include <iterator>
 
-namespace vm
+namespace tachyon::runtime
 {
 /**
  * @brief small visitor for printing values
@@ -380,4 +380,4 @@ void VM::diagnose() const
         std::println();
     }
 }
-} // namespace vm
+} // namespace tachyon::runtime

@@ -4,39 +4,57 @@
 #include "tachyon/parser/ast.h"
 
 #include <expected>
-#include <optional>
+#include <utility>
 
-using namespace ast;
 using namespace tachyon::lexer;
 
-namespace parser
+namespace tachyon::parser
 {
 class Parser
 {
-    /// index of the current token
+    /**
+     * @brief token index
+     */
     size_t i = 0;
-    Tokens ts;
-
-  public:
-    explicit Parser(Tokens ts) : ts(ts) {}
-
-    std::expected<ast::Expr, Error> parse();
-
-    std::expected<ast::Expr, Error> parse_stmt();
-
-    std::expected<ast::Expr, Error> parse_expr(int rbp = 0);
 
     /**
-     * @brief null denotation (literals, unary operators)
+     * @brief token parse list
      */
-    std::expected<ast::Expr, Error> parse_expr_nud(Token t);
+    Tokens ts;
 
     /**
      * @brief left denotation (binary operators with infix positions)
      */
-    std::expected<ast::Expr, Error> parse_expr_led(Token t, Expr l);
+    std::expected<Expr, Error> parse_expr_led(Token t, Expr l);
 
+    /**
+     * @brief null denotation (literals, unary operators)
+     */
+    std::expected<Expr, Error> parse_expr_nud(Token t);
+
+    /**
+     * @brief parse next expression
+     * @param rbp right binding power
+     * @return expression
+     */
+    std::expected<Expr, Error> parse_expr(int rbp = 0);
+
+    /**
+     * @brief parse next statement
+     * @return statement
+     */
+    std::expected<Expr, Error> parse_stmt();
+
+    /**
+     * @brief peek current token
+     * @return current token
+     */
     Token peek();
+
+    /**
+     * @brief consume current token
+     * @return last token
+     */
     std::expected<Token, Error> advance();
 
     /**
@@ -53,15 +71,21 @@ class Parser
      * @return void or "expected token" error
      */
     std::expected<Token, Error> expect(TokenType tt);
+
+  public:
+    explicit Parser(Tokens ts) : ts(std::move(ts)) {}
+
+    std::expected<Expr, Error> parse();
 };
 
 /**
- * @brief builds a Parser and wraps around Parser::parse
+ * @brief builds a Parser given tokens, and runs Parser::parse
+ * @param ts tokens
  * @see Parser::parse
  */
-inline std::expected<ast::Expr, Error> parse(const Tokens &ts)
+inline std::expected<Expr, Error> parse(Tokens ts)
 {
-    Parser parser(ts);
+    Parser parser(std::move(ts));
     return parser.parse();
 }
-} // namespace parser
+} // namespace tachyon::parser
