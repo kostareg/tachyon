@@ -24,13 +24,13 @@ option(TACHYON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 if (TACHYON_BUILD_TESTS)
     find_package(GTest QUIET)
     if (NOT GTest_FOUND)
-                include(FetchContent)
-                FetchContent_Declare(
-                        googletest
-                        GIT_REPOSITORY https://github.com/google/googletest.git
-                        GIT_TAG v1.16.0
-                )
-                FetchContent_MakeAvailable(googletest)
+        include(FetchContent)
+        FetchContent_Declare(
+                googletest
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG v1.16.0
+        )
+        FetchContent_MakeAvailable(googletest)
     endif ()
     enable_testing()
 endif ()
@@ -51,6 +51,7 @@ endif ()
 add_subdirectory(libs/common)
 add_subdirectory(libs/lexer)
 add_subdirectory(libs/parser)
+add_subdirectory(libs/codegen)
 add_subdirectory(libs/runtime)
 #add_subdirectory(libs/analyzer)
 #add_subdirectory(libs/codegen)
@@ -71,8 +72,8 @@ endif ()
 #    add_subdirectory(benchmarks)
 #endif ()
 
-install(TARGETS tachyon_common tachyon_lexer #tachyon_parser tachyon_analyzer
-        #tachyon_codegen tachyon_jit tachyon_runtime
+install(TARGETS tachyon_common tachyon_lexer tachyon_parser
+        tachyon_codegen tachyon_runtime
         EXPORT tachyonTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib

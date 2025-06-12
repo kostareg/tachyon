@@ -1,10 +1,10 @@
-# libs/parser/CMakeLists.txt
-add_library(tachyon_parser STATIC
-        src/parser.cpp
+# libs/codegen/CMakeLists.txt
+add_library(tachyon_codegen STATIC
+        src/bytecode_generator.cpp
 )
 
 # Public headers - what other libraries can use
-target_include_directories(tachyon_parser
+target_include_directories(tachyon_codegen
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -13,43 +13,43 @@ target_include_directories(tachyon_parser
 )
 
 # Compiler-specific optimizations
-target_compile_features(tachyon_parser PUBLIC cxx_std_23)
+target_compile_features(tachyon_codegen PUBLIC cxx_std_23)
 
 # Preprocessor definitions
-target_compile_definitions(tachyon_parser
+target_compile_definitions(tachyon_codegen
         PRIVATE
-        TACHYON_PARSER_VERSION="${PROJECT_VERSION}"
+        TACHYON_CODEGEN_VERSION="${PROJECT_VERSION}"
         PUBLIC
         $<$<CONFIG:Debug>:TACHYON_DEBUG>
 )
 
-target_link_libraries(tachyon_parser
+target_link_libraries(tachyon_codegen
         PRIVATE
         tachyon::common
-        tachyon::lexer
+        tachyon::parser
         tachyon::runtime
 )
 
 # Alias for consistent naming
-add_library(tachyon::parser ALIAS tachyon_parser)
+add_library(tachyon::codegen ALIAS tachyon_codegen)
 
 # Tests for this library
 #if (TACHYON_BUILD_TESTS)
-#    add_executable(parser_tests
-#            tests/parser_test.cpp
+#    add_executable(codegen_tests
+#            tests/codegen_test.cpp
 #            tests/token_test.cpp
 #            tests/unicode_test.cpp
 #    )
 #
-#    target_link_libraries(parser_tests
+#    target_link_libraries(codegen_tests
 #            PRIVATE
-#            tachyon_parser
+#            tachyon_codegen
 #            gtest
 #            gtest_main
 #    )
 #
 #    # Add to test suite
-#    add_test(NAME LexerTests COMMAND parser_tests)
+#    add_test(NAME LexerTests COMMAND codegen_tests)
 #
 #    # Test data files
 #    #file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
@@ -57,13 +57,13 @@ add_library(tachyon::parser ALIAS tachyon_parser)
 
 # Benchmarks for this library
 #if (TACHYON_BUILD_BENCHMARKS)
-#    add_executable(parser_benchmarks
-#            benchmarks/parser_benchmark.cpp
+#    add_executable(codegen_benchmarks
+#            benchmarks/codegen_benchmark.cpp
 #    )
 #
-#    target_link_libraries(parser_benchmarks
+#    target_link_libraries(codegen_benchmarks
 #            PRIVATE
-#            tachyon_parser
+#            tachyon_codegen
 #            benchmark::benchmark
 #    )
 #endif ()

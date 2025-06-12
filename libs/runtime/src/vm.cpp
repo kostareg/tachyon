@@ -1,37 +1,13 @@
 #include "tachyon/runtime/vm.h"
 
-#include <cmath>
+#include "tachyon/runtime/bytecode.h"
+
 #include <expected>
 #include <iostream>
 #include <iterator>
 
 namespace tachyon::runtime
 {
-/**
- * @brief small visitor for printing values
- */
-void print_value(const Value &reg)
-{
-    std::visit(
-        [](const auto &val)
-        {
-            using T = std::decay_t<decltype(val)>;
-            if constexpr (std::is_same_v<T, std::monostate>)
-            {
-                std::print("()");
-            }
-            else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>)
-            {
-                std::print("proto");
-            }
-            else
-            {
-                std::print("{}", val);
-            }
-        },
-        reg);
-}
-
 std::expected<void, Error> VM::run(const Proto &proto)
 {
     size_t ptr = 0;
@@ -365,7 +341,7 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
     return {};
 }
 
-void VM::diagnose() const
+void VM::doctor() const
 {
     std::println("vm state:");
     for (auto &call : call_stack)

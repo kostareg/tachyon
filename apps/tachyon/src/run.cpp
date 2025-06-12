@@ -1,7 +1,9 @@
 #include "run.h"
 
+#include "tachyon/codegen/bytecode_generator.h"
 #include "tachyon/lexer/lexer.h"
 #include "tachyon/parser/parser.h"
+#include "tachyon/runtime/vm.h"
 
 #include <filesystem>
 #include <fstream>
@@ -82,8 +84,7 @@ int run(char *fileName)
     // pipeline
     auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
-                 // .and_then(ast::print)
-                 .and_then(parser::generateProto)
+                 .and_then(codegen::generateProto)
                  // .and_then(
                  // [](vm::Proto proto) -> std::expected<vm::Proto, Error>
                  // {

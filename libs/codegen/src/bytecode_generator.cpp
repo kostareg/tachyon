@@ -1,13 +1,12 @@
-#include <expected>
-#include <print>
-#include <ranges>
-#include <variant>
+#include "tachyon/codegen/bytecode_generator.h"
 
-#include "tachyon/parser/ast.h"
+#include "tachyon/runtime/bytecode.h"
 
-namespace tachyon::parser
+namespace tachyon::codegen
 {
-void BytecodeGenerator::operator()(const LiteralExpr &lit)
+using namespace tachyon::parser;
+
+void BytecodeGenerator::operator()(const tachyon::parser::LiteralExpr &lit)
 {
     // convert to value, push to constants, reference that.
     runtime::Value val = std::visit([](auto &&val) -> runtime::Value { return val; }, lit.value);
@@ -274,5 +273,4 @@ void BytecodeGenerator::operator()(const SequenceExpr &seq)
         std::visit(*this, expr.kind);
     }
 };
-
-} // namespace tachyon::parser
+} // namespace tachyon::codegen

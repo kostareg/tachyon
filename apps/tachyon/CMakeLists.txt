@@ -12,6 +12,7 @@ target_link_libraries(tachyon_tachyon
         tachyon::common
         tachyon::lexer
         tachyon::parser
+        tachyon::codegen
         tachyon::runtime
         #tachyon::parser
         #tachyon::analyzer

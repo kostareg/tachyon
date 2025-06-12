@@ -1,5 +1,6 @@
 #include "repl.h"
 
+#include "tachyon/codegen/bytecode_generator.h"
 #include "tachyon/common/error.h"
 #include "tachyon/lexer/lexer.h"
 #include "tachyon/parser/parser.h"
@@ -31,9 +32,9 @@ int repl()
             continue;
 
         // pipeline
-        auto m = tachyon::lexer::lex(source)
+        auto m = lexer::lex(source)
                      .and_then(tachyon::parser::parse)
-                     .and_then(parser::generateProto)
+                     .and_then(codegen::generateProto)
                      .and_then([&vm](runtime::Proto proto) -> std::expected<void, Error>
                                { return vm.run(proto); });
 
