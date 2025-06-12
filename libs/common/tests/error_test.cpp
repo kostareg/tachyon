@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+using namespace tachyon;
+
 TEST(ErrorTest, FormatsInternalErrorMesage)
 {
     std::string result =
