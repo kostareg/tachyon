@@ -9,7 +9,6 @@ using namespace tachyon::parser;
 
 namespace tachyon::codegen
 {
-// TODO: move to codegen
 struct BytecodeGenerator
 {
     std::vector<uint8_t> bc;

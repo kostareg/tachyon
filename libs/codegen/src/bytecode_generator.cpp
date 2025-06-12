@@ -6,7 +6,7 @@ namespace tachyon::codegen
 {
 using namespace tachyon::parser;
 
-void BytecodeGenerator::operator()(const tachyon::parser::LiteralExpr &lit)
+void BytecodeGenerator::operator()(const LiteralExpr &lit)
 {
     // convert to value, push to constants, reference that.
     runtime::Value val = std::visit([](auto &&val) -> runtime::Value { return val; }, lit.value);

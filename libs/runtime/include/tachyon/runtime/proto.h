@@ -12,7 +12,7 @@ struct Proto
     // TODO: uint8_t* + malloc
     std::vector<uint8_t> bytecode;
 
-    // TODO: it would be an optimisation to store all constants somewhere
+    // TODO: it could be an optimisation to store all constants somewhere
     //  else (eg in the VM) and call from there. There may be duplicate
     //  constants, and since they're currently stored in each Proto,
     //  duplicates within functions are not difficult but impossible to

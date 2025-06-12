@@ -25,6 +25,5 @@ TEST(ErrorTest, FormatsInternalErrorMesage)
 }
 
 // TODO: more
-// TODO: fixes namespaces. this could be just tachyon::
 // TODO: there was some kind of testing framework that made this easy? does it integrate with gtest?
 //  research.

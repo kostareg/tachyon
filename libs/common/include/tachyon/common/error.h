@@ -24,22 +24,6 @@ enum class ErrorKind
 };
 
 /**
- * @brief given a string and a position index, get its whole line
- */
-inline std::string getLineAt(const std::string &s, size_t pos)
-{
-    size_t start = s.rfind('\n', pos);
-    size_t end = s.find('\n', pos);
-    if (start == std::string::npos)
-        start = 0;
-    else
-        ++start;
-    if (end == std::string::npos)
-        end = s.size();
-    return s.substr(start, end - start);
-}
-
-/**
  * @brief an error
  *
  * Stores any kind of error that occurs during (this program's) runtime. The source is kept blank
@@ -137,6 +121,47 @@ struct [[nodiscard]] Error final
     }
 
   public:
+    static Error create(ErrorKind kind, SourceSpan span, std::string message_short)
+    {
+        return {kind, span, std::move(message_short), "", "", {}, {}};
+    }
+
+    static Error createMultiple(std::vector<Error> errors)
+    {
+        if (errors.empty())
+            throw std::range_error("cannot initialize list of errors with no errors");
+
+        // inherit the first error, pop it from the front.
+        Error e = std::move(errors.at(0));
+        std::vector<Error> es(errors.begin() + 1, errors.end());
+        e.additional_errors = std::move(es);
+        return e;
+    }
+
+    Error &withLongMessage(const std::string &message_long)
+    {
+        this->message_long = message_long;
+        return *this;
+    }
+
+    Error &withCode(const std::string &message_code)
+    {
+        this->message_code = message_code;
+        return *this;
+    }
+
+    Error &withHint(const std::string &hint)
+    {
+        this->hints.push_back(hint);
+        return *this;
+    }
+
+    Error &withAdditional(const Error &additional_error)
+    {
+        this->additional_errors.push_back(additional_error);
+        return *this;
+    }
+
     /**
      * @brief format an error to a given stream
      * @param os write stream
@@ -220,47 +245,6 @@ struct [[nodiscard]] Error final
             os << std::endl << "\033[31m" << i + 2 << ".\033[0m " << additional_error;
         }
     };
-
-    static Error create(ErrorKind kind, SourceSpan span, std::string message_short)
-    {
-        return {kind, span, std::move(message_short), "", "", {}, {}};
-    }
-
-    static Error createMultiple(std::vector<Error> errors)
-    {
-        if (errors.empty())
-            throw std::range_error("cannot initialize list of errors with no errors");
-
-        // inherit the first error, pop it from the front.
-        Error e = std::move(errors.at(0));
-        std::vector<Error> es(errors.begin() + 1, errors.end());
-        e.additional_errors = std::move(es);
-        return e;
-    }
-
-    Error &withLongMessage(const std::string &message_long)
-    {
-        this->message_long = message_long;
-        return *this;
-    }
-
-    Error &withCode(const std::string &message_code)
-    {
-        this->message_code = message_code;
-        return *this;
-    }
-
-    Error &withHint(const std::string &hint)
-    {
-        this->hints.push_back(hint);
-        return *this;
-    }
-
-    Error &withAdditional(const Error &additional_error)
-    {
-        this->additional_errors.push_back(additional_error);
-        return *this;
-    }
 
     /**
      * @brief format to stream

@@ -4,12 +4,15 @@
 
 namespace tachyon::lexer
 {
+// TODO: consider taking a string_view, then duplicating the string_view as many times as needed for
+//  spans. benchmark difference.
 std::expected<Tokens, Error> lex(const std::string &s)
 {
     std::vector<Token> tokens;
     std::vector<Error> errors;
     size_t pos = 0;
 
+    // TODO: half of this could just be a really fast hashmap. benchmark.
     while (1)
     {
         if (pos == s.size())

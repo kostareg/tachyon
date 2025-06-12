@@ -2,11 +2,13 @@
 
 #include "ast.h"
 
+#include <expected>
 #include <string>
 #include <variant>
 
 namespace tachyon::parser
 {
+// TODO: consider using just ostream <<.
 struct PrintLiteral
 {
     void operator()(std::monostate _) const;
