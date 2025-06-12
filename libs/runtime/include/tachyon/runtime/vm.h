@@ -1,11 +1,13 @@
 #pragma once
 
+#include "tachyon/common/error.h"
+
 #include <cstdint>
 #include <expected>
 #include <variant>
 #include <vector>
 
-#include "error.h"
+#include "tachyon/common/source_span.h"
 
 namespace vm
 {

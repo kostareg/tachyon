@@ -1,3 +1,9 @@
+#include "tachyon/parser/parser.h"
+
+#include "tachyon/common/error.h"
+#include "tachyon/lexer/token.h"
+#include "tachyon/parser/ast.h"
+
 #include <expected>
 #include <format>
 #include <memory>
@@ -5,12 +11,12 @@
 #include <unordered_map>
 #include <variant>
 
-#include "parser.h"
-
-using enum TokenType;
+using enum tachyon::lexer::TokenType;
 
 namespace parser
 {
+using namespace ast;
+
 std::expected<ast::Expr, Error> Parser::parse()
 {
     std::vector<ast::Expr> stmts;

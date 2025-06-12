@@ -1,15 +1,14 @@
 #pragma once
 
-#include <expected>
+#include "tachyon/common/op.h"
+#include "tachyon/common/source_span.h"
+#include "tachyon/lexer/token.h"
+
 #include <iostream>
-#include <string>
+#include <stdexcept>
 #include <variant>
-#include <vector>
 
-#include "error.h"
-#include "op.h"
-
-namespace lexer
+namespace tachyon::lexer
 {
 enum class TokenType
 {
@@ -208,19 +207,16 @@ struct Token
     std::variant<std::monostate, double, bool, std::string> value;
     SourceSpan span;
 
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len)
-        : type(type), span(pos, len)
-    {
-    }
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, double value)
+    Token(TokenType type, size_t pos, size_t len) : type(type), span(pos, len) {}
+    Token(TokenType type, size_t pos, size_t len, double value)
         : type(type), value(value), span(pos, len)
     {
     }
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, bool value)
+    Token(TokenType type, size_t pos, size_t len, bool value)
         : type(type), value(value), span(pos, len)
     {
     }
-    Token(TokenType type, size_t pos, size_t line, size_t col, size_t len, std::string value)
+    Token(TokenType type, size_t pos, size_t len, std::string value)
         : type(type), value(value), span(pos, len)
     {
     }
@@ -238,18 +234,4 @@ struct Token
 };
 
 using Tokens = std::vector<Token>;
-
-struct LexerMeta
-{
-    size_t line = 1;
-    size_t col = 1;
-
-    void nline()
-    {
-        ++line;
-        col = 0;
-    }
-};
-
-std::expected<Tokens, Error> lex(const std::string &);
-} // namespace lexer
+} // namespace tachyon::lexer

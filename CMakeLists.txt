@@ -1,14 +1,105 @@
-cmake_minimum_required(VERSION 3.28)
-project(Tachyon)
+cmake_minimum_required(VERSION 3.16)
+project(tachyon
+        VERSION 1.0.0
+        DESCRIPTION "A just-in-time compiled programming language optimized for mathematical operations."
+        LANGUAGES CXX
+)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "src/*.h")
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O1 -fsanitize=address,undefined")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -flto")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
+endif ()
 
-add_executable(tachyon)
-target_sources(tachyon
-        PUBLIC FILE_SET CXX_MODULES FILES ${MODULE_SOURCES}
-        PRIVATE ${SOURCES}
+option(TACHYON_BUILD_TESTS "Build tests" ON)
+option(TACHYON_BUILD_BENCHMARKS "Build benchmarks" ON)
+option(TACHYON_BUILD_TOOLS "Build apps" ON)
+option(TACHYON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
+#if (TACHYON_BUILD_TESTS)
+#    find_package(GTest QUIET)
+#    if (NOT GTest_FOUND)
+#        include(FetchContent)
+#        FetchContent_Declare(
+#                googletest
+#                GIT_REPOSITORY https://github.com/google/googletest.git
+#                GIT_TAG release-1.12.1
+#        )
+#        FetchContent_MakeAvailable(googletest)
+#    endif ()
+#    enable_testing()
+#endif ()
+
+#if (TACHYON_BUILD_BENCHMARKS)
+#    find_package(benchmark QUIET)
+#    if (NOT benchmark_FOUND)
+#        include(FetchContent)
+#        FetchContent_Declare(
+#                googlebenchmark
+#                GIT_REPOSITORY https://github.com/google/benchmark.git
+#                GIT_TAG v1.7.1
+#        )
+#        FetchContent_MakeAvailable(googlebenchmark)
+#    endif ()
+#endif ()
+
+add_subdirectory(libs/common)
+add_subdirectory(libs/lexer)
+add_subdirectory(libs/parser)
+add_subdirectory(libs/runtime)
+#add_subdirectory(libs/analyzer)
+#add_subdirectory(libs/codegen)
+#add_subdirectory(libs/jit)
+
+if (TACHYON_BUILD_TOOLS)
+    add_subdirectory(apps/tachyon)
+    #add_subdirectory(tools/repl)
+    # add_subdirectory(tools/profiler)
+endif ()
+
+#if (TACHYON_BUILD_TESTS)
+#    add_subdirectory(tests)
+#endif ()
+
+#if (TACHYON_BUILD_BENCHMARKS)
+#    add_subdirectory(benchmarks)
+#endif ()
+
+install(TARGETS tachyon_common tachyon_lexer #tachyon_parser tachyon_analyzer
+        #tachyon_codegen tachyon_jit tachyon_runtime
+        EXPORT tachyonTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+)
+
+install(DIRECTORY libs/common/include/ DESTINATION include)
+install(DIRECTORY libs/lexer/include/ DESTINATION include)
+install(DIRECTORY libs/parser/include/ DESTINATION include)
+install(DIRECTORY libs/runtime/include/ DESTINATION include)
+#install(DIRECTORY libs/analyzer/include/ DESTINATION include)
+#install(DIRECTORY libs/codegen/include/ DESTINATION include)
+#install(DIRECTORY libs/jit/include/ DESTINATION include)
+
+install(EXPORT tachyonTargets
+        FILE tachyonTargets.cmake
+        NAMESPACE tachyon::
+        DESTINATION lib/cmake/tachyon
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+        tachyonConfigVersion.cmake
+        VERSION ${PACKAGE_VERSION}
+        COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES tachyonConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/tachyonConfigVersion.cmake
+        DESTINATION lib/cmake/tachyon
 )

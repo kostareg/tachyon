@@ -1,9 +1,9 @@
+#include "tachyon/runtime/vm.h"
+
 #include <cmath>
 #include <expected>
 #include <iostream>
 #include <iterator>
-
-#include "vm.h"
 
 namespace vm
 {
@@ -346,7 +346,7 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
         // start at +1 + i <- offset + i
         registers[i + 1] = call_stack.back().registers[i + offset];
     }
-    CallFrame frame{std::move(registers)};
+    CallFrame frame{std::move(registers), 0.0};
     call_stack.push_back(frame);
 
     if (auto postFn = run(*fn); !postFn)

@@ -33,6 +33,7 @@
             llvm.libunwind
             pkgs.glibc
             pkgs.glibc.dev
+            pkgs.pandoc
           ];
 
           CXXFLAGS = "-nostdinc++ -isystem ${libcxx.dev}/include/c++/v1 -isystem ${pkgs.glibc.dev}/include";

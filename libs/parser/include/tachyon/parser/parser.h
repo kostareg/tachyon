@@ -1,14 +1,13 @@
 #pragma once
 
+#include "tachyon/lexer/lexer.h"
+#include "tachyon/parser/ast.h"
+
 #include <expected>
 #include <optional>
 
-#include "ast.h"
-#include "error.h"
-#include "lexer.h"
-
 using namespace ast;
-using namespace lexer;
+using namespace tachyon::lexer;
 
 namespace parser
 {

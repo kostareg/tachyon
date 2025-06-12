@@ -3,7 +3,7 @@
 #include <ranges>
 #include <variant>
 
-#include "ast.h"
+#include "tachyon/parser/ast.h"
 
 namespace ast
 {
@@ -143,7 +143,13 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit)
 void BytecodeGenerator::operator()(const FnExpr &fn)
 {
     // TODO: see generateProto_with_args definition.
-    std::expected<vm::Proto, Error> maybe_proto = vm::Proto{.span = fn.body->span};
+    std::expected<vm::Proto, Error> maybe_proto = vm::Proto{
+        .bytecode = {},
+        .constants = {},
+        .arguments = 0,
+        .name = "",
+        .span = fn.body->span,
+    };
     if (fn.arguments.size() == 0)
         maybe_proto = generateProto(std::move(*fn.body));
     else
@@ -361,7 +367,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
 };
 
 // TODO: should this be stripped already?
-void BytecodeGenerator::operator()(const ImportExpr &imp) {};
+void BytecodeGenerator::operator()(const ImportExpr &) {};
 
 // retv, retr, retc.
 // TODO: should probably check that each function has a return at the end. and

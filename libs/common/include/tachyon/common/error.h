@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cmath>
-#include <format>
+#include "source_span.h"
+
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -36,19 +37,6 @@ inline std::string getLineAt(const std::string &s, size_t pos)
         end = s.size();
     return s.substr(start, end - start);
 }
-
-/**
- * @brief represents a span of source code
- */
-struct SourceSpan final
-{
-    /// source byte offset
-    size_t position;
-    /// source byte length
-    size_t length;
-
-    SourceSpan(size_t position, size_t length) : position(position), length(length) {}
-};
 
 /**
  * @brief an error

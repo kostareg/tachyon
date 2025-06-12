@@ -7,59 +7,11 @@
 #include <string>
 #include <variant>
 
-#include "ast.h"
+#include "../libs/parser/include/tachyon/parser/ast.h"
+#include "../libs/runtime/include/tachyon/runtime/vm.h"
 #include "error.h"
 #include "lexer.h"
 #include "parser.h"
-#include "vm.h"
-
-// TODO: for now:
-std::string unescape(const std::string &input)
-{
-    std::string result;
-    result.reserve(input.size());
-
-    for (size_t i = 0; i < input.size(); ++i)
-    {
-        if (input[i] == '\\' && i + 1 < input.size())
-        {
-            switch (input[++i])
-            {
-            case 'n':
-                result += '\n';
-                break;
-            case 't':
-                result += '\t';
-                break;
-            case 'r':
-                result += '\r';
-                break;
-            case '\\':
-                result += '\\';
-                break;
-            case '"':
-                result += '"';
-                break;
-            case '\'':
-                result += '\'';
-                break;
-            case '0':
-                result += '\0';
-                break;
-                // Add more cases if needed
-            default:
-                result += '\\';
-                result += input[i];
-            }
-        }
-        else
-        {
-            result += input[i];
-        }
-    }
-
-    return result;
-}
 
 int run(char *fileName)
 {
@@ -101,49 +53,6 @@ int run(char *fileName)
         e.source = file_contents;
         std::cerr << e << std::flush;
         return 1;
-    }
-
-    return 0;
-}
-
-int repl()
-{
-    vm::VM vm;
-    std::string source, line;
-    auto prefix = "> ";
-
-    while (std::printf("%s", prefix) && std::getline(std::cin, line))
-    {
-        if (line.ends_with(";;"))
-        {
-            // add the line to the source, without the ;;.
-            source += line.substr(0, line.size() - 2) + '\n';
-            prefix = "  ";
-            continue;
-        }
-
-        source += line + '\n';
-
-        if (source.empty())
-            continue;
-
-        // pipeline
-        auto m = lexer::lex(source)
-                     .and_then(parser::parse)
-                     .and_then(ast::print)
-                     .and_then(ast::generateProto)
-                     .and_then([&vm](vm::Proto proto) -> std::expected<void, Error>
-                               { return vm.run(proto); });
-
-        if (!m)
-        {
-            Error e = m.error();
-            e.source = source;
-            std::cerr << e << std::flush;
-        }
-
-        source = "";
-        prefix = "> ";
     }
 
     return 0;
@@ -247,39 +156,4 @@ int testerr()
     error.source = source;
     std::cerr << error << std::flush;
     return 0;
-}
-
-int main(int argc, char **argv)
-{
-    if (argc == 1)
-    {
-        return repl();
-    }
-    else if (strcmp(argv[1], "run") == 0)
-    {
-        if (argc == 2)
-        {
-            std::println(std::cerr, "specify a file to run.\n> "
-                                    "tachyon run myfile.tachyon");
-            return 1;
-        }
-        return run(argv[2]);
-    }
-    else if (strcmp(argv[1], "testvm") == 0)
-    {
-        return testvm();
-    }
-    else if (strcmp(argv[1], "testgen") == 0)
-    {
-        return testgen();
-    }
-    else if (strcmp(argv[1], "testerr") == 0)
-    {
-        return testerr();
-    }
-    else
-    {
-        std::println(std::cerr, "unknown command: {}", argv[1]);
-        return 1;
-    }
 }

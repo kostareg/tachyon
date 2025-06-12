@@ -41,7 +41,7 @@ inline const char *op_to_str(Op op)
 /**
  * @brief convert op to vm bytecode constant operations.
  */
-inline const uint8_t op_to_uint8_t(Op op)
+inline uint8_t op_to_uint8_t(Op op)
 {
     if (op == Op::Pow)
         throw std::runtime_error("power operator not yet supported");

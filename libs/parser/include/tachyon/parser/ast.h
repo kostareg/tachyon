@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tachyon/common/error.h"
+
 #include <expected>
 #include <memory>
 #include <string>
@@ -7,9 +9,8 @@
 #include <variant>
 #include <vector>
 
-#include "error.h"
-#include "op.h"
-#include "vm.h"
+#include "tachyon/common/op.h"
+#include "tachyon/runtime/vm.h"
 
 /**
  * @namespace ast
@@ -201,7 +202,7 @@ struct BytecodeGenerator
     void operator()(const LetExpr &vdecl);
     void operator()(const LetRefExpr &vref);
     void operator()(const FnCallExpr &fnc);
-    void operator()(const ImportExpr &imp);
+    void operator()(const ImportExpr &);
     void operator()(const ReturnExpr &ret);
     void operator()(const SequenceExpr &seq);
 };
