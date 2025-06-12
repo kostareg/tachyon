@@ -1,5 +1,6 @@
 #include "tachyon/runtime/vm.h"
 
+#include "tachyon/common/assert.h"
 #include "tachyon/runtime/bytecode.h"
 
 #include <expected>
@@ -26,6 +27,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         case RETC:
         {
             auto src1 = proto.bytecode[++ptr];
+            TY_ASSERT(src1 < proto.constants.size());
             call_stack.back().returns = proto.constants[src1];
             return {};
         }
@@ -35,18 +37,14 @@ std::expected<void, Error> VM::run(const Proto &proto)
             call_stack.back().returns = call_stack.back().registers[src1];
             return {};
         }
-        // TODO: if the section after this switch case remains blank, don't
-        //  continue, just break.
         case NOOP:
         {
-            ++ptr;
-            continue;
+            break;
         }
-        // TODO: consider putting a check here that makes sure constants exists.
-        //  otherwise, its a segfault.
         case LOCR:
         {
             auto src1 = proto.bytecode[++ptr];
+            TY_ASSERT(src1 < proto.constants.size());
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] = proto.constants[src1];
             break;
@@ -62,6 +60,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
+            TY_ASSERT(src2 < proto.constants.size());
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
                 call_stack.back().registers[src1] < proto.constants[src2];
@@ -71,6 +70,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
+            TY_ASSERT(src2 < proto.constants.size());
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
                 call_stack.back().registers[src1] > proto.constants[src2];
@@ -98,6 +98,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         {
             auto src1 = proto.bytecode[++ptr];
             auto src2 = proto.bytecode[++ptr];
+            TY_ASSERT(src2 < proto.constants.size());
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] =
                 call_stack.back().registers[src1] == proto.constants[src2];
@@ -116,18 +117,22 @@ std::expected<void, Error> VM::run(const Proto &proto)
         case JMPC:
         {
             auto src1 = proto.bytecode[++ptr];
+            TY_ASSERT(src1 < proto.constants.size());
+            TY_ASSERT(std::holds_alternative<double>(proto.constants[src1]));
             ptr = std::get<double>(proto.constants[src1]);
             continue; // do not increment
         }
         case JMPR:
         {
             auto src1 = proto.bytecode[++ptr];
+            TY_ASSERT(std::holds_alternative<double>(call_stack.back().registers[src1]));
             ptr = std::get<double>(call_stack.back().registers[src1]);
             continue;
         }
         // TODO: for now, just assume that math operations are only working on
         //  doubles. we can handle other issues either in the typechecker or by
-        //  allowing weak types. or, we can make it a runtime error.
+        //  allowing weak types. or, we can make it a runtime error. Or consider
+        //  using TY_ASSERT for all of these.
         case MACC:
         {
             auto src1 = proto.bytecode[++ptr];
@@ -275,6 +280,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         case CALC:
         {
             auto src1 = proto.bytecode[++ptr];
+            TY_ASSERT(src1 < proto.constants.size());
             auto offset = proto.bytecode[++ptr];
             auto fn = std::get<std::shared_ptr<Proto>>(proto.constants[src1]);
 

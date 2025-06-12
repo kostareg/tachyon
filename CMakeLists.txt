@@ -21,6 +21,12 @@ option(TACHYON_BUILD_BENCHMARKS "Build benchmarks" ON)
 option(TACHYON_BUILD_TOOLS "Build apps" ON)
 option(TACHYON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(TY_DEBUG)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_definitions(TY_RELEASE)
+endif ()
+
 if (TACHYON_BUILD_TESTS)
     find_package(GTest QUIET)
     if (NOT GTest_FOUND)
