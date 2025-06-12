@@ -1,5 +1,6 @@
 #include "tachyon/codegen/bytecode_generator.h"
 
+#include "tachyon/parser/print.h"
 #include "tachyon/runtime/bytecode.h"
 
 namespace tachyon::codegen
@@ -140,16 +141,25 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
 //  before generation.
 void BytecodeGenerator::operator()(const LetExpr &vdecl)
 {
-    vars.push_back(std::move(vdecl.name));
-    auto index = vars.size(); // starts at +1 index
+    auto index = next_free_register++;
+    vars.insert({vdecl.name, index});
     std::visit(*this, vdecl.value->kind);
-    if (std::holds_alternative<LiteralExpr>(vdecl.value->kind) ||
-        std::holds_alternative<FnExpr>(vdecl.value->kind))
+    if (std::holds_alternative<LiteralExpr>(vdecl.value->kind))
     {
         // curr is set to the constant address, use LOCR
         bc.push_back(runtime::LOCR);
         bc.push_back(curr);
         bc.push_back(index);
+    }
+    else if (std::holds_alternative<FnExpr>(vdecl.value->kind))
+    {
+        // curr is set to the constant address, use LOCR
+        bc.push_back(runtime::LOCR);
+        bc.push_back(curr);
+        bc.push_back(index);
+
+        // rename function
+        std::get<std::shared_ptr<runtime::Proto>>(constants.back())->name = vdecl.name;
     }
     else
     {
@@ -165,9 +175,9 @@ void BytecodeGenerator::operator()(const LetExpr &vdecl)
 //  generation.
 void BytecodeGenerator::operator()(const LetRefExpr &vref)
 {
-    if (auto it = std::find(vars.begin(), vars.end(), vref.name); it != vars.end())
+    if (auto it = vars.find(vref.name); it != vars.end())
     {
-        curr = std::distance(vars.begin(), it) + 1; // starts at +1
+        curr = it->second;
     }
     else
     {
@@ -180,48 +190,49 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
 {
     // to run a function, we load the arguments in the first [1, n] registers,
     // then call CALC/CALR with a pointer to the prototype.
-    auto start = vars.size() + 1; // start after vars
-    auto i = start;
-    // TODO: do we need two loops here? once to std::visit, once to
-    //  bc.push_back.
-    for (auto &arg : fnc.args)
+
+    // run all of the arguments first, store their currs, then set registers.
+    // TODO: reread this - does it make sense to split into two loops? i need to
+    //  store start as next_free_register *after* all argument instructions.
+    std::vector<uint8_t> currs;
+    for (size_t i = 0; i < fnc.args.size(); ++i)
     {
-        std::visit(*this, arg.kind);
-        if (std::holds_alternative<BinaryOperatorExpr>(arg.kind) ||
-            std::holds_alternative<LetRefExpr>(arg.kind))
+        std::visit(*this, fnc.args[i].kind);
+        currs.push_back(curr);
+    }
+
+    auto start = next_free_register;
+    for (size_t i = 0; i < fnc.args.size(); ++i)
+    {
+        if (std::holds_alternative<BinaryOperatorExpr>(fnc.args[i].kind) ||
+            std::holds_alternative<LetRefExpr>(fnc.args[i].kind))
         {
             // we have the register index.
             bc.push_back(runtime::LORR);
-            bc.push_back(curr);
-            bc.push_back(i);
+            bc.push_back(currs[i]);
+            bc.push_back(next_free_register++);
         }
-        else if (std::holds_alternative<LiteralExpr>(arg.kind))
+        else if (std::holds_alternative<LiteralExpr>(fnc.args[i].kind) ||
+                 std::holds_alternative<FnExpr>(fnc.args[i].kind))
         {
             // we have the constant index so we should load that.
             bc.push_back(runtime::LOCR);
-            bc.push_back(curr);
-            bc.push_back(i);
+            bc.push_back(currs[i]);
+            bc.push_back(next_free_register++);
         }
-        else if (std::holds_alternative<FnCallExpr>(arg.kind))
+        else if (std::holds_alternative<FnCallExpr>(fnc.args[i].kind))
         {
             // answer is in register 0.
             bc.push_back(runtime::LORR);
             bc.push_back(0);
-            bc.push_back(i);
-        }
-        else if (std::holds_alternative<FnExpr>(arg.kind))
-        {
-            // we have the constant index.
-            bc.push_back(runtime::LOCR);
-            bc.push_back(curr);
-            bc.push_back(i);
+            bc.push_back(next_free_register++);
         }
         else
         {
             errors.push_back(Error::create(ErrorKind::BytecodeGenerationError, SourceSpan(0, 0),
-                                           "could not generate function call"));
+                                           "could not generate function call")
+                                 .withLongMessage("failed to recognize fnc.args[i]ument type."));
         }
-        ++i; // TODO: i dont like this?
     }
 
     if (fnc.ref.name == "print")
@@ -231,7 +242,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
         return;
     }
 
-    (*this)(fnc.ref);
+    (*this)(fnc.ref); // visit ref
     bc.push_back(runtime::CALR);
     bc.push_back(curr);
     bc.push_back(start);

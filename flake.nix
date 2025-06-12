@@ -15,6 +15,8 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       devShells.default = pkgs.mkShell {
+        hardeningDisable = ["all"];
+
         buildInputs = with pkgs; [
           llvmPackages.clangUseLLVM
           libcxx

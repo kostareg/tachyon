@@ -1,6 +1,7 @@
 # libs/parser/CMakeLists.txt
 add_library(tachyon_parser STATIC
         src/parser.cpp
+        src/print.cpp
 )
 
 # Public headers - what other libraries can use

@@ -86,7 +86,7 @@ int run(char *fileName)
                  .and_then(parser::parse)
                  .and_then(codegen::generateProto)
                  // .and_then(
-                 // [](vm::Proto proto) -> std::expected<vm::Proto, Error>
+                 // [](runtime::Proto proto) -> std::expected<runtime::Proto, Error>
                  // {
                  // std::println("function {}", proto.name);
                  // for (auto bc : proto.bytecode)

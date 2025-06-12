@@ -37,10 +37,9 @@ struct PrintExpr
     void operator()(const SequenceExpr &seq) const;
 };
 
-inline std::expected<Expr, Error> printExpr(Expr e)
+inline void printExpr(Expr &e)
 {
     auto printer = PrintExpr{};
     std::visit(printer, e.kind);
-    return e;
 }
 } // namespace tachyon::parser
