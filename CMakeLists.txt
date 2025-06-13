@@ -41,42 +41,40 @@ if (TACHYON_BUILD_TESTS)
     enable_testing()
 endif ()
 
-#if (TACHYON_BUILD_BENCHMARKS)
-#    find_package(benchmark QUIET)
-#    if (NOT benchmark_FOUND)
-#        include(FetchContent)
-#        FetchContent_Declare(
-#                googlebenchmark
-#                GIT_REPOSITORY https://github.com/google/benchmark.git
-#                GIT_TAG v1.7.1
-#        )
-#        FetchContent_MakeAvailable(googlebenchmark)
-#    endif ()
-#endif ()
+if (TACHYON_BUILD_BENCHMARKS)
+    # ignore warning about clang version 5.0.0
+    set(BENCHMARK_ENABLE_ASSEMBLY_TESTS OFF CACHE BOOL "" FORCE)
+    find_package(benchmark QUIET)
+    if (NOT benchmark_FOUND)
+        include(FetchContent)
+        FetchContent_Declare(
+                googlebenchmark
+                GIT_REPOSITORY https://github.com/google/benchmark.git
+                GIT_TAG v1.9.4
+        )
+        FetchContent_MakeAvailable(googlebenchmark)
+    endif ()
+endif ()
 
 add_subdirectory(libs/common)
 add_subdirectory(libs/lexer)
 add_subdirectory(libs/parser)
 add_subdirectory(libs/codegen)
 add_subdirectory(libs/runtime)
-#add_subdirectory(libs/analyzer)
-#add_subdirectory(libs/codegen)
-#add_subdirectory(libs/jit)
 
 if (TACHYON_BUILD_TOOLS)
     add_subdirectory(apps/tachyon)
-    #add_subdirectory(tools/repl)
-    # add_subdirectory(tools/profiler)
 endif ()
 
-## for integration tests only. still useful.
-#if (TACHYON_BUILD_TESTS)
-#    add_subdirectory(tests)
-#endif ()
+## for integration tests only.
+if (TACHYON_BUILD_TESTS)
+    add_subdirectory(tests)
+endif ()
 
-#if (TACHYON_BUILD_BENCHMARKS)
-#    add_subdirectory(benchmarks)
-#endif ()
+# for global benchmarks only.
+if (TACHYON_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif ()
 
 install(TARGETS tachyon_common tachyon_lexer tachyon_parser
         tachyon_codegen tachyon_runtime
@@ -90,10 +88,8 @@ install(TARGETS tachyon_common tachyon_lexer tachyon_parser
 install(DIRECTORY libs/common/include/ DESTINATION include)
 install(DIRECTORY libs/lexer/include/ DESTINATION include)
 install(DIRECTORY libs/parser/include/ DESTINATION include)
+install(DIRECTORY libs/codegen/include/ DESTINATION include)
 install(DIRECTORY libs/runtime/include/ DESTINATION include)
-#install(DIRECTORY libs/analyzer/include/ DESTINATION include)
-#install(DIRECTORY libs/codegen/include/ DESTINATION include)
-#install(DIRECTORY libs/jit/include/ DESTINATION include)
 
 install(EXPORT tachyonTargets
         FILE tachyonTargets.cmake

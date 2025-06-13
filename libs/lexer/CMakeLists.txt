@@ -55,14 +55,15 @@ if (TACHYON_BUILD_TESTS)
 endif ()
 
 # Benchmarks for this library
-#if (TACHYON_BUILD_BENCHMARKS)
-#    add_executable(lexer_benchmarks
-#            benchmarks/lexer_benchmark.cpp
-#    )
-#
-#    target_link_libraries(lexer_benchmarks
-#            PRIVATE
-#            tachyon_lexer
-#            benchmark::benchmark
-#    )
-#endif ()
+if (TACHYON_BUILD_BENCHMARKS)
+    add_executable(lexer_benchmarks
+            benchmarks/lexer_benchmark.cpp
+    )
+
+    target_link_libraries(lexer_benchmarks
+            PRIVATE
+            tachyon_common
+            tachyon_lexer
+            benchmark::benchmark
+    )
+endif ()
