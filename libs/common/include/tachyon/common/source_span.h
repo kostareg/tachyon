@@ -5,7 +5,7 @@
 namespace tachyon
 {
 /**
- * @brief represents a span of source code
+ * @brief represents a region of source code
  */
 struct SourceSpan final
 {

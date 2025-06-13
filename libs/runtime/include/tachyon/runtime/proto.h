@@ -7,8 +7,12 @@
 
 namespace tachyon::runtime
 {
+/**
+ * @brief function prototype object
+ */
 struct Proto
 {
+    /// function bytecode instructions
     // TODO: uint8_t* + malloc
     std::vector<uint8_t> bytecode;
 
@@ -25,11 +29,15 @@ struct Proto
      */
     std::vector<Value> constants;
 
+    /// number of arguments
     size_t arguments;
 
-    // debug info
-    // TODO: actually using this
+    // TODO: actually using this:
+
+    /// debug info name
     std::string name;
+
+    /// debug info source span
     SourceSpan span;
 
     // TODO: when capturing vars from outer scope, just store a lookup table,

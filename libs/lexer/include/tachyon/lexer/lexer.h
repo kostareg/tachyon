@@ -7,5 +7,10 @@
 
 namespace tachyon::lexer
 {
+// TODO: take string_view here?
+/**
+ * @brief lex string into list of tokens
+ * @return tokens or error
+ */
 std::expected<Tokens, Error> lex(const std::string &);
-}
+} // namespace tachyon::lexer

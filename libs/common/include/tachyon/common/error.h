@@ -12,7 +12,7 @@
 namespace tachyon
 {
 /**
- * @brief kind of errors that can occur
+ * @brief classification of errors that can occur throughout all of Tachyon
  */
 enum class ErrorKind
 {
@@ -33,13 +33,30 @@ enum class ErrorKind
  */
 struct [[nodiscard]] Error final
 {
+    /// classification of error
     ErrorKind kind;
+
+    /// region that the error applies to
     SourceSpan span;
+
+    /// initial description
     std::string message_short;
+
+    /// detailed description (optional)
     std::string message_long;
+
+    /// error code (optional)
     std::string message_code;
+
+    /// list of hints (optional)
     std::vector<std::string> hints;
-    std::vector<Error> additional_errors; // TODO: not sure
+
+    /// list of additional errors that have occurred (optional)
+    // TODO: not sure if I want to keep this
+    std::vector<Error> additional_errors;
+
+    /// whole source view, left blank until just before formatting
+    // TODO: currently is kept blank until it's time to report. Consider .withSource() function?
     std::string_view source;
 
   private:
@@ -121,11 +138,24 @@ struct [[nodiscard]] Error final
     }
 
   public:
+    /**
+     * @brief create an error
+     * @param kind classification of error
+     * @param span region that the error applies to
+     * @param message_short initial description
+     * @return error
+     */
     static Error create(ErrorKind kind, SourceSpan span, std::string message_short)
     {
         return {kind, span, std::move(message_short), "", "", {}, {}};
     }
 
+    /**
+     * @brief create an error from a list of errors
+     * @param errors list of errors
+     * @return errors in one object
+     * @see Error::additional_errors
+     */
     static Error createMultiple(std::vector<Error> errors)
     {
         if (errors.empty())
@@ -138,24 +168,28 @@ struct [[nodiscard]] Error final
         return e;
     }
 
+    /// add detailed message to error
     Error &withLongMessage(const std::string &message_long)
     {
         this->message_long = message_long;
         return *this;
     }
 
+    /// add error code to error
     Error &withCode(const std::string &message_code)
     {
         this->message_code = message_code;
         return *this;
     }
 
+    /// add hint to error
     Error &withHint(const std::string &hint)
     {
         this->hints.push_back(hint);
         return *this;
     }
 
+    /// add additional error to error
     Error &withAdditional(const Error &additional_error)
     {
         this->additional_errors.push_back(additional_error);
@@ -163,7 +197,7 @@ struct [[nodiscard]] Error final
     }
 
     /**
-     * @brief format an error to a given stream
+     * @brief format error to a stream
      * @param os write stream
      */
     void format(std::ostream &os) const
@@ -250,7 +284,7 @@ struct [[nodiscard]] Error final
      * @brief format to stream
      *
      * This is declared here and as a friend so that the additional errors can be printed in the
-     * format function with `os << additional_error`.
+     * `Error::format` method with `os << additional_error`.
      *
      * @param os stream
      * @param s error

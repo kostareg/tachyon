@@ -75,7 +75,7 @@ void PrintExpr::operator()(const FnExpr &fn) const
 
 void PrintExpr::operator()(const BinaryOperatorExpr &binop) const
 {
-    std::print("{} (", op_to_str(binop.op));
+    std::print("{} (", opToStr(binop.op));
     std::visit(*this, binop.left->kind);
     std::print(", ");
     std::visit(*this, binop.right->kind);

@@ -10,6 +10,9 @@
 
 namespace tachyon::lexer
 {
+/**
+ * @brief type of token that can be found in a Tachyon source file
+ */
 enum class TokenType
 {
     IDENT,
@@ -23,7 +26,8 @@ enum class TokenType
     STAR,
     FSLASH,
     CARET,
-    RCHEV, // TODO: rest of comparison
+    RCHEV,
+    // TODO: rest of the comparison operators eg >=, ==, !=, etc.
     LPAREN,
     RPAREN,
     LBRACE,
@@ -42,138 +46,159 @@ enum class TokenType
 
 using enum TokenType;
 
-inline std::string tokToStr(TokenType t)
+/**
+ * @brief find token as string
+ * @param tt token type
+ * @return stringified
+ */
+inline std::string tokToStr(TokenType tt)
 {
-    if (t == IDENT)
+    if (tt == IDENT)
         return "IDENT";
-    else if (t == NUMBER)
+    else if (tt == NUMBER)
         return "NUMBER";
-    else if (t == STRING)
+    else if (tt == STRING)
         return "STRING";
-    else if (t == BOOL)
+    else if (tt == BOOL)
         return "BOOL";
-    else if (t == UNIT)
+    else if (tt == UNIT)
         return "UNIT";
-    else if (t == EQ)
+    else if (tt == EQ)
         return "EQ";
-    else if (t == PLUS)
+    else if (tt == PLUS)
         return "PLUS";
-    else if (t == MINUS)
+    else if (tt == MINUS)
         return "MINUS";
-    else if (t == STAR)
+    else if (tt == STAR)
         return "STAR";
-    else if (t == FSLASH)
+    else if (tt == FSLASH)
         return "FSLASH";
-    else if (t == RCHEV)
+    else if (tt == RCHEV)
         return "RCHEV";
-    else if (t == CARET)
+    else if (tt == CARET)
         return "CARET";
-    else if (t == LPAREN)
+    else if (tt == LPAREN)
         return "LPAREN";
-    else if (t == RPAREN)
+    else if (tt == RPAREN)
         return "RPAREN";
-    else if (t == LBRACE)
+    else if (tt == LBRACE)
         return "LBRACE";
-    else if (t == RBRACE)
+    else if (tt == RBRACE)
         return "RBRACE";
-    else if (t == RARROW)
+    else if (tt == RARROW)
         return "RARROW";
-    else if (t == DOT)
+    else if (tt == DOT)
         return "DOT";
-    else if (t == COLON)
+    else if (tt == COLON)
         return "COLON";
-    else if (t == SEMIC)
+    else if (tt == SEMIC)
         return "SEMIC";
-    else if (t == COMMA)
+    else if (tt == COMMA)
         return "COMMA";
-    else if (t == IMPORT)
+    else if (tt == IMPORT)
         return "IMPORT";
-    else if (t == FN)
+    else if (tt == FN)
         return "FN";
-    else if (t == RETURN)
+    else if (tt == RETURN)
         return "RETURN";
-    else if (t == NLINE)
+    else if (tt == NLINE)
         return "NLINE";
-    else if (t == END)
+    else if (tt == END)
         return "END";
     else
-        return "unknown token";
+        return "unrecognized token";
 }
 
-inline std::string tokToStrPretty(TokenType t)
+/**
+ * @brief find token as pretty string, for user-end
+ * @param tt token type
+ * @return pretty stringified
+ */
+inline std::string tokToStrPretty(TokenType tt)
 {
-    if (t == IDENT)
+    if (tt == IDENT)
         return "an identifier";
-    else if (t == NUMBER)
+    else if (tt == NUMBER)
         return "a number";
-    else if (t == STRING)
+    else if (tt == STRING)
         return "a string";
-    else if (t == BOOL)
+    else if (tt == BOOL)
         return "a boolean";
-    else if (t == UNIT)
+    else if (tt == UNIT)
         return "a unit";
-    else if (t == EQ)
+    else if (tt == EQ)
         return "an equals sign";
-    else if (t == PLUS)
+    else if (tt == PLUS)
         return "a plus sign";
-    else if (t == MINUS)
+    else if (tt == MINUS)
         return "a minus sign";
-    else if (t == STAR)
+    else if (tt == STAR)
         return "a star";
-    else if (t == FSLASH)
+    else if (tt == FSLASH)
         return "a slash";
-    else if (t == RCHEV)
+    else if (tt == RCHEV)
         return "a right chevron";
-    else if (t == CARET)
+    else if (tt == CARET)
         return "a caret symbol";
-    else if (t == LPAREN)
+    else if (tt == LPAREN)
         return "a left parenthesis";
-    else if (t == RPAREN)
+    else if (tt == RPAREN)
         return "a right parenthesis";
-    else if (t == LBRACE)
+    else if (tt == LBRACE)
         return "a left brace";
-    else if (t == RBRACE)
+    else if (tt == RBRACE)
         return "a right brace";
-    else if (t == RARROW)
+    else if (tt == RARROW)
         return "a right arrow";
-    else if (t == DOT)
+    else if (tt == DOT)
         return "a dot";
-    else if (t == COLON)
+    else if (tt == COLON)
         return "a colon";
-    else if (t == SEMIC)
+    else if (tt == SEMIC)
         return "a semicolon";
-    else if (t == COMMA)
+    else if (tt == COMMA)
         return "a comma";
-    else if (t == IMPORT)
+    else if (tt == IMPORT)
         return "an import";
-    else if (t == FN)
+    else if (tt == FN)
         return "a function declaration";
-    else if (t == RETURN)
+    else if (tt == RETURN)
         return "a return";
-    else if (t == NLINE)
+    else if (tt == NLINE)
         return "a new line";
-    else if (t == END)
+    else if (tt == END)
         return "the end of the code";
     else
-        return "an unknown token";
+        return "an unrecognized token";
 }
 
-inline bool isOperator(TokenType t)
+/**
+ * @brief checks if a token is an operator (one of +, -, *, /, ^)
+ * @param tt token type
+ * @return is operator?
+ */
+inline bool isOperator(TokenType tt)
 {
-    return t == PLUS || t == MINUS || t == STAR || t == FSLASH || t == CARET;
+    return tt == PLUS || tt == MINUS || tt == STAR || tt == FSLASH || tt == CARET;
 };
 
-inline parser::Op tokToOp(TokenType t)
+/**
+ * @brief turn an operator token into an `Op`
+ * @param tt token type
+ * @return operator
+ * @see tachyon::parser::Op
+ */
+inline parser::Op tokToOp(TokenType tt)
 {
-    if (t == PLUS)
+    if (tt == PLUS)
         return parser::Op::Add;
-    else if (t == MINUS)
+    else if (tt == MINUS)
         return parser::Op::Sub;
-    else if (t == STAR)
+    else if (tt == STAR)
         return parser::Op::Mul;
-    else if (t == FSLASH)
+    else if (tt == FSLASH)
         return parser::Op::Div;
-    else if (t == CARET)
+    else if (tt == CARET)
         return parser::Op::Pow;
     else
         throw std::runtime_error("ice: unknown operator");
@@ -183,10 +208,12 @@ inline parser::Op tokToOp(TokenType t)
  * @brief get left binding power
  *
  * Represents the precedence of a token.
+ *
+ * @param tt token type
  */
-inline int getLbp(TokenType t)
+inline int getLbp(TokenType tt)
 {
-    switch (t)
+    switch (tt)
     {
     case PLUS:
     case MINUS:
@@ -201,10 +228,18 @@ inline int getLbp(TokenType t)
     }
 }
 
+/**
+ * @brief represents one typed, valued, and spanned Tachyon token
+ */
 struct Token
 {
+    /// token type
     TokenType type;
+
+    /// value, defaults to std::monostate
     std::variant<std::monostate, double, bool, std::string> value;
+
+    /// relevant source region
     SourceSpan span;
 
     Token(TokenType type, size_t pos, size_t len) : type(type), span(pos, len) {}
@@ -221,6 +256,9 @@ struct Token
     {
     }
 
+    /**
+     * @brief print token
+     */
     void print()
     {
         std::cout << tokToStr(type);
@@ -233,5 +271,6 @@ struct Token
     };
 };
 
+/// list of tokens
 using Tokens = std::vector<Token>;
 } // namespace tachyon::lexer

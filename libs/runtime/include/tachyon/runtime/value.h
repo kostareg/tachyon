@@ -19,6 +19,8 @@ struct Proto;
 //  and keeping an int? or pointer?) and benchmark alternatives.
 // TODO: can I/should I unify this value with the AST value, so that it's all
 //  the same type? and put it in tachyon::common.
+
+/// runtime value
 using Value = std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
 
 /**

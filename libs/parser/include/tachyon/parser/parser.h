@@ -10,6 +10,9 @@ using namespace tachyon::lexer;
 
 namespace tachyon::parser
 {
+/**
+ * @brief generates abstract syntax tree from list of tokens
+ */
 class Parser
 {
     /**

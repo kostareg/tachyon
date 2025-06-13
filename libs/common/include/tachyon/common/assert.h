@@ -1,5 +1,8 @@
 #pragma once
 
+/**
+ * @brief always assert, ignore debug status
+ */
 #define TY_ALWAYS_ASSERT(...)                                                                      \
     do                                                                                             \
     {                                                                                              \
@@ -15,6 +18,9 @@
         }                                                                                          \
     } while (false)
 
+/**
+ * @brief never assert, used as placeholder
+ */
 #define TY_NEVER_ASSERT(...)                                                                       \
     do                                                                                             \
     {                                                                                              \
@@ -23,6 +29,10 @@
         }                                                                                          \
     } while (false)
 
+/**
+ * @def TY_ASSERT
+ * @brief assert, if in debug
+ */
 #if defined(TY_DEBUG) && TY_DEBUG
 #define TY_ASSERT(...) TY_ALWAYS_ASSERT(__VA_ARGS__)
 #else

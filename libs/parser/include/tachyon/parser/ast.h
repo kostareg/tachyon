@@ -17,10 +17,13 @@ using ExprRef = std::unique_ptr<Expr>;
 using Exprs = std::vector<Expr>;
 
 /**
- * @brief literal values, ie unit, numbers, strings, booleans
+ * @brief literal values ie unit, numbers, strings, booleans
  */
 using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
 
+/**
+ * @brief a literal expression, or constant value
+ */
 struct LiteralExpr
 {
     LiteralValue value;
@@ -45,8 +48,14 @@ struct FunctionConcreteTypes;
  */
 using Type = std::variant<BasicConcreteTypes, FunctionConcreteTypes, std::string>;
 
+/**
+ * @brief optionally a type, for pre-inference abstract syntax tree
+ */
 using MaybeType = std::optional<Type>;
 
+/**
+ * @brief function type, eg Fn(Num) -> Num
+ */
 struct FunctionConcreteTypes
 {
     std::unordered_map<std::string, Type> arguments;
@@ -77,52 +86,80 @@ struct BinaryOperatorExpr
     ExprRef right;
 };
 
+/**
+ * @brief let binding (variable)
+ */
 struct LetExpr
 {
     std::string name;
     ExprRef value;
 };
 
+/**
+ * @brief let binding reference (variable reference)
+ */
 struct LetRefExpr
 {
     std::string name;
 };
 
 // TODO: captures
+/**
+ * @brief function call
+ */
 struct FnCallExpr
 {
     LetRefExpr ref;
     std::vector<Expr> args;
 };
 
+/**
+ * @brief module import
+ */
 struct ImportExpr
 {
     std::string path;
 };
 
 // TODO: retv
+/**
+ * @brief return value from function
+ */
 struct ReturnExpr
 {
     ExprRef returns;
 };
 
+/**
+ * @brief linear sequence of expressions
+ *
+ * This is how we can show the idea of "statements" in the abstract syntax tree without moving too
+ * far away from expressions. Any tree that needs a list of statements (e.g. function definition)
+ * can keep a SequenceExpr that in turn keeps the list of expressions.
+ */
 struct SequenceExpr
 {
     Exprs sequence;
 };
 
+/**
+ * @brief type of expression
+ */
 using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
                               FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
- * @brief Top-level expression type.
+ * @brief top-level expression type
  */
 struct Expr
 {
+    /// kind
     ExprKind kind;
+
+    /// source span
     SourceSpan span;
 
-    // TODO: remove
+    // TODO: remove?
     Expr(ExprKind kind) : kind(std::move(kind)), span(0, 0) {}
     Expr(ExprKind kind, SourceSpan span) : kind(std::move(kind)), span(span) {}
 };

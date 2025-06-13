@@ -6,7 +6,7 @@
 namespace tachyon::parser
 {
 /**
- * @brief Mathematical operators.
+ * @brief basic mathematical operators
  */
 enum class Op
 {
@@ -18,10 +18,10 @@ enum class Op
 };
 
 /**
- * @brief For printing operators.
+ * @brief show operator
  * @sa Op
  */
-inline const char *op_to_str(Op op)
+inline const char *opToStr(Op op)
 {
     switch (op)
     {
@@ -41,9 +41,9 @@ inline const char *op_to_str(Op op)
 }
 
 /**
- * @brief convert op to vm bytecode constant operations.
+ * @brief convert op to vm bytecode constant operations
  */
-inline uint8_t op_to_uint8_t(Op op)
+inline uint8_t opToUint8T(Op op)
 {
     if (op == Op::Pow)
         throw std::runtime_error("power operator not yet supported");

@@ -37,6 +37,10 @@ struct PrintExpr
     void operator()(const SequenceExpr &seq) const;
 };
 
+/**
+ * @brief print an expression
+ * @param e expression
+ */
 inline void printExpr(Expr &e)
 {
     auto printer = PrintExpr{};

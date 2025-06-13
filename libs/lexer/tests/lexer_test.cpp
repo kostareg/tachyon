@@ -1,6 +1,6 @@
 #include "tachyon/lexer/lexer.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace tachyon::lexer;
 

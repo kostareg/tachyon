@@ -17,7 +17,7 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit)
 
 void BytecodeGenerator::operator()(const FnExpr &fn)
 {
-    // TODO: see generateProto_with_args definition.
+    // TODO: see generateProtoWithArgs definition.
     std::expected<runtime::Proto, Error> maybe_proto = runtime::Proto{
         .bytecode = {},
         .constants = {},
@@ -48,7 +48,7 @@ void BytecodeGenerator::operator()(const FnExpr &fn)
 // TODO: handle fn calls
 void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
 {
-    uint8_t op = op_to_uint8_t(binop.op);
+    uint8_t op = opToUint8T(binop.op);
     if (std::holds_alternative<LiteralExpr>(binop.left->kind))
     {
         // constant lhs
@@ -231,7 +231,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
         {
             errors.push_back(Error::create(ErrorKind::BytecodeGenerationError, SourceSpan(0, 0),
                                            "could not generate function call")
-                                 .withLongMessage("failed to recognize fnc.args[i]ument type."));
+                                 .withLongMessage("failed to recognize argument type."));
         }
     }
 
