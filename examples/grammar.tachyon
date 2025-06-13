@@ -7,67 +7,148 @@
  * and end with a star and a forward slash.
  */
 
-n : Integer  = 5
-x : Real     = 9.99999
-y : Complex  = 4.1 + 10.9i
-z : 5x5 Real = zeroes // matrix
+// Variables
+n = 5
+x = 0.999
+b = False
+// y = 4.1 + 10.9i // complex numbers
 
-f x y : Real -> Real -> Real = x + y
+// Unary and binary operators
+// neg = -x
+// not_b = !b
+z = x * (x + 2) - 5 / (2 * 2 * 2)
+// l = 3x + (5)(3) // precede x by a number, or ()(), to multiply it
 
-g n x : Real -> Real -> Real = {
-    return \sum |0 --> \inf| x^n/n!
-}
+// Anonymous functions, last line of function is return value
+// square = fn(x) { x * x }
+square' = fn(x) { return x * x; }
+square'' = fn(x: Num) -> Num { return x * x; }
 
-// or
+// Function composition
+// f = fn(x) { 2x }
+// g = fn(x) { 5x }
+// h = f . g // same as 10x
 
-g' n x = \sum |0 --> \inf| x^n/n!
+// First-class functions
+// f(fn(x) { x })
+// map([1 2 3], fn(x) { x * 2 })
 
-gAtSomePoint = g 5 // currying
+// Partial application of functions
+// add = fn(a, b) { a + b }
+// add5 = add(5, _) // add5(b) = 5 + b
 
-// Now some more practical code. @derive generates derivatives for a given fn.
-@derive
-h x = 5x^3 + 4x^2 + 5
+// Macro for symbolic differentiation, integration
+// n = @diff x^2 + sin(x) wrt x
+// m = @integ sin(x) of x = 0..pi
+// n = 2x + cos(x)
+// m = 2
 
-// Now automatically have h' x, h'' x, d2h/dx2, etc... in scope.
-// D(h, 5) is always in scope, even without @derive.
+// Control flow
+// if x > 0 {
+//   y = x
+// } else {
+//   y = -x
+// }
 
-// systems - a library? probably part of std.
-mysys = @system x, y {
-    x + y = 10
-    x^2 = 25
-}
+// while x > 0 {
+//   x = x - 1
+// }
 
-print(@solve mysys)
-/*
- * mysys has two finite solutions, so solving it will return 2 systems with two
- * rows each. this prints:
- * [
- *     @system { x = 5, y = 5 },
- *     @system { x = -5, y = 15 },
- * ]
- * Note how these systems have no parameters (after @system) like mysys does,
- * because its solved.
- *
- * NB: solving systems with a free parameter will look like this:
- * [ @system a { x = a, y = 1-a } ]
- * Importantly, there is an `a` as a parameter of the system.
+// Data structures and array unpacking
+// a = [1 2 3]
+// mat = [5 5 5; 1 2 3]
+// [a b] = [3 4]
+
+// Modules
+import Math // can now use Math.PI
+// import Math.Genius.Ideas // ./Math/Genius/Ideas.Tachyon
+
+// Expression-only
+// x = if a > 0 { a } else { -a }
+
+// Pattern matching
+// match expr {
+//     0 => "zero"
+//     1 => "one"
+//     n if n > 1 => "many"
+//     _ => "unknown"
+// }
+
+// Structs
+// Point = struct (x: Num, y: Num)
+// MyData = struct {
+//   name: Str,
+//   something: Num,
+// }
+
+// Enumerations
+// Shape = enum {
+//     Circle(radius: Num)
+//     Rect(width: Num, height: Num)
+// }
+
+// Unit type
+x = ()
+y = fn(x) -> Unit { return (); }
+
+/**
+ * Type inference
+ *   -> Available for variables and functions
+ *   -> Not available for structs and enums: must be self-contained
+ *   -> Can always type using x: T syntax.
+ *   -> Need to resolve types during compile-time. So if can't reason, fails.
+ *   -> Function inferences must be based on body only.
+ *   -> There is a TypeCheckPass during compilation.
  */
 
-// we can also do differential eqns:
+/*
+// Algebraic systems
+mysys = @system x, y {
+    x + y = 10
+    x * x = 25
+}
+
+x = @solve mysys
+// x = [
+//   @system { x = 5, y = 5 }
+//   @system { x = -5, y = 15 }
+// ]
+
+// Parametric solutions
+n = @system a, b {
+     a +  b = 10
+    2a + 2b = 20
+}
+// @solve n = [@system a, b { b = 10 - a }]
+// a is not used in the body therefore its free.
+
+// Ordinary Differential Equations
 myode = @ode x | t {
     dx = -x
 }
-print(@solve myode of t=0..10 with x = 1)
-// prints:
+// `@solve myode of t = 0..10 with x = 1` returns:
 // @system {
-//     x = e^(-x)
+//   x = e^(-t)
 // }
 
-mymatrix = ( 1 2 3 4
-           | 1 2 3 4
-           | 1 2 3 4 )
+// Limits macro
+x = @lim x -> 0 of x         //   determinate: simply x=0
+x = @lim x -> 0 of sin x / x // indeterminate: apply l'hopitals rule = cos x / 1
 
-// maybe a std library macro for matrices
-@matrix | 1 2 3 |
-        | 1 2 3 |
-        | 4 5 6 |
+// Plotting macro
+@plot fn(x) { sin(x) } over x = -pi..pi
+*/
+
+// Std sum types defined by Result and Option
+// enum Result {
+//     Ok(value: Str)
+//     Err(message: Str)
+// }
+
+// match r {
+//     Ok(v) => @todo // prints todo and quits
+//     Err(msg) => @todo
+// }
+
+// String interpolation
+// l = "hello, {m}"

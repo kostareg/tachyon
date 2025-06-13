@@ -1,28 +1,40 @@
 {
-  description = "C++ project with spdlog";
+  description = "Development environment with clang and libc++";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            clang
-            cmake
-            spdlog spdlog.dev
-            fmt fmt.dev
-            mimalloc mimalloc.dev
-          ];
-          shellHook = ''
-            export CC=clang
-            export CXX=clang++
-          '';
-        };
-      });
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      devShells.default = pkgs.mkShell {
+        hardeningDisable = ["all"];
+
+        buildInputs = with pkgs; [
+          llvmPackages.clangUseLLVM
+          libcxx
+          llvm
+          lld
+          cmake
+          ninja
+          pkg-config
+          llvmPackages.libunwind
+        ];
+
+        shellHook = ''
+          export CXX=clang++
+          export CC=clang
+          export CXXFLAGS="-stdlib=libc++"
+          export LDFLAGS="-stdlib=libc++"
+          export LD=lld
+        '';
+      };
+    });
 }

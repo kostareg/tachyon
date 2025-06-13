@@ -1,0 +1,36 @@
+@startuml
+top to bottom direction
+hide empty description
+
+[*] --> CompilationPipeline : source text
+
+state "Compilation Pipeline" as CompilationPipeline {
+  state Lexer
+  state Parser
+  state "Bytecode Generator" as Bytecodegen
+
+  [*] -> Lexer
+
+  Lexer -> Parser : list of tokens
+
+  Parser -> Bytecodegen : abstract syntax tree
+}
+CompilationPipeline --> RuntimePipeline
+
+state "Runtime Pipeline" as RuntimePipeline {
+  state "Tachyon Virtual Machine"  as VM
+  state "Intermediate Representation Generator" as IRGenerator
+  state "Intermediate Representation Optimizer" as IROptimizer
+
+  note right of VM : interprets bytecode or executes machine code.\nalso collects traces and marks bytecode for JIT compilation.
+  note top of IRGenerator : generates an intermediate representation of bytecode
+  note right of IROptimizer : applies various optimizations
+
+  [*] -down-> VM
+  VM -down-> IRGenerator : bytecode
+  IRGenerator -down-> IROptimizer : intermediate representation
+  IROptimizer -up-> VM : optimized machine code
+}
+RuntimePipeline --> [*] : exit
+
+@enduml
