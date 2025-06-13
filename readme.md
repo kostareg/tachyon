@@ -27,7 +27,6 @@ The next steps for this project are, in no particular order:
 * Implement math tools
     * Research what algorithms you want to implement
     * Find efficient and pretty
-* Document codebase
 * Plotting library (eg `plot(sin, 1, 5)`) plots sin b/w x=1, x=5
 * Visual debug tool
     * Not necessarily for stepping through code (lldb is fine)

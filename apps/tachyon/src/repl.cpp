@@ -16,7 +16,7 @@ int repl()
     std::string source, line;
     auto prefix = "> ";
 
-    while (std::printf("%s", prefix) && std::getline(std::cin, line))
+    while (std::print("{}", prefix), std::getline(std::cin, line))
     {
         if (line.ends_with(";;"))
         {
