@@ -26,7 +26,9 @@ int repl()
             continue;
         }
 
-        source += line + '\n';
+        // TODO: we could have a different mode of the VM for the REPL, that way we don't have to
+        //  return 0 each time. Could also be return void.
+        source += line + "\nreturn 0;";
 
         if (source.empty())
             continue;
