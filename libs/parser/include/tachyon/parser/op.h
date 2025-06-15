@@ -45,8 +45,6 @@ inline const char *opToStr(Op op)
  */
 inline uint8_t opToUint8T(Op op)
 {
-    if (op == Op::Pow)
-        throw std::runtime_error("power operator not yet supported");
     return static_cast<uint8_t>(op) + 0x50;
 }
 } // namespace tachyon::parser

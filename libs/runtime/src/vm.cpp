@@ -169,6 +169,15 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]) / std::get<double>(proto.constants[src2]);
             break;
         }
+        case MPCC:
+        {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] = pow(std::get<double>(proto.constants[src1]),
+                                                   std::get<double>(proto.constants[src2]));
+            break;
+        }
         case MARC:
         {
             auto src1 = proto.bytecode[++ptr];
@@ -203,6 +212,16 @@ std::expected<void, Error> VM::run(const Proto &proto)
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) /
                                                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case MPRC:
+        {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                pow(std::get<double>(call_stack.back().registers[src1]),
+                    std::get<double>(proto.constants[src2]));
             break;
         }
         case MACR:
@@ -241,6 +260,16 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                std::get<double>(call_stack.back().registers[src2]);
             break;
         }
+        case MPCR:
+        {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                pow(std::get<double>(proto.constants[src1]),
+                    std::get<double>(call_stack.back().registers[src2]));
+            break;
+        }
         case MARR:
         {
             auto src1 = proto.bytecode[++ptr];
@@ -275,6 +304,16 @@ std::expected<void, Error> VM::run(const Proto &proto)
             auto dst = proto.bytecode[++ptr];
             call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) /
                                                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
+        case MPRR:
+        {
+            auto src1 = proto.bytecode[++ptr];
+            auto src2 = proto.bytecode[++ptr];
+            auto dst = proto.bytecode[++ptr];
+            call_stack.back().registers[dst] =
+                pow(std::get<double>(proto.constants[src1]),
+                    std::get<double>(call_stack.back().registers[src2]));
             break;
         }
         case CALC:

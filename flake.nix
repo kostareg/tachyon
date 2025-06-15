@@ -26,6 +26,7 @@
           ninja
           pkg-config
           llvmPackages.libunwind
+          lcov
         ];
 
         shellHook = ''

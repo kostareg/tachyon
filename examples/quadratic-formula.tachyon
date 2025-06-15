@@ -1,0 +1,11 @@
+/// find the first root of a quadratic equation
+quadratic  = fn(a, b, c) { return ((0 - b) + (b ^ 2 - 4 * a * c) ^ (0.5)) / (2 * a); }
+/// find the second root of a quadratic equation
+quadratic' = fn(a, b, c) { return ((0 - b) - (b ^ 2 - 4 * a * c) ^ (0.5)) / (2 * a); }
+
+print("the roots are: ")
+print(quadratic(0.4,6.9,10))
+print(", ")
+print(quadratic'(0.4,6.9,10))
+
+return 0;

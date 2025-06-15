@@ -13,6 +13,6 @@ static void BM_BasicLex(benchmark::State &state)
     }
 }
 
-BENCHMARK(BM_BasicLex);
+BENCHMARK(BM_BasicLex)->MinTime(1.0);
 
 BENCHMARK_MAIN();

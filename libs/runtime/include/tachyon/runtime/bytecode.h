@@ -52,18 +52,22 @@ enum Bytecode : uint8_t
     MSCC = 0x51, // constant - constant -> register
     MMCC = 0x52, // constant * constant -> register
     MDCC = 0x53, // constant / constant -> register
-    MARC = 0x54, // register + constant -> register
-    MSRC = 0x55, // register - constant -> register
-    MMRC = 0x56, // register * constant -> register
-    MDRC = 0x57, // register / constant -> register
-    MACR = 0x58, // constant + register -> register
-    MSCR = 0x59, // constant - register -> register
-    MMCR = 0x5A, // constant * register -> register
-    MDCR = 0x5B, // constant / register -> register
-    MARR = 0x5C, // register + register -> register
-    MSRR = 0x5D, // register - register -> register
-    MMRR = 0x5E, // register * register -> register
-    MDRR = 0x5F, // register / register -> register
+    MPCC = 0x54, // constant ^ constant -> register
+    MARC = 0x55, // register + constant -> register
+    MSRC = 0x56, // register - constant -> register
+    MMRC = 0x57, // register * constant -> register
+    MDRC = 0x58, // register / constant -> register
+    MPRC = 0x59, // register ^ constant -> register
+    MACR = 0x5A, // constant + register -> register
+    MSCR = 0x5B, // constant - register -> register
+    MMCR = 0x5C, // constant * register -> register
+    MDCR = 0x5D, // constant / register -> register
+    MPCR = 0x5E, // constant ^ register -> register
+    MARR = 0x5F, // register + register -> register
+    MSRR = 0x60, // register - register -> register
+    MMRR = 0x61, // register * register -> register
+    MDRR = 0x62, // register / register -> register
+    MPRR = 0x63, // register ^ register -> register
 
     // TODO: negate, inverse, pow, nth root/sqrt, abs, floor, ceil, round,
     //  min?/max?, trig functions, potentially shortcuts for square and cube.

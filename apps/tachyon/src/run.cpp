@@ -3,6 +3,7 @@
 #include "tachyon/codegen/bytecode_generator.h"
 #include "tachyon/lexer/lexer.h"
 #include "tachyon/parser/parser.h"
+#include "tachyon/parser/print.h"
 #include "tachyon/runtime/vm.h"
 
 #include <filesystem>
@@ -84,6 +85,12 @@ int run(char *fileName)
     // pipeline
     auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
+                 // .and_then(
+                 // [](Expr e) -> std::expected<Expr, Error>
+                 // {
+                 // printExpr(e);
+                 // return e;
+                 // })
                  .and_then(codegen::generateProto)
                  // .and_then(
                  // [](runtime::Proto proto) -> std::expected<runtime::Proto, Error>
@@ -92,6 +99,19 @@ int run(char *fileName)
                  // for (auto bc : proto.bytecode)
                  // {
                  // std::println("{}", bc);
+                 // }
+                 // for (auto constant : proto.constants)
+                 // {
+                 // if (std::holds_alternative<std::shared_ptr<runtime::Proto>>(constant))
+                 // {
+                 // auto proto_new =
+                 // std::get<std::shared_ptr<runtime::Proto>>(constant);
+                 // std::println("function {}", proto_new->name);
+                 // for (auto bc : proto_new->bytecode)
+                 // {
+                 // std::println("{}", bc);
+                 // }
+                 // }
                  // }
                  // return proto;
                  // })
@@ -111,4 +131,4 @@ int run(char *fileName)
     }
 
     return 0;
-}
+};

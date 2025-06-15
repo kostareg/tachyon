@@ -55,7 +55,7 @@ struct BytecodeGenerator
      */
     explicit BytecodeGenerator(std::unordered_map<std::string, size_t> vars) : vars(std::move(vars))
     {
-        next_free_register = vars.size() + 1;
+        next_free_register = this->vars.size() + 1;
     };
 
     void operator()(const LiteralExpr &lit);
