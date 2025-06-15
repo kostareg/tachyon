@@ -26,8 +26,12 @@ enum class TokenType
     STAR,
     FSLASH,
     CARET,
-    RCHEV,
-    // TODO: rest of the comparison operators eg >=, ==, !=, etc.
+    ECOMP,
+    NECOMP,
+    LCOMP,
+    GCOMP,
+    LECOMP,
+    GECOMP,
     LPAREN,
     RPAREN,
     LBRACE,
@@ -40,6 +44,9 @@ enum class TokenType
     IMPORT,
     FN,
     RETURN,
+    WHILE,
+    BREAK,
+    CONTINUE,
     NLINE,
     END
 };
@@ -73,10 +80,20 @@ inline std::string tokToStr(TokenType tt)
         return "STAR";
     else if (tt == FSLASH)
         return "FSLASH";
-    else if (tt == RCHEV)
-        return "RCHEV";
     else if (tt == CARET)
         return "CARET";
+    else if (tt == ECOMP)
+        return "ECOMP";
+    else if (tt == NECOMP)
+        return "NECOMP";
+    else if (tt == GCOMP)
+        return "GCOMP";
+    else if (tt == LCOMP)
+        return "LCOMP";
+    else if (tt == GECOMP)
+        return "GECOMP";
+    else if (tt == LECOMP)
+        return "LECOMP";
     else if (tt == LPAREN)
         return "LPAREN";
     else if (tt == RPAREN)
@@ -101,6 +118,12 @@ inline std::string tokToStr(TokenType tt)
         return "FN";
     else if (tt == RETURN)
         return "RETURN";
+    else if (tt == WHILE)
+        return "WHILE";
+    else if (tt == BREAK)
+        return "BREAK";
+    else if (tt == CONTINUE)
+        return "CONTINUE";
     else if (tt == NLINE)
         return "NLINE";
     else if (tt == END)
@@ -136,10 +159,20 @@ inline std::string tokToStrPretty(TokenType tt)
         return "a star";
     else if (tt == FSLASH)
         return "a slash";
-    else if (tt == RCHEV)
-        return "a right chevron";
     else if (tt == CARET)
         return "a caret symbol";
+    else if (tt == ECOMP)
+        return "an equality comparison";
+    else if (tt == NECOMP)
+        return "an inequality comparison";
+    else if (tt == LCOMP)
+        return "a less than sign";
+    else if (tt == GCOMP)
+        return "a greater than sign";
+    else if (tt == LECOMP)
+        return "a less than or equal to sign";
+    else if (tt == GECOMP)
+        return "a greater than or equal to sign";
     else if (tt == LPAREN)
         return "a left parenthesis";
     else if (tt == RPAREN)
@@ -164,6 +197,12 @@ inline std::string tokToStrPretty(TokenType tt)
         return "a function declaration";
     else if (tt == RETURN)
         return "a return";
+    else if (tt == WHILE)
+        return "a while loop";
+    else if (tt == BREAK)
+        return "a break";
+    else if (tt == CONTINUE)
+        return "a continue";
     else if (tt == NLINE)
         return "a new line";
     else if (tt == END)
@@ -173,13 +212,14 @@ inline std::string tokToStrPretty(TokenType tt)
 }
 
 /**
- * @brief checks if a token is an operator (one of +, -, *, /, ^)
+ * @brief checks if a token is an operator
  * @param tt token type
  * @return is operator?
  */
 inline bool isOperator(TokenType tt)
 {
-    return tt == PLUS || tt == MINUS || tt == STAR || tt == FSLASH || tt == CARET;
+    return tt == ECOMP || tt == NECOMP || tt == LCOMP || tt == GCOMP || tt == LECOMP ||
+           tt == GECOMP || tt == PLUS || tt == MINUS || tt == STAR || tt == FSLASH || tt == CARET;
 };
 
 /**
@@ -190,7 +230,19 @@ inline bool isOperator(TokenType tt)
  */
 inline parser::Op tokToOp(TokenType tt)
 {
-    if (tt == PLUS)
+    if (tt == ECOMP)
+        return parser::Op::Eq;
+    else if (tt == NECOMP)
+        return parser::Op::Neq;
+    else if (tt == LCOMP)
+        return parser::Op::Lst;
+    else if (tt == GCOMP)
+        return parser::Op::Grt;
+    else if (tt == LECOMP)
+        return parser::Op::Lset;
+    else if (tt == GECOMP)
+        return parser::Op::Gret;
+    else if (tt == PLUS)
         return parser::Op::Add;
     else if (tt == MINUS)
         return parser::Op::Sub;
@@ -223,6 +275,14 @@ inline int getLbp(TokenType tt)
         return 20;
     case CARET:
         return 30;
+    case ECOMP:
+    case NECOMP:
+        return 40;
+    case LCOMP:
+    case GCOMP:
+    case LECOMP:
+    case GECOMP:
+        return 50;
     default:
         return 0;
     }

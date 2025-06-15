@@ -57,7 +57,15 @@ std::expected<Tokens, Error> lex(const std::string &s)
             }
         }
         else if (c == '=')
-            tokens.emplace_back(EQ, pos, 1);
+        {
+            // could be ==
+            if (s[pos + 1] == '=')
+                tokens.emplace_back(ECOMP, pos++, 2);
+            else
+                tokens.emplace_back(EQ, pos, 1);
+        }
+        else if (c == '!' && s[pos + 1] == '=')
+            tokens.emplace_back(NECOMP, pos++, 2);
         else if (c == '+')
             tokens.emplace_back(PLUS, pos, 1);
         else if (c == '-')
@@ -77,10 +85,24 @@ std::expected<Tokens, Error> lex(const std::string &s)
             tokens.emplace_back(STAR, pos, 1);
         else if (c == '/')
             tokens.emplace_back(FSLASH, pos, 1);
-        else if (c == '>')
-            tokens.emplace_back(RCHEV, pos, 1);
         else if (c == '^')
             tokens.emplace_back(CARET, pos, 1);
+        else if (c == '<')
+        {
+            // could be <=
+            if (s[pos + 1] == '=')
+                tokens.emplace_back(LECOMP, pos++, 2);
+            else
+                tokens.emplace_back(LCOMP, pos, 1);
+        }
+        else if (c == '>')
+        {
+            // could be >=
+            if (s[pos + 1] == '=')
+                tokens.emplace_back(GECOMP, pos++, 2);
+            else
+                tokens.emplace_back(GCOMP, pos, 1);
+        }
         else if (c == '(')
         {
             // may be unit type ()
@@ -143,6 +165,21 @@ std::expected<Tokens, Error> lex(const std::string &s)
         {
             tokens.emplace_back(RETURN, pos, 6);
             pos += 5;
+        }
+        else if (s.substr(pos, 5) == "while" && !isalpha(s[pos + 5]))
+        {
+            tokens.emplace_back(WHILE, pos, 5);
+            pos += 4;
+        }
+        else if (s.substr(pos, 5) == "break" && !isalpha(s[pos + 5]))
+        {
+            tokens.emplace_back(BREAK, pos, 5);
+            pos += 4;
+        }
+        else if (s.substr(pos, 8) == "continue" && !isalpha(s[pos + 8]))
+        {
+            tokens.emplace_back(CONTINUE, pos, 8);
+            pos += 7;
         }
         else if (isalpha(c))
         {

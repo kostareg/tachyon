@@ -72,7 +72,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             uint8_t lhs = curr;
             std::visit(*this, binop.right->kind);
             uint8_t rhs = curr;
-            bc.push_back(op + 10);
+            bc.push_back(getBytecodeNthGroup(op, 2));
             bc.push_back(lhs);
             bc.push_back(rhs);
             bc.push_back(next_free_register); // target
@@ -93,7 +93,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             uint8_t lhs = curr;
             std::visit(*this, binop.right->kind);
             uint8_t rhs = curr;
-            bc.push_back(op + 5);
+            bc.push_back(getBytecodeNthGroup(op, 1));
             bc.push_back(lhs);
             bc.push_back(rhs);
             bc.push_back(next_free_register); // target
@@ -106,7 +106,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             uint8_t lhs = curr;
             std::visit(*this, binop.right->kind);
             uint8_t rhs = curr;
-            bc.push_back(op + 15);
+            bc.push_back(getBytecodeNthGroup(op, 3));
             bc.push_back(lhs);
             bc.push_back(rhs);
             bc.push_back(next_free_register); // target

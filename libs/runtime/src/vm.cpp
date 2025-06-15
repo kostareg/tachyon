@@ -403,6 +403,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t src1 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0] == proto.constants[src1];
+            break;
         }
         case CNCC:
         {
@@ -410,6 +411,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t src1 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0] != proto.constants[src1];
+            break;
         }
         case CLCC:
         {
@@ -417,6 +419,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t src1 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0] < proto.constants[src1];
+            break;
         }
         case CGCC:
         {
@@ -424,6 +427,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t src1 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0] > proto.constants[src1];
+            break;
         }
         case CHCC:
         {
@@ -431,6 +435,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t src1 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0] <= proto.constants[src1];
+            break;
         }
         case CFCC:
         {
@@ -438,6 +443,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t src1 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0] >= proto.constants[src1];
+            break;
         }
         case CERC:
         {
@@ -446,6 +452,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] == proto.constants[src1];
+            break;
         }
         case CNRC:
         {
@@ -454,6 +461,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] != proto.constants[src1];
+            break;
         }
         case CLRC:
         {
@@ -462,6 +470,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] < proto.constants[src1];
+            break;
         }
         case CGRC:
         {
@@ -470,6 +479,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] > proto.constants[src1];
+            break;
         }
         case CHRC:
         {
@@ -478,6 +488,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] <= proto.constants[src1];
+            break;
         }
         case CFRC:
         {
@@ -486,6 +497,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] >= proto.constants[src1];
+            break;
         }
         case CECR:
         {
@@ -494,6 +506,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 proto.constants[src0] == call_stack.back().registers[src1];
+            break;
         }
         case CNCR:
         {
@@ -502,6 +515,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 proto.constants[src0] != call_stack.back().registers[src1];
+            break;
         }
         case CLCR:
         {
@@ -510,6 +524,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 proto.constants[src0] < call_stack.back().registers[src1];
+            break;
         }
         case CGCR:
         {
@@ -518,6 +533,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 proto.constants[src0] > call_stack.back().registers[src1];
+            break;
         }
         case CHCR:
         {
@@ -526,6 +542,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 proto.constants[src0] <= call_stack.back().registers[src1];
+            break;
         }
         case CFCR:
         {
@@ -534,6 +551,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 proto.constants[src0] >= call_stack.back().registers[src1];
+            break;
         }
         case CERR:
         {
@@ -542,6 +560,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] == call_stack.back().registers[src1];
+            break;
         }
         case CNRR:
         {
@@ -550,6 +569,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] != call_stack.back().registers[src1];
+            break;
         }
         case CLRR:
         {
@@ -558,6 +578,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] < call_stack.back().registers[src1];
+            break;
         }
         case CGRR:
         {
@@ -566,6 +587,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] > call_stack.back().registers[src1];
+            break;
         }
         case CHRR:
         {
@@ -574,6 +596,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] <= call_stack.back().registers[src1];
+            break;
         }
         case CFRR:
         {
@@ -582,6 +605,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint8_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 call_stack.back().registers[src0] >= call_stack.back().registers[src1];
+            break;
         }
 
         /* function */
