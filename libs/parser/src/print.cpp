@@ -1,5 +1,7 @@
 #include "tachyon/parser/print.h"
 
+#include <ranges>
+
 namespace tachyon::parser
 {
 void PrintLiteral::operator()(const std::monostate _) const
@@ -36,9 +38,9 @@ void PrintType::operator()(const BasicConcreteTypes &btyp) const
 
 void PrintType::operator()(const FunctionConcreteTypes &ftyp) const
 {
-    for (auto pair : ftyp.arguments)
+    for (auto val : ftyp.arguments | std::views::values)
     {
-        std::visit(*this, pair.second);
+        std::visit(*this, val);
     }
 };
 
@@ -55,11 +57,11 @@ void PrintExpr::operator()(const LiteralExpr &lit) const
 void PrintExpr::operator()(const FnExpr &fn) const
 {
     std::print("fn (");
-    for (auto pair : fn.arguments)
+    for (auto [fst, snd] : fn.arguments)
     {
-        std::print("{}: ", pair.first);
-        if (pair.second)
-            std::visit(PrintType{}, pair.second.value());
+        std::print("{}: ", fst);
+        if (snd)
+            std::visit(PrintType{}, snd.value());
         else
             std::print("<unknown type>");
     }
@@ -99,7 +101,7 @@ void PrintExpr::operator()(const FnCallExpr &fnc) const
     if (fnc.args.empty())
         std::print("<empty>");
     else
-        for (const auto &arg : fnc.args)
+        for (const Expr &arg : fnc.args)
         {
             std::visit(*this, arg.kind);
             std::print(", ");

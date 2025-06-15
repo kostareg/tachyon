@@ -42,18 +42,21 @@ if (TACHYON_BUILD_TESTS)
 endif ()
 
 if (TACHYON_BUILD_BENCHMARKS)
-    # ignore warning about clang version 5.0.0
+    # Disable internal benchmark tests
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
     set(BENCHMARK_ENABLE_ASSEMBLY_TESTS OFF CACHE BOOL "" FORCE)
-    find_package(benchmark QUIET)
-    if (NOT benchmark_FOUND)
-        include(FetchContent)
-        FetchContent_Declare(
-                googlebenchmark
-                GIT_REPOSITORY https://github.com/google/benchmark.git
-                GIT_TAG v1.9.4
-        )
-        FetchContent_MakeAvailable(googlebenchmark)
-    endif ()
+
+    include(FetchContent)
+    FetchContent_Declare(
+            googlebenchmark
+            GIT_REPOSITORY https://github.com/google/benchmark.git
+            GIT_TAG v1.9.4
+    )
+    FetchContent_MakeAvailable(googlebenchmark)
+
+    # Optional: forcibly unset any benchmark test registration with CTest
+    set_property(DIRECTORY "${benchmark_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "")
 endif ()
 
 add_subdirectory(libs/common)

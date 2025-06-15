@@ -6,8 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-using namespace tachyon::parser;
-
 namespace tachyon::codegen
 {
 /**
@@ -58,15 +56,15 @@ struct BytecodeGenerator
         next_free_register = this->vars.size() + 1;
     };
 
-    void operator()(const LiteralExpr &lit);
-    void operator()(const FnExpr &fn);
-    void operator()(const BinaryOperatorExpr &binop);
-    void operator()(const LetExpr &vdecl);
-    void operator()(const LetRefExpr &vref);
-    void operator()(const FnCallExpr &fnc);
-    void operator()(const ImportExpr &);
-    void operator()(const ReturnExpr &ret);
-    void operator()(const SequenceExpr &seq);
+    void operator()(const parser::LiteralExpr &lit);
+    void operator()(const parser::FnExpr &fn);
+    void operator()(const parser::BinaryOperatorExpr &binop);
+    void operator()(const parser::LetExpr &vdecl);
+    void operator()(const parser::LetRefExpr &vref);
+    void operator()(const parser::FnCallExpr &fnc);
+    void operator()(const parser::ImportExpr &);
+    void operator()(const parser::ReturnExpr &ret);
+    void operator()(const parser::SequenceExpr &seq);
 };
 
 /**
@@ -74,13 +72,13 @@ struct BytecodeGenerator
  * @param e abstract syntax tree
  * @return function prototype object or error
  */
-inline std::expected<runtime::Proto, Error> generateProto(Expr e)
+inline std::expected<runtime::Proto, Error> generateProto(parser::Expr e)
 {
-    auto generator = BytecodeGenerator{};
+    BytecodeGenerator generator;
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error::createMultiple(generator.errors));
-    return runtime::Proto(generator.bc, std::move(generator.constants), 0, "<anonymous>", e.span);
+    return runtime::Proto(generator.bc, std::move(generator.constants), 0, "<main>", e.span);
 }
 
 // TODO: I wanted to do this with function overloading or defaults but the
@@ -91,21 +89,20 @@ inline std::expected<runtime::Proto, Error> generateProto(Expr e)
  * @param args ordered list of argument names
  * @return function prototype object or error
  */
-inline std::expected<runtime::Proto, Error> generateProtoWithArgs(Expr e,
+inline std::expected<runtime::Proto, Error> generateProtoWithArgs(parser::Expr e,
                                                                   std::vector<std::string> args)
 {
-    auto size = args.size();
+    size_t size = args.size();
     std::unordered_map<std::string, size_t> map;
     for (size_t i = 1; i <= size; ++i)
     {
         map[args[i - 1]] = i;
     }
 
-    auto generator = BytecodeGenerator(std::move(map));
+    BytecodeGenerator generator(std::move(map));
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error::createMultiple(generator.errors));
-    return runtime::Proto(generator.bc, std::move(generator.constants), size, "<anonymous>",
-                          e.span);
+    return runtime::Proto(generator.bc, std::move(generator.constants), size, "<main>", e.span);
 }
 } // namespace tachyon::codegen

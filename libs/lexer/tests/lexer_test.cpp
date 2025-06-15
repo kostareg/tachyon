@@ -6,10 +6,10 @@ using namespace tachyon::lexer;
 
 TEST(LexerTest, RecognizesAllTokens)
 {
-    auto rhs_ts = lex("\n = + - -> * / > ^ () ( ) { } . : ; , "
-                      "\"hello, world!\" True False import "
-                      "fn return someidentifier 12345")
-                      .value();
+    Tokens rhs_ts = lex("\n = + - -> * / > ^ () ( ) { } . : ; , "
+                        "\"hello, world!\" True False import "
+                        "fn return someidentifier 12345")
+                        .value();
 
     // 1. assert all values. default to std::monostate{}:
     std::vector<std::variant<std::monostate, double, bool, std::string>> lhs2(rhs_ts.size(),
@@ -46,8 +46,8 @@ TEST(LexerTest, RecognizesAllTokens)
 TEST(LexerTest, IgnoresComments)
 {
     // these lexed values should only include END.
-    auto rhs_1 = lex("// hello, world!\n").value();
-    auto rhs_2 = lex("/* this is a comment */").value();
+    Tokens rhs_1 = lex("// hello, world!\n").value();
+    Tokens rhs_2 = lex("/* this is a comment */").value();
 
     ASSERT_EQ(END, rhs_1.at(0).type);
     ASSERT_EQ(1, rhs_1.size());

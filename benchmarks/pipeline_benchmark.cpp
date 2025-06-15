@@ -16,7 +16,7 @@ static void BM_BasicPipeline(benchmark::State &state)
         lexer::lex(basic_source)
             .and_then(parser::parse)
             .and_then(codegen::generateProto)
-            .and_then([](auto proto) -> std::expected<void, Error>
+            .and_then([](const auto &proto) -> std::expected<void, Error>
                       { return runtime::VM().run(proto); });
     }
 }

@@ -26,7 +26,7 @@ using Value = std::variant<std::monostate, double, std::string, bool, std::share
 /**
  * @brief small visitor for printing values
  */
-inline void print_value(const Value &reg)
+inline void printValue(const Value &reg)
 {
     std::visit(
         [](const auto &val)

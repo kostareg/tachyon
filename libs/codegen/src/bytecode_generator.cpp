@@ -56,9 +56,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // constant <op> constant
             std::visit(*this, binop.left->kind);
-            auto lhs = curr;
+            uint8_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            auto rhs = curr;
+            uint8_t rhs = curr;
             bc.push_back(op);
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -90,9 +90,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // reference <op> constant
             std::visit(*this, binop.left->kind);
-            auto lhs = curr;
+            uint8_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            auto rhs = curr;
+            uint8_t rhs = curr;
             bc.push_back(op + 5);
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -103,9 +103,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // reference <op> reference
             std::visit(*this, binop.left->kind);
-            auto lhs = curr;
+            uint8_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            auto rhs = curr;
+            uint8_t rhs = curr;
             bc.push_back(op + 15);
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -141,7 +141,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
 //  before generation.
 void BytecodeGenerator::operator()(const LetExpr &vdecl)
 {
-    auto index = next_free_register++;
+    size_t index = next_free_register++;
     vars.insert({vdecl.name, index});
     std::visit(*this, vdecl.value->kind);
     if (std::holds_alternative<LiteralExpr>(vdecl.value->kind))
@@ -201,7 +201,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
         currs.push_back(curr);
     }
 
-    auto start = next_free_register;
+    size_t start = next_free_register;
     for (size_t i = 0; i < fnc.args.size(); ++i)
     {
         if (std::holds_alternative<BinaryOperatorExpr>(fnc.args[i].kind) ||

@@ -13,6 +13,8 @@
 
 using enum tachyon::lexer::TokenType;
 
+using namespace tachyon::lexer;
+
 namespace tachyon::parser
 {
 std::expected<Expr, Error> Parser::parse_expr_led(Token t, Expr l)

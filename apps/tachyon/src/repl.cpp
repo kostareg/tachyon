@@ -14,7 +14,7 @@ int repl()
 {
     runtime::VM vm;
     std::string source, line;
-    auto prefix = "> ";
+    std::string prefix = "> ";
 
     while (std::print("{}", prefix), std::getline(std::cin, line))
     {
@@ -35,9 +35,9 @@ int repl()
 
         // pipeline
         auto m = lexer::lex(source)
-                     .and_then(tachyon::parser::parse)
+                     .and_then(parser::parse)
                      .and_then(codegen::generateProto)
-                     .and_then([&vm](runtime::Proto proto) -> std::expected<void, Error>
+                     .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error>
                                { return vm.run(proto); });
 
         if (!m)

@@ -30,7 +30,7 @@ class VM
   public:
     VM()
     {
-        auto initial_frame = CallFrame{};
+        CallFrame initial_frame{};
         call_stack.push_back(std::move(initial_frame));
     }
 

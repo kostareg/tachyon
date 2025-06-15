@@ -86,7 +86,7 @@ int run(char *fileName)
     auto m = lexer::lex(file_contents)
                  .and_then(parser::parse)
                  // .and_then(
-                 // [](Expr e) -> std::expected<Expr, Error>
+                 // [](parser::Expr e) -> std::expected<parser::Expr, Error>
                  // {
                  // printExpr(e);
                  // return e;

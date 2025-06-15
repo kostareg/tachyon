@@ -21,7 +21,7 @@ std::expected<Tokens, Error> lex(const std::string &s)
             break;
         }
 
-        auto c = s[pos];
+        char c = s[pos];
 
         if (c == ' ')
         {
@@ -154,7 +154,7 @@ std::expected<Tokens, Error> lex(const std::string &s)
                 i += s[pos];
                 ++pos;
             }
-            auto len = pos - start_pos;
+            size_t len = pos - start_pos;
             tokens.emplace_back(IDENT, start_pos, len, i);
             --pos;
         }
@@ -167,7 +167,7 @@ std::expected<Tokens, Error> lex(const std::string &s)
                 n += s[pos];
                 ++pos;
             }
-            auto len = pos - start_pos;
+            size_t len = pos - start_pos;
             tokens.emplace_back(NUMBER, start_pos, len, std::stod(n));
             --pos;
         }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../../parser/include/tachyon/parser/op.h"
+#include "tachyon/common/op.h"
 #include "tachyon/common/source_span.h"
 #include "tachyon/lexer/token.h"
 

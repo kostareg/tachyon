@@ -42,7 +42,7 @@ struct PrintExpr
  */
 inline void printExpr(Expr &e)
 {
-    auto printer = PrintExpr{};
+    PrintExpr printer{};
     std::visit(printer, e.kind);
 }
 } // namespace tachyon::parser

@@ -6,8 +6,6 @@
 #include <expected>
 #include <utility>
 
-using namespace tachyon::lexer;
-
 namespace tachyon::parser
 {
 /**
@@ -23,17 +21,17 @@ class Parser
     /**
      * @brief token parse list
      */
-    Tokens ts;
+    lexer::Tokens ts;
 
     /**
      * @brief left denotation (binary operators with infix positions)
      */
-    std::expected<Expr, Error> parse_expr_led(Token t, Expr l);
+    std::expected<Expr, Error> parse_expr_led(lexer::Token t, Expr l);
 
     /**
      * @brief null denotation (literals, unary operators)
      */
-    std::expected<Expr, Error> parse_expr_nud(Token t);
+    std::expected<Expr, Error> parse_expr_nud(lexer::Token t);
 
     /**
      * @brief parse next expression
@@ -52,13 +50,13 @@ class Parser
      * @brief peek current token
      * @return current token
      */
-    Token peek();
+    lexer::Token peek();
 
     /**
      * @brief consume current token
      * @return last token
      */
-    std::expected<Token, Error> advance();
+    std::expected<lexer::Token, Error> advance();
 
     /**
      * @brief matches token type
@@ -66,17 +64,17 @@ class Parser
      * @param x offset
      * @return matches?
      */
-    bool match(TokenType tt, size_t x = 0);
+    bool match(lexer::TokenType tt, size_t x = 0);
 
     /**
      * @brief matches and consumes token type, fails if cannot match
      * @param tt token type
      * @return void or "expected token" error
      */
-    std::expected<Token, Error> expect(TokenType tt);
+    std::expected<lexer::Token, Error> expect(lexer::TokenType tt);
 
   public:
-    explicit Parser(Tokens ts) : ts(std::move(ts)) {}
+    explicit Parser(lexer::Tokens ts) : ts(std::move(ts)) {}
 
     std::expected<Expr, Error> parse();
 };
@@ -86,7 +84,7 @@ class Parser
  * @param ts tokens
  * @see Parser::parse
  */
-inline std::expected<Expr, Error> parse(Tokens ts)
+inline std::expected<Expr, Error> parse(lexer::Tokens ts)
 {
     Parser parser(std::move(ts));
     return parser.parse();

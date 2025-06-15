@@ -1,7 +1,7 @@
 #pragma once
 
 #include "tachyon/common/error.h"
-#include "tachyon/parser/op.h"
+#include "tachyon/common/op.h"
 
 #include <memory>
 #include <string>

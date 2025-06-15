@@ -2,13 +2,15 @@
 
 #include <benchmark/benchmark.h>
 
+using namespace tachyon;
+
 static const std::string basic_source = R"(fn add(x, y) { return x + y; })";
 
 static void BM_BasicLex(benchmark::State &state)
 {
     for (auto _ : state)
     {
-        auto tokens = tachyon::lexer::lex(basic_source);
+        auto tokens = lexer::lex(basic_source);
         benchmark::DoNotOptimize(tokens);
     }
 }

@@ -274,7 +274,7 @@ struct [[nodiscard]] Error final
         // print additional errors
         for (size_t i = 0; i < additional_errors.size(); ++i)
         {
-            auto additional_error = additional_errors[i];
+            Error additional_error = additional_errors[i];
             additional_error.source = source;
             os << std::endl << "\033[31m" << i + 2 << ".\033[0m " << additional_error;
         }
