@@ -123,6 +123,30 @@ struct FnCallExpr
 };
 
 /**
+ * @brief while loop
+ */
+struct WhileLoopExpr
+{
+    ExprRef condition;
+    ExprRef body;
+};
+
+/**
+ * @brief loop break
+ */
+struct BreakExpr
+{
+    ExprRef returns;
+};
+
+/**
+ * @brief loop continue
+ */
+struct ContinueExpr
+{
+};
+
+/**
  * @brief module import
  */
 struct ImportExpr
@@ -155,7 +179,8 @@ struct SequenceExpr
  * @brief type of expression
  */
 using ExprKind = std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr,
-                              LetRefExpr, FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
+                              LetRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr, ContinueExpr,
+                              ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
  * @brief top-level expression type

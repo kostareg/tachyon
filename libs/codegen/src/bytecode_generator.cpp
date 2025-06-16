@@ -11,7 +11,7 @@ using namespace tachyon::parser;
 void BytecodeGenerator::operator()(const LiteralExpr &lit)
 {
     // convert to value, push to constants, reference that.
-    runtime::Value val = std::visit([](auto &&val) -> runtime::Value { return val; }, lit.value);
+    runtime::Value val = std::visit([](auto &&v) -> runtime::Value { return v; }, lit.value);
     constants.push_back(val);
     curr = constants.size() - 1;
 };
@@ -54,6 +54,7 @@ void BytecodeGenerator::operator()(const UnaryOperatorExpr &unop)
     std::visit(*this, unop.right->kind);
     if (std::holds_alternative<LetRefExpr>(unop.right->kind) ||
         std::holds_alternative<FnCallExpr>(unop.right->kind) ||
+        std::holds_alternative<UnaryOperatorExpr>(unop.right->kind) ||
         std::holds_alternative<BinaryOperatorExpr>(unop.right->kind))
     {
         // curr holds a register address, use BNOR
@@ -93,6 +94,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             bc.push_back(next_free_register); // target
         }
         else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                 std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
                  std::holds_alternative<BinaryOperatorExpr>(binop.right->kind))
         {
             // constant <op> reference
@@ -111,6 +113,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         }
     }
     else if (std::holds_alternative<LetRefExpr>(binop.left->kind) ||
+             std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
              std::holds_alternative<BinaryOperatorExpr>(binop.left->kind))
     {
         // reference lhs
@@ -127,6 +130,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             bc.push_back(next_free_register); // target
         }
         else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                 std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
                  std::holds_alternative<BinaryOperatorExpr>(binop.right->kind))
         {
             // reference <op> reference
@@ -152,6 +156,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             // fn_call() <op> constant
         }
         else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                 std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
                  std::holds_alternative<BinaryOperatorExpr>(binop.right->kind))
         {
             // fn_call() <op> reference
@@ -169,9 +174,19 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
 //  before generation.
 void BytecodeGenerator::operator()(const LetExpr &vdecl)
 {
-    size_t index = next_free_register++;
-    vars.insert({vdecl.name, index});
     std::visit(*this, vdecl.value->kind);
+
+    // find index of register assigned to this let reference. if it does not exist, create one.
+    size_t index;
+    if (vars.contains(vdecl.name))
+        index = vars[vdecl.name];
+    else
+    {
+        index = next_free_register++;
+        vars.insert({vdecl.name, index});
+    }
+
+    // push instructions to copy value to register
     if (std::holds_alternative<LiteralExpr>(vdecl.value->kind))
     {
         // curr is set to the constant address, use LOCR
@@ -280,6 +295,54 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
     curr = 0;
 };
 
+void BytecodeGenerator::operator()(const parser::WhileLoopExpr &wlop)
+{
+    // record the current position, evaluate condition, store register
+    size_t condition_start_position = bc.size();
+    std::visit(*this, wlop.condition->kind);
+
+    // store the position that we need to fill in later with the address of the last instruction
+    // in the body.
+    size_t end_reference_position = bc.size() + 2;
+    if (std::holds_alternative<LetRefExpr>(wlop.condition->kind) ||
+        std::holds_alternative<FnCallExpr>(wlop.condition->kind) ||
+        std::holds_alternative<UnaryOperatorExpr>(wlop.condition->kind) ||
+        std::holds_alternative<BinaryOperatorExpr>(wlop.condition->kind))
+    {
+        // curr holds a register address, use JMRN
+        bc.push_back(runtime::JMRN);
+        bc.push_back(curr);
+        bc.push_back(0); // to be filled in
+    }
+    else if (std::holds_alternative<LiteralExpr>(wlop.condition->kind) ||
+             std::holds_alternative<FnExpr>(wlop.condition->kind))
+    {
+        // curr holds a constant address, use JMCN
+        bc.push_back(runtime::JMCN);
+        bc.push_back(curr);
+        bc.push_back(0); // to be filled in
+    }
+
+    // evaluate function body
+    std::visit(*this, wlop.body->kind);
+
+    // now jump back to condition
+    bc.push_back(runtime::JMPU);
+    bc.push_back(condition_start_position);
+
+    // don't forget to inform the start where the loop ends, so it can jump here when the condition
+    // is false. assumes that there is at the very least a return statement after this.
+    bc[end_reference_position] = bc.size();
+};
+
+void BytecodeGenerator::operator()(const parser::BreakExpr &) {
+    // TODO
+};
+
+void BytecodeGenerator::operator()(const parser::ContinueExpr &) {
+    // TODO
+};
+
 // TODO: should this be stripped already?
 void BytecodeGenerator::operator()(const ImportExpr &) {};
 
@@ -291,6 +354,7 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
     std::visit(*this, ret.returns->kind);
     if (std::holds_alternative<LetRefExpr>(ret.returns->kind) ||
         std::holds_alternative<FnCallExpr>(ret.returns->kind) ||
+        std::holds_alternative<UnaryOperatorExpr>(ret.returns->kind) ||
         std::holds_alternative<BinaryOperatorExpr>(ret.returns->kind))
     {
         // curr holds a register address, use RETR

@@ -149,53 +149,54 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
 
         /* positional */
-        // TODO: if you implement integer or size_t type in Values, use that in JMPC/JMPR instead
-        case JMPC:
+        case JMPU:
         {
-            uint8_t src0 = proto.bytecode[++ptr];
-            TY_ASSERT(src0 < proto.constants.size());
-            TY_ASSERT(std::holds_alternative<double>(proto.constants[src0]));
-            ptr = std::get<double>(proto.constants[src0]);
+            ptr = proto.bytecode[++ptr];
             continue; // do not increment
         }
-        case JMPR:
-        {
-            uint8_t src0 = proto.bytecode[++ptr];
-            TY_ASSERT(std::holds_alternative<double>(call_stack.back().registers[src0]));
-            ptr = std::get<double>(call_stack.back().registers[src0]);
-            continue;
-        }
-        case JICC:
+        case JMCI:
         {
             uint8_t src0 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             if (std::get<bool>(proto.constants[src0]))
-                ptr = std::get<double>(proto.constants[dst0]);
-            continue;
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
         }
-        case JIRC:
+        case JMCN:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            if (!std::get<bool>(proto.constants[src0]))
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
+        }
+        case JMRI:
         {
             uint8_t src0 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
             if (std::get<bool>(call_stack.back().registers[src0]))
-                ptr = std::get<double>(proto.constants[dst0]);
-            continue;
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
         }
-        case JICR:
+        case JMRN:
         {
             uint8_t src0 = proto.bytecode[++ptr];
             uint8_t dst0 = proto.bytecode[++ptr];
-            if (std::get<bool>(proto.constants[src0]))
-                ptr = std::get<double>(call_stack.back().registers[dst0]);
-            continue;
-        }
-        case JIRR:
-        {
-            uint8_t src0 = proto.bytecode[++ptr];
-            uint8_t dst0 = proto.bytecode[++ptr];
-            if (std::get<bool>(call_stack.back().registers[src0]))
-                ptr = std::get<double>(call_stack.back().registers[dst0]);
-            continue;
+            if (!std::get<bool>(call_stack.back().registers[src0]))
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
         }
 
         /* arithmetic */

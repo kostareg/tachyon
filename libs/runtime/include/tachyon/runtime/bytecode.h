@@ -52,12 +52,11 @@ enum Bytecode : uint8_t
     BORR = 0x39, // register  OR register -> register
 
     /* positional */
-    JMPC = 0x40, // jump             to constant address
-    JMPR = 0x41, // jump             to register address
-    JICC = 0x42, // jump if constant to constant address
-    JIRC = 0x43, // jump if register to constant address
-    JICR = 0x44, // jump to constant if register address
-    JIRR = 0x45, // jump to register if register address
+    JMPU = 0x40, // jump unconditionally to bytecode address
+    JMCI = 0x41, // jump if     constant to bytecode address
+    JMCN = 0x42, // jump if   ! constant to bytecode address
+    JMRI = 0x43, // jump if     register to bytecode address
+    JMRN = 0x44, // jump if   ! register to bytecode address
 
     /* arithmetic */
     MACC = 0x50, // constant +  constant -> register

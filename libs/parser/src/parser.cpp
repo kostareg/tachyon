@@ -100,6 +100,64 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
         else
             return Expr(ref, t.span);
     }
+    else if (t.type == WHILE)
+    {
+        auto condition = parse_expr();
+        if (!condition)
+            return std::unexpected(condition.error());
+
+        if (auto lb = expect(LBRACE); !lb)
+            return std::unexpected(lb.error());
+
+        // TODO: this is repeated in function and parse, can we move it into one helper function?
+        std::vector<Expr> stmts;
+        while (1)
+        {
+            // get rid of any leading newlines
+            while (match(NLINE))
+            {
+                auto _leading = advance();
+            }
+
+            auto stmt = parse_stmt();
+            if (!stmt)
+                return std::unexpected(stmt.error());
+
+            // TODO
+            if (!(match(SEMIC) || match(NLINE)))
+            {
+                return std::unexpected(Error::create(ErrorKind::ParseError,
+                                                     SourceSpan(peek().span.position, 1),
+                                                     "expected end of statement"));
+            }
+
+            auto _terminator = advance();
+
+            // get rid of any trailing newlines
+            while (match(NLINE))
+            {
+                auto _trail = advance();
+            }
+
+            if (match(END))
+                return std::unexpected(
+                    Error::create(ErrorKind::ParseError, peek().span, "eof during function"));
+
+            stmts.push_back(std::move(stmt.value()));
+
+            if (match(RBRACE))
+            {
+                auto _rbrace = advance();
+                break;
+            }
+        }
+
+        auto body = SequenceExpr(std::move(stmts));
+
+        return Expr(WhileLoopExpr(std::make_unique<Expr>(std::move(condition).value()),
+                                  std::make_unique<Expr>(std::move(body))),
+                    t.span);
+    }
     else if (t.type == FN)
     {
         if (auto lp = expect(LPAREN); !lp)
@@ -349,7 +407,7 @@ std::expected<Expr, Error> Parser::parse()
         // get rid of any leading newlines
         while (match(NLINE))
         {
-            auto _trail = advance();
+            auto _leading = advance();
         }
 
         auto stmt = parse_stmt();

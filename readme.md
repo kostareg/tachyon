@@ -10,10 +10,8 @@ to create fast and efficient programs during runtime.
 The next steps for this project are, in no particular order:
 
 * Complete grammar
-    * High priority:
-        * Control flow
-        * Loops
     * Medium priority:
+        * Else, else-if
         * Arrays
         * Enums
         * Structs

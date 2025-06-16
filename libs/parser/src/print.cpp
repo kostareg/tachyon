@@ -115,6 +115,26 @@ void PrintExpr::operator()(const FnCallExpr &fnc) const
         }
 };
 
+void PrintExpr::operator()(const WhileLoopExpr &wlop) const
+{
+    std::print("while (");
+    std::visit(*this, wlop.condition->kind);
+    std::print(") {{ ");
+    std::visit(*this, wlop.body->kind);
+    std::print("}}");
+};
+
+void PrintExpr::operator()(const BreakExpr &brk) const
+{
+    std::print("break ");
+    std::visit(*this, brk.returns->kind);
+};
+
+void PrintExpr::operator()(const ContinueExpr &) const
+{
+    std::print("continue");
+};
+
 void PrintExpr::operator()(const ImportExpr &imp) const
 {
     std::print("import {}", imp.path);
