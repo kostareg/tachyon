@@ -77,7 +77,16 @@ struct FnExpr
 };
 
 /**
- * @brief <expr> +, -, *, /, ^ <expr>
+ * @brief <op> expr, eg !false
+ */
+struct UnaryOperatorExpr
+{
+    Op op;
+    ExprRef right;
+};
+
+/**
+ * @brief expr <op> expr, eg false || true
  */
 struct BinaryOperatorExpr
 {
@@ -145,8 +154,8 @@ struct SequenceExpr
 /**
  * @brief type of expression
  */
-using ExprKind = std::variant<LiteralExpr, FnExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
-                              FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
+using ExprKind = std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr,
+                              LetRefExpr, FnCallExpr, ImportExpr, ReturnExpr, SequenceExpr>;
 
 /**
  * @brief top-level expression type

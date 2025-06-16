@@ -36,6 +36,14 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
         return Expr(LiteralExpr(LiteralValue(std::get<bool>(t.value))), t.span);
     else if (t.type == UNIT)
         return Expr(LiteralExpr(LiteralValue()), t.span);
+    else if (t.type == NOT)
+    {
+        auto e = parse_expr();
+        if (!e)
+            return std::unexpected(e.error());
+        return Expr(UnaryOperatorExpr(Op::Not, std::make_unique<Expr>(std::move(e.value()))),
+                    t.span);
+    }
     else if (t.type == LPAREN)
     {
         auto e = parse_expr();

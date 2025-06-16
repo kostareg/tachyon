@@ -75,6 +75,13 @@ void PrintExpr::operator()(const FnExpr &fn) const
     std::print("}}");
 };
 
+void PrintExpr::operator()(const UnaryOperatorExpr &unop) const
+{
+    std::print("({} ", opToStr(unop.op));
+    std::visit(*this, unop.right->kind);
+    std::print(")");
+}
+
 void PrintExpr::operator()(const BinaryOperatorExpr &binop) const
 {
     std::print("{} (", opToStr(binop.op));

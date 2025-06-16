@@ -1,5 +1,6 @@
 #include "tachyon/codegen/bytecode_generator.h"
 
+#include "tachyon/common/assert.h"
 #include "tachyon/parser/print.h"
 #include "tachyon/runtime/bytecode.h"
 
@@ -44,6 +45,33 @@ void BytecodeGenerator::operator()(const FnExpr &fn)
 
     curr = constants.size() - 1;
 };
+
+void BytecodeGenerator::operator()(const UnaryOperatorExpr &unop)
+{
+    // assume we are using the only unary operator, NOT.
+    TY_ASSERT(unop.op == Op::Not);
+
+    std::visit(*this, unop.right->kind);
+    if (std::holds_alternative<LetRefExpr>(unop.right->kind) ||
+        std::holds_alternative<FnCallExpr>(unop.right->kind) ||
+        std::holds_alternative<BinaryOperatorExpr>(unop.right->kind))
+    {
+        // curr holds a register address, use BNOR
+        bc.push_back(runtime::BNOR);
+        bc.push_back(curr);
+        bc.push_back(next_free_register);
+    }
+    else if (std::holds_alternative<LiteralExpr>(unop.right->kind) ||
+             std::holds_alternative<FnExpr>(unop.right->kind))
+    {
+        // curr holds a constant address, use BNOC
+        bc.push_back(runtime::BNOC);
+        bc.push_back(curr);
+        bc.push_back(next_free_register);
+    }
+
+    curr = next_free_register++;
+}
 
 // TODO: handle fn calls
 void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
@@ -204,7 +232,8 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
     size_t start = next_free_register;
     for (size_t i = 0; i < fnc.args.size(); ++i)
     {
-        if (std::holds_alternative<BinaryOperatorExpr>(fnc.args[i].kind) ||
+        if (std::holds_alternative<UnaryOperatorExpr>(fnc.args[i].kind) ||
+            std::holds_alternative<BinaryOperatorExpr>(fnc.args[i].kind) ||
             std::holds_alternative<LetRefExpr>(fnc.args[i].kind))
         {
             // we have the register index.

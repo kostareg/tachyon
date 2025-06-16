@@ -6,7 +6,7 @@ using namespace tachyon::lexer;
 
 TEST(LexerTest, RecognizesAllTokens)
 {
-    Tokens rhs_ts = lex("\n = + - -> * / ^ == != < > <= >= () ( ) { } . : ; , "
+    Tokens rhs_ts = lex("\n = + - -> * / ^ == != < > <= >= ! && || () ( ) { } . : ; , "
                         "\"hello, world!\" True False import "
                         "fn return someidentifier 12345")
                         .value();
@@ -16,11 +16,11 @@ TEST(LexerTest, RecognizesAllTokens)
                                                                               std::monostate{});
 
     //   with some exceptional variants:
-    lhs2[23] = "hello, world!";
-    lhs2[24] = true;
-    lhs2[25] = false;
-    lhs2[29] = "someidentifier";
-    lhs2[30] = 12345.;
+    lhs2[26] = "hello, world!";
+    lhs2[27] = true;
+    lhs2[28] = false;
+    lhs2[32] = "someidentifier";
+    lhs2[33] = 12345.;
 
     //   assert_eq each value:
     for (size_t i = 0; i < lhs2.size(); ++i)
@@ -29,10 +29,10 @@ TEST(LexerTest, RecognizesAllTokens)
     }
 
     // 2. assert all token types.
-    std::vector<TokenType> lhs_tts = {NLINE,  EQ,     PLUS,   MINUS, RARROW, STAR,   FSLASH, CARET,
-                                      ECOMP,  NECOMP, LCOMP,  GCOMP, LECOMP, GECOMP, UNIT,   LPAREN,
-                                      RPAREN, LBRACE, RBRACE, DOT,   COLON,  SEMIC,  COMMA,  STRING,
-                                      BOOL,   BOOL,   IMPORT, FN,    RETURN, IDENT,  NUMBER, END};
+    std::vector<TokenType> lhs_tts = {
+        NLINE,  EQ,     PLUS,   MINUS, RARROW, STAR,   FSLASH, CARET,  ECOMP,  NECOMP, LCOMP, GCOMP,
+        LECOMP, GECOMP, NOT,    BAND,  BOR,    UNIT,   LPAREN, RPAREN, LBRACE, RBRACE, DOT,   COLON,
+        SEMIC,  COMMA,  STRING, BOOL,  BOOL,   IMPORT, FN,     RETURN, IDENT,  NUMBER, END};
 
     //   map vector<Token> to vector<TokenType>
     std::vector<TokenType> rhs_tts = {};

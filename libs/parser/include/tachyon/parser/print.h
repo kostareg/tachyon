@@ -27,6 +27,7 @@ struct PrintExpr
 {
     void operator()(const LiteralExpr &literal) const;
     void operator()(const FnExpr &fn) const;
+    void operator()(const UnaryOperatorExpr &unop) const;
     void operator()(const BinaryOperatorExpr &binop) const;
     void operator()(const LetExpr &vdecl) const;
     void operator()(const LetRefExpr &vref) const;

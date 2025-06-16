@@ -58,6 +58,7 @@ struct BytecodeGenerator
 
     void operator()(const parser::LiteralExpr &lit);
     void operator()(const parser::FnExpr &fn);
+    void operator()(const parser::UnaryOperatorExpr &unop);
     void operator()(const parser::BinaryOperatorExpr &binop);
     void operator()(const parser::LetExpr &vdecl);
     void operator()(const parser::LetRefExpr &vref);

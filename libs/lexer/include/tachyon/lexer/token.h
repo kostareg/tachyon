@@ -32,6 +32,9 @@ enum class TokenType
     GCOMP,
     LECOMP,
     GECOMP,
+    NOT,
+    BAND,
+    BOR,
     LPAREN,
     RPAREN,
     LBRACE,
@@ -53,6 +56,7 @@ enum class TokenType
 
 using enum TokenType;
 
+// TODO: hashmap? or better way?
 /**
  * @brief find token as string
  * @param tt token type
@@ -86,14 +90,20 @@ inline std::string tokToStr(TokenType tt)
         return "ECOMP";
     else if (tt == NECOMP)
         return "NECOMP";
-    else if (tt == GCOMP)
-        return "GCOMP";
     else if (tt == LCOMP)
         return "LCOMP";
-    else if (tt == GECOMP)
-        return "GECOMP";
+    else if (tt == GCOMP)
+        return "GCOMP";
     else if (tt == LECOMP)
         return "LECOMP";
+    else if (tt == GECOMP)
+        return "GECOMP";
+    else if (tt == NOT)
+        return "NOT";
+    else if (tt == BAND)
+        return "BAND";
+    else if (tt == BOR)
+        return "BOR";
     else if (tt == LPAREN)
         return "LPAREN";
     else if (tt == RPAREN)
@@ -173,6 +183,12 @@ inline std::string tokToStrPretty(TokenType tt)
         return "a less than or equal to sign";
     else if (tt == GECOMP)
         return "a greater than or equal to sign";
+    else if (tt == NOT)
+        return "a not operator";
+    else if (tt == BAND)
+        return "a boolean and operator";
+    else if (tt == BOR)
+        return "a boolean or operator";
     else if (tt == LPAREN)
         return "a left parenthesis";
     else if (tt == RPAREN)
@@ -219,7 +235,8 @@ inline std::string tokToStrPretty(TokenType tt)
 inline bool isOperator(TokenType tt)
 {
     return tt == ECOMP || tt == NECOMP || tt == LCOMP || tt == GCOMP || tt == LECOMP ||
-           tt == GECOMP || tt == PLUS || tt == MINUS || tt == STAR || tt == FSLASH || tt == CARET;
+           tt == GECOMP || tt == PLUS || tt == MINUS || tt == STAR || tt == FSLASH || tt == CARET ||
+           tt == NOT || tt == BAND || tt == BOR;
 };
 
 /**
@@ -242,6 +259,12 @@ inline parser::Op tokToOp(TokenType tt)
         return parser::Op::Lset;
     else if (tt == GECOMP)
         return parser::Op::Gret;
+    else if (tt == NOT)
+        return parser::Op::Not;
+    else if (tt == BAND)
+        return parser::Op::And;
+    else if (tt == BOR)
+        return parser::Op::Or;
     else if (tt == PLUS)
         return parser::Op::Add;
     else if (tt == MINUS)
@@ -283,6 +306,11 @@ inline int getLbp(TokenType tt)
     case LECOMP:
     case GECOMP:
         return 50;
+    case BAND:
+    case BOR:
+        return 60;
+    case NOT:
+        return 70;
     default:
         return 0;
     }

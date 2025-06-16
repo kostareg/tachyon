@@ -64,8 +64,14 @@ std::expected<Tokens, Error> lex(const std::string &s)
             else
                 tokens.emplace_back(EQ, pos, 1);
         }
-        else if (c == '!' && s[pos + 1] == '=')
-            tokens.emplace_back(NECOMP, pos++, 2);
+        else if (c == '!')
+        {
+            // could be !=
+            if (s[pos + 1] == '=')
+                tokens.emplace_back(NECOMP, pos++, 2);
+            else
+                tokens.emplace_back(NOT, pos, 1);
+        }
         else if (c == '+')
             tokens.emplace_back(PLUS, pos, 1);
         else if (c == '-')
@@ -103,6 +109,10 @@ std::expected<Tokens, Error> lex(const std::string &s)
             else
                 tokens.emplace_back(GCOMP, pos, 1);
         }
+        else if (c == '&' && s[pos + 1] == '&')
+            tokens.emplace_back(BAND, pos++, 2);
+        else if (c == '|' && s[pos + 1] == '|')
+            tokens.emplace_back(BOR, pos++, 2);
         else if (c == '(')
         {
             // may be unit type ()
