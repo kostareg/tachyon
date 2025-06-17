@@ -15,14 +15,13 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix develop
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          nix develop --command cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Build
-        run: cmake --build build --config ${{ matrix.build_type }}
+        run: nix develop --command cmake --build build --config ${{ matrix.build_type }}
 
       - name: Run Tests
-        run: ctest --test-dir build --output-on-failure
+        run: nix develop --command ctest --test-dir build --output-on-failure
