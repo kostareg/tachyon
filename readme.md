@@ -10,8 +10,11 @@ to create fast and efficient programs during runtime.
 The next steps for this project are, in no particular order:
 
 * Complete grammar
+    * High priority:
+        * Extended conditionals:
+            * Else/else-if
+            * Continue/break
     * Medium priority:
-        * Else, else-if
         * Arrays
         * Enums
         * Structs
@@ -40,3 +43,6 @@ The next steps for this project are, in no particular order:
     * C++23 `std::mdspan`, `std::submdspan` not released.
 * Runtime profiling program
     * This will help massively with showing how performance gains are found.
+* Set up CI/CD
+* Set up data directory
+* More tests and benchmarks

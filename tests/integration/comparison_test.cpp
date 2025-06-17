@@ -8,7 +8,6 @@
 
 using namespace tachyon;
 
-// TODO: complete, move to data directory
 static const std::string all_operators_source = "1 < 1; 2 > 2; x = 5; y = 2; x == 5; y < 1;";
 
 TEST(ComparisonTest, AllOperators)
