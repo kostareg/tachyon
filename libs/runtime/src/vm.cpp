@@ -19,6 +19,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
 
         switch (op)
         {
+        /* machine */
         default:
         case RETV:
         {
@@ -26,302 +27,595 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
         case RETC:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            TY_ASSERT(src1 < proto.constants.size());
-            call_stack.back().returns = proto.constants[src1];
+            uint8_t src0 = proto.bytecode[++ptr];
+            TY_ASSERT(src0 < proto.constants.size());
+            call_stack.back().returns = proto.constants[src0];
             return {};
         }
         case RETR:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            call_stack.back().returns = call_stack.back().registers[src1];
+            uint8_t src0 = proto.bytecode[++ptr];
+            call_stack.back().returns = call_stack.back().registers[src0];
             return {};
         }
         case NOOP:
         {
             break;
         }
+
+        /* register */
         case LOCR:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            TY_ASSERT(src1 < proto.constants.size());
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = proto.constants[src1];
+            uint8_t src0 = proto.bytecode[++ptr];
+            TY_ASSERT(src0 < proto.constants.size());
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0];
             break;
         }
         case LORR:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = call_stack.back().registers[src1];
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = call_stack.back().registers[src0];
             break;
         }
-        case CRLC:
+
+        /* boolean logic */
+        case BNOC:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            TY_ASSERT(src2 < proto.constants.size());
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] < proto.constants[src2];
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = !std::get<bool>(proto.constants[src0]);
             break;
         }
-        case CRGC:
+        case BNOR:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            TY_ASSERT(src2 < proto.constants.size());
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] > proto.constants[src2];
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = !std::get<bool>(call_stack.back().registers[src0]);
             break;
         }
-        case CRLR:
+        case BACC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] < call_stack.back().registers[src2];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<bool>(proto.constants[src0]) && std::get<bool>(proto.constants[src1]);
             break;
         }
-        case CRGR:
+        case BOCC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] > call_stack.back().registers[src2];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<bool>(proto.constants[src0]) || std::get<bool>(proto.constants[src1]);
             break;
         }
-        case CREC:
+        case BARC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            TY_ASSERT(src2 < proto.constants.size());
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] == proto.constants[src2];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<bool>(call_stack.back().registers[src0]) &&
+                                                std::get<bool>(proto.constants[src1]);
             break;
         }
-        case CRER:
+        case BORC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                call_stack.back().registers[src1] == call_stack.back().registers[src2];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<bool>(call_stack.back().registers[src0]) ||
+                                                std::get<bool>(proto.constants[src1]);
             break;
         }
-        // TODO: if you implement integer type, use that in JMPC/JMPR instead
-        case JMPC:
+        case BACR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            TY_ASSERT(src1 < proto.constants.size());
-            TY_ASSERT(std::holds_alternative<double>(proto.constants[src1]));
-            ptr = std::get<double>(proto.constants[src1]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<bool>(proto.constants[src0]) &&
+                                                std::get<bool>(call_stack.back().registers[src1]);
+            break;
+        }
+        case BOCR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<bool>(proto.constants[src0]) ||
+                                                std::get<bool>(call_stack.back().registers[src1]);
+            break;
+        }
+        case BARR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<bool>(call_stack.back().registers[src0]) &&
+                                                std::get<bool>(call_stack.back().registers[src1]);
+            break;
+        }
+        case BORR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<bool>(call_stack.back().registers[src0]) ||
+                                                std::get<bool>(call_stack.back().registers[src1]);
+            break;
+        }
+
+        /* positional */
+        case JMPU:
+        {
+            ptr = proto.bytecode[++ptr];
             continue; // do not increment
         }
-        case JMPR:
+        case JMCI:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            TY_ASSERT(std::holds_alternative<double>(call_stack.back().registers[src1]));
-            ptr = std::get<double>(call_stack.back().registers[src1]);
-            continue;
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            if (std::get<bool>(proto.constants[src0]))
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
         }
+        case JMCN:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            if (!std::get<bool>(proto.constants[src0]))
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
+        }
+        case JMRI:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            if (std::get<bool>(call_stack.back().registers[src0]))
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
+        }
+        case JMRN:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            if (!std::get<bool>(call_stack.back().registers[src0]))
+            {
+                ptr = dst0;
+                continue;
+            }
+            break;
+        }
+
+        /* arithmetic */
         // TODO: for now, just assume that math operations are only working on
         //  doubles. we can handle other issues either in the typechecker or by
         //  allowing weak types. or, we can make it a runtime error. Or consider
         //  using TY_ASSERT for all of these.
         case MACC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) + std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(proto.constants[src0]) + std::get<double>(proto.constants[src1]);
             break;
         }
         case MSCC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) - std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(proto.constants[src0]) - std::get<double>(proto.constants[src1]);
             break;
         }
         case MMCC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) * std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(proto.constants[src0]) * std::get<double>(proto.constants[src1]);
             break;
         }
         case MDCC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                std::get<double>(proto.constants[src1]) / std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(proto.constants[src0]) / std::get<double>(proto.constants[src1]);
             break;
         }
         case MPCC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = pow(std::get<double>(proto.constants[src1]),
-                                                   std::get<double>(proto.constants[src2]));
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = pow(std::get<double>(proto.constants[src0]),
+                                                    std::get<double>(proto.constants[src1]));
             break;
         }
         case MARC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) +
-                                               std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) +
+                std::get<double>(proto.constants[src1]);
             break;
         }
         case MSRC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) -
-                                               std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) -
+                std::get<double>(proto.constants[src1]);
             break;
         }
         case MMRC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) *
-                                               std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) *
+                std::get<double>(proto.constants[src1]);
             break;
         }
         case MDRC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) /
-                                               std::get<double>(proto.constants[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) /
+                std::get<double>(proto.constants[src1]);
             break;
         }
         case MPRC:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                pow(std::get<double>(call_stack.back().registers[src1]),
-                    std::get<double>(proto.constants[src2]));
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                pow(std::get<double>(call_stack.back().registers[src0]),
+                    std::get<double>(proto.constants[src1]));
             break;
         }
         case MACR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) +
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<double>(proto.constants[src0]) +
+                                                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MSCR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) -
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<double>(proto.constants[src0]) -
+                                                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MMCR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) *
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<double>(proto.constants[src0]) *
+                                                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MDCR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(proto.constants[src1]) /
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = std::get<double>(proto.constants[src0]) /
+                                                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MPCR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                pow(std::get<double>(proto.constants[src1]),
-                    std::get<double>(call_stack.back().registers[src2]));
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                pow(std::get<double>(proto.constants[src0]),
+                    std::get<double>(call_stack.back().registers[src1]));
             break;
         }
         case MARR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) +
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) +
+                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MSRR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) -
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) -
+                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MMRR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) *
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) *
+                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MDRR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] = std::get<double>(call_stack.back().registers[src1]) /
-                                               std::get<double>(call_stack.back().registers[src2]);
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<double>(call_stack.back().registers[src0]) /
+                std::get<double>(call_stack.back().registers[src1]);
             break;
         }
         case MPRR:
         {
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t src1 = proto.bytecode[++ptr];
-            uint8_t src2 = proto.bytecode[++ptr];
-            uint8_t dst = proto.bytecode[++ptr];
-            call_stack.back().registers[dst] =
-                pow(std::get<double>(proto.constants[src1]),
-                    std::get<double>(call_stack.back().registers[src2]));
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                pow(std::get<double>(proto.constants[src0]),
+                    std::get<double>(call_stack.back().registers[src1]));
             break;
         }
+
+        /* comparison */
+        // TODO: don't allow function comparison in type checker
+        case CECC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0] == proto.constants[src1];
+            break;
+        }
+        case CNCC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0] != proto.constants[src1];
+            break;
+        }
+        case CLCC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0] < proto.constants[src1];
+            break;
+        }
+        case CGCC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0] > proto.constants[src1];
+            break;
+        }
+        case CHCC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0] <= proto.constants[src1];
+            break;
+        }
+        case CFCC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] = proto.constants[src0] >= proto.constants[src1];
+            break;
+        }
+        case CERC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] == proto.constants[src1];
+            break;
+        }
+        case CNRC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] != proto.constants[src1];
+            break;
+        }
+        case CLRC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] < proto.constants[src1];
+            break;
+        }
+        case CGRC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] > proto.constants[src1];
+            break;
+        }
+        case CHRC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] <= proto.constants[src1];
+            break;
+        }
+        case CFRC:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] >= proto.constants[src1];
+            break;
+        }
+        case CECR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                proto.constants[src0] == call_stack.back().registers[src1];
+            break;
+        }
+        case CNCR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                proto.constants[src0] != call_stack.back().registers[src1];
+            break;
+        }
+        case CLCR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                proto.constants[src0] < call_stack.back().registers[src1];
+            break;
+        }
+        case CGCR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                proto.constants[src0] > call_stack.back().registers[src1];
+            break;
+        }
+        case CHCR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                proto.constants[src0] <= call_stack.back().registers[src1];
+            break;
+        }
+        case CFCR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                proto.constants[src0] >= call_stack.back().registers[src1];
+            break;
+        }
+        case CERR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] == call_stack.back().registers[src1];
+            break;
+        }
+        case CNRR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] != call_stack.back().registers[src1];
+            break;
+        }
+        case CLRR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] < call_stack.back().registers[src1];
+            break;
+        }
+        case CGRR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] > call_stack.back().registers[src1];
+            break;
+        }
+        case CHRR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] <= call_stack.back().registers[src1];
+            break;
+        }
+        case CFRR:
+        {
+            uint8_t src0 = proto.bytecode[++ptr];
+            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                call_stack.back().registers[src0] >= call_stack.back().registers[src1];
+            break;
+        }
+
+        /* function */
         case CALC:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            TY_ASSERT(src1 < proto.constants.size());
+            uint8_t src0 = proto.bytecode[++ptr];
+            TY_ASSERT(src0 < proto.constants.size());
             uint8_t offset = proto.bytecode[++ptr];
-            auto fn = std::get<std::shared_ptr<Proto>>(proto.constants[src1]);
+            auto fn = std::get<std::shared_ptr<Proto>>(proto.constants[src0]);
 
             if (auto called_fn = call(fn, offset); !called_fn)
                 return std::unexpected(called_fn.error());
@@ -329,24 +623,26 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
         case CALR:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
+            uint8_t src0 = proto.bytecode[++ptr];
             uint8_t offset = proto.bytecode[++ptr];
-            auto fn = std::get<std::shared_ptr<Proto>>(call_stack.back().registers[src1]);
+            auto fn = std::get<std::shared_ptr<Proto>>(call_stack.back().registers[src0]);
 
             if (auto called_fn = call(fn, offset); !called_fn)
                 return std::unexpected(called_fn.error());
             break;
         }
+
+        /* intrinsic */
         case PRNC:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            printValue(proto.constants[src1]);
+            uint8_t src0 = proto.bytecode[++ptr];
+            printValue(proto.constants[src0]);
             break;
         }
         case PRNR:
         {
-            uint8_t src1 = proto.bytecode[++ptr];
-            printValue(call_stack.back().registers[src1]);
+            uint8_t src0 = proto.bytecode[++ptr];
+            printValue(call_stack.back().registers[src0]);
             break;
         }
         }

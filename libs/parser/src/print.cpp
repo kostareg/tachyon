@@ -75,6 +75,13 @@ void PrintExpr::operator()(const FnExpr &fn) const
     std::print("}}");
 };
 
+void PrintExpr::operator()(const UnaryOperatorExpr &unop) const
+{
+    std::print("({} ", opToStr(unop.op));
+    std::visit(*this, unop.right->kind);
+    std::print(")");
+}
+
 void PrintExpr::operator()(const BinaryOperatorExpr &binop) const
 {
     std::print("{} (", opToStr(binop.op));
@@ -106,6 +113,26 @@ void PrintExpr::operator()(const FnCallExpr &fnc) const
             std::visit(*this, arg.kind);
             std::print(", ");
         }
+};
+
+void PrintExpr::operator()(const WhileLoopExpr &wlop) const
+{
+    std::print("while (");
+    std::visit(*this, wlop.condition->kind);
+    std::print(") {{ ");
+    std::visit(*this, wlop.body->kind);
+    std::print("}}");
+};
+
+void PrintExpr::operator()(const BreakExpr &brk) const
+{
+    std::print("break ");
+    std::visit(*this, brk.returns->kind);
+};
+
+void PrintExpr::operator()(const ContinueExpr &) const
+{
+    std::print("continue");
 };
 
 void PrintExpr::operator()(const ImportExpr &imp) const

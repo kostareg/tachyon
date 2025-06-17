@@ -27,10 +27,14 @@ struct PrintExpr
 {
     void operator()(const LiteralExpr &literal) const;
     void operator()(const FnExpr &fn) const;
+    void operator()(const UnaryOperatorExpr &unop) const;
     void operator()(const BinaryOperatorExpr &binop) const;
     void operator()(const LetExpr &vdecl) const;
     void operator()(const LetRefExpr &vref) const;
     void operator()(const FnCallExpr &fnc) const;
+    void operator()(const WhileLoopExpr &wlop) const;
+    void operator()(const BreakExpr &brk) const;
+    void operator()(const ContinueExpr &) const;
     void operator()(const ImportExpr &imp) const;
     void operator()(const ReturnExpr &ret) const;
     void operator()(const SequenceExpr &seq) const;

@@ -19,6 +19,10 @@ class VM
     /// call stack for all functions
     std::vector<CallFrame> call_stack;
 
+    // TODO: consider something like a current_registers function so I don't have to repeat
+    //  call_stack.back().registers[x] each time. However, will have to handle assignment. Maybe a
+    //  dedicated set_register function?
+
     /**
      * @brief loads arguments (starting from offset) to new call frame and calls function pointer
      * @param fn function pointer
