@@ -33,12 +33,12 @@ jobs:
 
       - name: Generate Coverage Report
         run: |
-          nix develop --command gcovr --gcov-executable="llvm-cov gcov" --gcov-ignore-errors=no_working_dir_found \
-            --exclude '.*_deps/googletest-src/.*' --exclude '.*_deps/googlebenchmark-src/.*' --exclude '.*tests/.*'
+          nix develop --command gcovr --gcov-executable="llvm-cov gcov" --gcov-ignore-errors=no_working_dir_found   \
+            --exclude '.*_deps/googletest-src/.*' --exclude '.*_deps/googlebenchmark-src/.*' --exclude '.*tests/.*' \
             --exclude '.*benchmarks/.*' --object-directory build --root . --html --html-details -o coverage.html
 
-          nix develop --command gcovr --gcov-executable="llvm-cov gcov" --gcov-ignore-errors=no_working_dir_found
-            --exclude '.*_deps/googletest-src/.*' --exclude '.*_deps/googlebenchmark-src/.*' --exclude '.*tests/.*'
+          nix develop --command gcovr --gcov-executable="llvm-cov gcov" --gcov-ignore-errors=no_working_dir_found   \
+            --exclude '.*_deps/googletest-src/.*' --exclude '.*_deps/googlebenchmark-src/.*' --exclude '.*tests/.*' \
             --exclude '.*benchmarks/.*' --object-directory build --root . --xml -o coverage.xml
 
       - name: Upload Coverage Artifact
