@@ -38,7 +38,6 @@ jobs:
           tool: 'googlecpp'
           output-file-path: benchmark_results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
           alert-threshold: '110%'
           comment-on-alert: true
           fail-on-alert: true
