@@ -43,6 +43,5 @@ The next steps for this project are, in no particular order:
     * C++23 `std::mdspan`, `std::submdspan` not released.
 * Runtime profiling program
     * This will help massively with showing how performance gains are found.
-* Set up CI/CD
-* Set up data directory
+* Set up test data directory
 * More tests and benchmarks
