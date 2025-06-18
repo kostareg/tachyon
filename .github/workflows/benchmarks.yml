@@ -43,3 +43,4 @@ jobs:
           fail-on-alert: true
           gh-pages-branch: 'main'
           benchmark-data-dir-path: 'docs/benchmarks'
+          summary-always: true
