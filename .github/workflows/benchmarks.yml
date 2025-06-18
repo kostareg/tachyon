@@ -21,6 +21,13 @@ jobs:
           name: kostareg
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
+    - name: Cache Previous Benchmarks
+      id: cache-benchmarks
+      uses: actions/cache@v4
+      with:
+        path: ./cache/benchmark_results.json
+        key: ${{ runner.os }}-benchmarks
+
       - name: Configure CMake
         run: |
           nix develop --command cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -41,13 +48,12 @@ jobs:
           alert-threshold: '110%'
           comment-on-alert: true
           fail-on-alert: true
-          gh-pages-branch: 'main'
-          benchmark-data-dir-path: 'docs/benchmarks'
           summary-always: true
+          external-data-json-path: ./cache/benchmark_results.json
 
       - name: Upload Benchmark Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: benchmark-results
           path: |
             benchmark_results.json
