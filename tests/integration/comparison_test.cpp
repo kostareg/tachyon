@@ -19,6 +19,4 @@ TEST(ComparisonTest, AllOperators)
         .and_then(codegen::generateProto)
         .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error>
                   { return vm.run(proto); });
-
-    vm.doctor();
 }
