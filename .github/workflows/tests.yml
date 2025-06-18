@@ -1,4 +1,4 @@
-name: CTest All
+name: All Tests
 
 on:
   push:
