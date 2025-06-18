@@ -31,7 +31,7 @@ jobs:
       - name: Run Benchmarks
         run: nix develop --command ./build/benchmarks/benchmarks --benchmark_out=benchmark_results.json
 
-      - name: Store benchmark result
+      - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: C++ Google Benchmark
@@ -44,3 +44,10 @@ jobs:
           gh-pages-branch: 'main'
           benchmark-data-dir-path: 'docs/benchmarks'
           summary-always: true
+
+      - name: Upload Benchmark Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            benchmark_results.json
