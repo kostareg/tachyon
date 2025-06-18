@@ -45,3 +45,4 @@ The next steps for this project are, in no particular order:
     * This will help massively with showing how performance gains are found.
 * Set up test data directory
 * More tests and benchmarks
+* Consider using mermaid over plantuml (github-flavoured markdown integraton)

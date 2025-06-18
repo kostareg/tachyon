@@ -18,6 +18,7 @@ endif ()
 
 option(TACHYON_BUILD_TESTS "Build tests" ON)
 option(TACHYON_BUILD_BENCHMARKS "Build benchmarks" ON)
+option(TACHYON_BUILD_BENCHMARKS "Build code coverage" OFF)
 option(TACHYON_BUILD_TOOLS "Build apps" ON)
 option(TACHYON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
@@ -58,6 +59,13 @@ if (TACHYON_BUILD_BENCHMARKS)
     # Optional: forcibly unset any benchmark test registration with CTest
     set_property(DIRECTORY "${benchmark_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "")
 endif ()
+
+if (TACHYON_BUILD_WITH_COVERAGE)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+  endif()
+endif()
 
 add_subdirectory(libs/common)
 add_subdirectory(libs/lexer)
