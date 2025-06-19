@@ -1,0 +1,96 @@
+name: All Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request: ~
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [ Debug, Release, RelWithDebInfo ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: kostareg
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Configure CMake
+        run: |
+          nix develop --command cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: nix develop --command cmake --build build --config ${{ matrix.build_type }}
+
+        # Save a unique cache of the release build directory, which the benchmarks will pull
+        # from instead of rebuilding the release build.
+      - name: Save Release cache
+        if: matrix.build_type == 'Release'
+        uses: actions/cache@v4
+        with:
+          path: build/
+          key: ${{ runner.os }}-tachyon-release-${{ github.run_id }}
+
+      - name: Run Tests
+        run: nix develop --command ctest --test-dir build --output-on-failure
+
+  benchmark:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: kostareg
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Restore release build
+        uses: actions/cache@v4
+        with:
+          path: build/
+          key: ${{ runner.os }}-tachyon-release-${{ github.run_id }}
+
+      - name: Cache Previous Benchmarks
+        id: cache-benchmarks
+        uses: actions/cache@v4
+        with:
+          path: ./cache/benchmark_results.json
+          key: '${{ runner.os }}-benchmarks'
+
+      - name: Run Benchmarks
+        run: nix develop --command ./build/benchmarks/benchmarks --benchmark_out=benchmark_results.json
+
+      - name: Store Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: C++ Google Benchmark
+          tool: 'googlecpp'
+          output-file-path: benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-threshold: '110%'
+          comment-on-alert: true
+          fail-on-alert: true
+          summary-always: true
+          external-data-json-path: ./cache/benchmark_results.json
+
+      - name: Upload Benchmark Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark_results.json
+
