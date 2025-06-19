@@ -31,17 +31,17 @@ jobs:
       - name: Build
         run: nix develop --command cmake --build build --config ${{ matrix.build_type }}
 
-      - name: Run Tests
-        run: nix develop --command ctest --test-dir build --output-on-failure
-
-        # Save a unique cache to this run, which will be pulled by the benchmark to avoid
-        # rebuilding the release build.
+        # Save a unique cache of the release build directory, which the benchmarks will pull
+        # from instead of rebuilding the release build.
       - name: Save Release cache
         if: matrix.config == 'Release'
         uses: actions/cache@v4
         with:
           path: build/
           key: ${{ runner.os }}-tachyon-release-${{ github.run_id }}
+
+      - name: Run Tests
+        run: nix develop --command ctest --test-dir build --output-on-failure
 
   benchmark:
     runs-on: ubuntu-latest
