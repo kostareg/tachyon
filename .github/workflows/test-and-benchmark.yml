@@ -44,6 +44,7 @@ jobs:
         run: nix develop --command ctest --test-dir build --output-on-failure
 
   benchmark:
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
