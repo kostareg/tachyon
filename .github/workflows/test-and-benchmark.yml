@@ -34,7 +34,7 @@ jobs:
         # Save a unique cache of the release build directory, which the benchmarks will pull
         # from instead of rebuilding the release build.
       - name: Save Release cache
-        if: matrix.config == 'Release'
+        if: matrix.build_type == 'Release'
         uses: actions/cache@v4
         with:
           path: build/
