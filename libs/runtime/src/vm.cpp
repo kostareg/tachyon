@@ -695,7 +695,7 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
 
     // don't forget to register in the cache before popping.
     // TODO: you can only do this with pure functions.
-    fn->cache.set(vs, call_stack.back().returns);
+    fn->cache.put(vs, call_stack.back().returns);
 
     // remove call frame.
     call_stack.pop_back();

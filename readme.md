@@ -48,6 +48,7 @@ The next steps for this project are, in no particular order:
 * Consider using mermaid over plantuml (github-flavoured markdown integraton)
 * gcovr markdown generation (waiting on gcovr version 8.4 release)
 * can strings be string_view?
+* research more cache structures, such as 2Q, ARC, GDSF
 
 ## Building
 
@@ -64,5 +65,5 @@ For debug builds:
 ```shell
 cmake -S . -B cmake-build-debug -G Ninja
 cmake --build cmake-build-debug
-./cmake-build-debug/tachyon run examples/memoization-example.tachyon
+./cmake-build-debug/tachyon run examples/memoization.tachyon
 ```

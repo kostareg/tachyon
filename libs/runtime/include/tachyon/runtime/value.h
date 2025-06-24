@@ -14,7 +14,7 @@ struct Proto;
 //  if we use char* copy = malloc(strlen(original) + 1), can store char* instead
 //  and get significant decrease (should be 16 bytes). and if we can store
 //  7 byte numbers, even if they need alignment, we will probably be at 8 bytes
-//  total size.
+//  total size. or maybe use string_view?
 // TODO: Proto is kept as a shared_ptr here. Consider other references (like having a storage pool
 //  and keeping an int? or pointer?) and benchmark alternatives.
 // TODO: can I/should I unify this value with the AST value, so that it's all

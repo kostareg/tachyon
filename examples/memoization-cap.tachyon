@@ -1,0 +1,17 @@
+// Demonstrates the least recently used cache in Tachyon by calling functions with such different
+// arguments that it creates a very large cache. Tachyon will keep the cache within approx. 500 MB.
+
+sumthreevalues = fn(x, y, z) { return x + y + z; }
+
+x = 0
+y = 0
+z = 0
+
+while (x < 10000000000) {
+  sumthreevalues(x, y, z)
+  x = x + 1
+  y = y + 1
+  z = z + 1
+}
+
+return 0
