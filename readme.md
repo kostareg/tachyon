@@ -48,3 +48,21 @@ The next steps for this project are, in no particular order:
 * Consider using mermaid over plantuml (github-flavoured markdown integraton)
 * gcovr markdown generation (waiting on gcovr version 8.4 release)
 * can strings be string_view?
+
+## Building
+
+For release builds, with tests and benchmarks disabled:
+
+```shell
+cmake -S . -B cmake-build-release -G Ninja -D TACHYON_BUILD_TESTS=OFF -D TACHYON_BUILD_BENCHMARKS=OFF
+cmake --build cmake-build-release
+./cmake-build-release/tachyon run examples/quadratic-formula.tachyon
+```
+
+For debug builds:
+
+```shell
+cmake -S . -B cmake-build-debug -G Ninja
+cmake --build cmake-build-debug
+./cmake-build-debug/tachyon run examples/memoization-example.tachyon
+```

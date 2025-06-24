@@ -5,10 +5,18 @@
 #include <functional>
 #include <unordered_map>
 
-#define TACHYON_MAX_CACHE_SIZE_MB = 500;
-
 namespace tachyon::runtime
 {
+/**
+ * @brief maximum items in the cache (500 MB)
+ *
+ * As of the time of writing, the size of a Value is 40 bytes on most systems. We are looking to
+ * cap the memory usage around 500 MB - however, this includes both cache keys and values. Assuming
+ * an average entry size of approx. 270 B (avg. 3 keys + 1 value, where each Value is ~40 bytes),
+ * we find that the maximum number of cache items is 500 MB / 270 B = ~1'851'851.
+ */
+inline constexpr std::size_t MaxCacheItems = 1'800'000;
+
 // from boost
 inline void hash_combine(std::size_t &seed, std::size_t h)
 {

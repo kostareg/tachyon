@@ -2,6 +2,6 @@
 .direnv
 .cache
 
-build
-cmake-build-debug
+build*
+cmake-build*
 .idea
