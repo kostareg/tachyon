@@ -1,8 +1,10 @@
 #pragma once
 
+#include "cache.h"
 #include "tachyon/common/source_span.h"
 #include "tachyon/runtime/value.h"
 
+#include <utility>
 #include <vector>
 
 namespace tachyon::runtime
@@ -32,6 +34,9 @@ struct Proto
     /// number of arguments
     size_t arguments;
 
+    /// memoization cache
+    Cache cache;
+
     // TODO: actually using this:
 
     /// debug info name
@@ -39,6 +44,13 @@ struct Proto
 
     /// debug info source span
     SourceSpan span;
+
+    Proto(std::vector<uint8_t> bytecode, std::vector<Value> constants, size_t arguments,
+          std::string name, SourceSpan span)
+        : bytecode(std::move(bytecode)), constants(std::move(constants)), arguments(arguments),
+          cache(), name(std::move(name)), span(span)
+    {
+    }
 
     // TODO: when capturing vars from outer scope, just store a lookup table,
     //  don't store names

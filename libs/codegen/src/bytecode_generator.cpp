@@ -20,11 +20,7 @@ void BytecodeGenerator::operator()(const FnExpr &fn)
 {
     // TODO: see generateProtoWithArgs definition.
     std::expected<runtime::Proto, Error> maybe_proto = runtime::Proto{
-        .bytecode = {},
-        .constants = {},
-        .arguments = 0,
-        .name = "",
-        .span = fn.body->span,
+        {}, {}, 0, "", fn.body->span,
     };
     if (fn.arguments.size() == 0)
         maybe_proto = generateProto(std::move(*fn.body));

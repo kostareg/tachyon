@@ -655,13 +655,30 @@ std::expected<void, Error> VM::run(const Proto &proto)
 
 std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
 {
-    // create the next call frame and prepare it with the first few
-    // registers of the old ones.
+    // first, check if the current function call is already cached. begin by loading the arguments:
+    Values vs;
+    for (size_t i = 0; i < fn->arguments; ++i)
+    {
+        // start at offset + i.
+        vs.push_back(call_stack.back().registers[i + offset]);
+    }
+
+    // then check the cache:
+    // TODO: you can only do this with pure functions.
+    if (auto hit = fn->cache.get(vs))
+    {
+        // handle the cache hit. load the return value to register 0 of this call frame and return.
+        call_stack[call_stack.size() - 1].registers[0] = *hit;
+        return {};
+    }
+
+    // if we are here, we will have to run the function. begin by creating the next call frame and
+    // preparing it with the arguments:
     std::array<Value, 256> registers;
     for (size_t i = 0; i < fn->arguments; ++i)
     {
-        // start at +1 + i <- offset + i
-        registers[i + 1] = call_stack.back().registers[i + offset];
+        // start at +1 + i index.
+        registers[i + 1] = vs[i];
     }
     CallFrame frame{std::move(registers), 0.0};
     call_stack.push_back(frame);
@@ -675,6 +692,10 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
     //  of registers[0], so that the 0th slot can be used for other
     //  things. blocked by bytecode generation.
     call_stack[call_stack.size() - 2].registers[0] = call_stack.back().returns;
+
+    // don't forget to register in the cache before popping.
+    // TODO: you can only do this with pure functions.
+    fn->cache.set(vs, call_stack.back().returns);
 
     // remove call frame.
     call_stack.pop_back();

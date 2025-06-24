@@ -47,3 +47,4 @@ The next steps for this project are, in no particular order:
 * More tests and benchmarks
 * Consider using mermaid over plantuml (github-flavoured markdown integraton)
 * gcovr markdown generation (waiting on gcovr version 8.4 release)
+* can strings be string_view?

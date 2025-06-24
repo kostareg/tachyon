@@ -1,0 +1,23 @@
+/*
+ * A simple example of memoization. On my machine, without memoization, this process takes over 50
+ * seconds. With memoization, it takes <3 seconds.
+ */
+
+/// find the first root of a quadratic equation
+quadratic  = fn(a, b, c) { return ((0 - b) + (b ^ 2 - 4 * a * c) ^ (0.5)) / (2 * a); }
+/// find the second root of a quadratic equation
+quadratic' = fn(a, b, c) { return ((0 - b) - (b ^ 2 - 4 * a * c) ^ (0.5)) / (2 * a); }
+
+print("the roots are: ")
+print(quadratic(0.4,6.9,10))
+print(", ")
+print(quadratic'(0.4,6.9,10))
+
+x = 0
+while (x < 100000) {
+  quadratic(0.4,6.9,10)
+  quadratic'(0.4,6.9,10)
+  x = x + 1;
+}
+
+return 0;

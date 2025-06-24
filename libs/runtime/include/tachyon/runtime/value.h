@@ -22,6 +22,7 @@ struct Proto;
 
 /// runtime value
 using Value = std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
+using Values = std::vector<Value>;
 
 /**
  * @brief small visitor for printing values
