@@ -47,7 +47,7 @@ class Cache
     size_t current_size_bytes = sizeof(list) + sizeof(map);
 
     /// approximate maximum size of the cache
-    static constexpr size_t max_size_bytes = 500'000'000;
+    static constexpr size_t max_size_bytes = 25'000'000;
 
   public:
     Cache() = default;
