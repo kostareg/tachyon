@@ -4,6 +4,7 @@
 #include <print>
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace tachyon::runtime
 {
@@ -48,5 +49,49 @@ inline void printValue(const Value &reg)
         },
         reg);
 }
+
+// TODO: research other hashing/hash combination functions
+
+/**
+ * @brief hash one value
+ */
+struct ValueHash
+{
+    std::size_t operator()(const Value &v) const noexcept
+    {
+        return std::visit([]<typename T>(const T &val)
+                          { return std::hash<std::decay_t<T>>{}(val); }, v);
+    }
+};
+
+/**
+ * @brief hash combine values
+ */
+struct ValuesHash
+{
+    /**
+     * @brief combine hashes
+     *
+     * Credit to:
+     *   * https://www.boost.org/doc/libs/1_82_0/boost/container_hash/hash.hpp
+     *   * https://www.boost.org/doc/libs/1_82_0/boost/container_hash/detail/hash_mix.hpp.
+     *
+     * @param seed seed
+     * @param h value to combine
+     */
+    static void hash_combine(std::size_t &seed, std::size_t h)
+    {
+        seed ^= h + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+    }
+
+    std::size_t operator()(const Values &vs) const noexcept
+    {
+        std::size_t h = vs.size();
+        ValueHash vh;
+        for (auto &v : vs)
+            hash_combine(h, vh(v));
+        return h;
+    }
+};
 
 } // namespace tachyon::runtime
