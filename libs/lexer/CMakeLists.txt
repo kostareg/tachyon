@@ -66,4 +66,9 @@ if (TACHYON_BUILD_BENCHMARKS)
             tachyon_lexer
             benchmark::benchmark
     )
+
+    # Benchmark data files
+    file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
+    message(STATUS "message")
+    message(STATUS ${CMAKE_CURRENT_BINARY_DIR})
 endif ()

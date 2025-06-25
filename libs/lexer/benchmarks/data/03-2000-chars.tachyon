@@ -1,0 +1,75 @@
+// this is a Tachyon file for benchmarking the lexer. it contains ~2000 characters of lexable
+// Tachyon content. however, some of this code may or may not compile past the lexer. it is meant to
+// be a benchmark for the lexer, not as an example of how to write Tachyon programs.
+
+// Single-line comment: Testing lexer tokens and patterns
+n = 5
+x = 0.999
+b = False
+t = True
+
+// Unary operators
+negx = -x
+notb = !b
+
+// Binary arithmetic
+sum1 = x + n
+diff1 = n - x
+prod1 = x * (x + 2) - 5 / (2 * 2 * 2)
+mulimplicit = 3x + (5)(3) // implicit multiplication tests
+complexexpr = -(3 + negx) * (!b || t) // note: || and && may be future tokens
+
+/*
+ * Multi-line comment starts here
+ * It should span multiple lines,
+ * include stars * and slashes / * * /
+ */
+multicalc = ((n + x) * (n - x)) / ((2)(2))(2)
+
+/* Nested comment markers in text should not confuse lexer:
+ * like this: /* inner start */ still inside comment
+ */
+
+// Anonymous functions
+square = fn(x) { x * x }
+squareprime = fn(x) { return x * x; }
+typedsquare = fn(x: Num) -> Num { return x * x; }
+strangefn = fn() { // no parameters
+  // return Unit
+  ()
+}
+
+// First-class functions
+apply = fn(f, v) { return f(v); }
+result1 = apply(fn(y) { y + y }, n)
+result2 = apply(square, x)
+
+// Higher-order and chaining
+doublethensquare = fn(v) { fn(u) { return u * 2; }(v); }(3)
+
+// While loop
+counter = 3
+while counter > 0 {
+  // Decrement counter
+  counter = counter - 1
+  log = fn(msg) { return (); }("Count is " + counter) // string concat test?
+}
+
+// Modules import
+import Math // now Math.PI etc.
+
+// Using imported module
+pi = Math.PI
+area = pi * (n * n)
+
+// Unit type usage
+u = ()
+unitfn = fn(z) -> Unit { return (); }
+u2 = unitfn()
+
+// Edge cases for identifiers
+primetest' = fn(x) { return x / 2 == 1; }
+primetest'' = fn(x: Num) -> Bool { return (x / 2) != 0; }
+
+// Long, complex line to test lexer resilience:
+deep = ((((1 + 2) * (3 - 4)) / (5 + (6 * (7 - 8)))) - -9) * +10 / !False

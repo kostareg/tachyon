@@ -1,0 +1,1013 @@
+// this is a Tachyon file for benchmarking the lexer. it contains ~20000 characters of lexable
+// Tachyon content. however, some of this code may or may not compile past the lexer. it is meant to
+// be a benchmark for the lexer, not as an example of how to write Tachyon programs.
+/*
+ * Multi-line test comment
+ * Contains nested marker /* inside comment
+ * Has numbers 123 456 789 and symbols !@#
+ * Keywords: fn return import while Unit False True
+ */
+
+// Single-line comment tests
+// First comment line
+// Second comment line
+// Third comment line with digits 98765
+
+// Variable assignments
+n = 5
+x = 0.999
+b = False
+c = True
+d = 42
+e = 3.14159
+
+// Arithmetic expressions
+a1 = n + x
+a2 = n - x
+a3 = n * x
+a4 = n / x
+a5 = (n + x) * (n - x) / (2 * 3)
+a6 = 7(2 + 3) - 4(1 + 1)
+a7 = 8x + (5)(3)
+a8 = 2(3(4 + 5) - 6) + 7
+a9 = (1)(2)(3)(4)
+
+// Unary operators
+u1 = -n
+u2 = -x
+u3 = !b
+u4 = !c
+
+// Combined unary and binary
+u5 = -(n + x) * -(x - 1)
+u6 = !(b && c) // Note: && not in grammar, but included as test text
+
+// Function definitions without semicolons, implicit return
+id = fn(x) { x }
+negate = fn(x) { -x }
+logicalNot = fn(b) { !b }
+
+// Function definitions with explicit return and semicolons
+inc = fn(x) { return x + 1; }
+dec = fn(x) { return x - 1; }
+double = fn(x) -> Num { return x * 2; }
+half = fn(x) -> Num { return x / 2; }
+
+// Nested function definitions
+makeAdder = fn(a) {
+  fn(b) { a + b }
+}
+
+applyTwice = fn(f, x) {
+  f(f(x))
+}
+
+// Function calls
+r1 = id(10)
+r2 = negate(r1)
+r3 = logicalNot(False)
+r4 = inc(5)
+r5 = dec(5)
+r6 = double(3)
+r7 = half(8)
+r8 = makeAdder(3)(4)
+r9 = applyTwice(double, 2)
+
+// Complex function bodies
+complex1 = fn(x) {
+  a = x + 2
+  b = a * a
+  return b - x
+}
+
+complex2 = fn(x, y) {
+  sum = x + y
+  prod = x * y
+  diff = x - y
+  return sum + prod - diff
+}
+
+complex3 = fn(x) {
+  temp = (x + 1)(x + 2)
+  return temp / (x + 3)
+}
+
+// While loops
+count1 = 3
+while count1 > 0 {
+  count1 = count1 - 1
+}
+
+count2 = 5
+while count2 > 1 {
+  count2 = count2 - 2
+}
+
+// Import and module usage
+import Math
+piVal = Math.PI
+sinVal = Math.sin(piVal)
+cosVal = Math.cos(piVal)
+
+// Unit type
+unit1 = ()
+unit2 = fn() -> Unit { return (); }
+
+// Higher-order functions
+compose = fn(f, g) {
+  fn(x) { f(g(x)) }
+}
+
+squareFunc = fn(x) { x * x }
+cubeFunc = fn(x) { x * x * x }
+squareThenCube = compose(cubeFunc, squareFunc)
+cubeThenSquare = compose(squareFunc, cubeFunc)
+v1 = squareThenCube(2)
+v2 = cubeThenSquare(2)
+
+// More arithmetic variations
+v3 = (2)(3 + 4) - (5)(6 - 1)
+v4 = 9x + 8(7 + x)
+v5 = (1 + 2)(3 + 4)(5 + 6)
+
+// Deeply nested functions and calls
+deep1 = fn(a) {
+  fn(b) {
+    fn(c) {
+      fn(d) {
+        return a + b + c + d;
+      }
+    }
+  }
+}
+
+// Test nested call for parsing only
+dummy = deep1(1)(2)(3)(4)
+
+// Loops inside functions
+fact = fn(n) {
+  result = 1
+  i = n
+  while i > 0 {
+    result = result * i
+    i = i - 1
+  }
+  return result
+}
+
+fact5 = fact(5)
+
+// Another function with while
+sumTo = fn(n) {
+  total = 0
+  i = 1
+  while i <= n {
+    total = total + i
+    i = i + 1
+  }
+  total
+}
+
+sum10 = sumTo(10)
+
+// More nested arithmetic in functions
+calc = fn(x) {
+  step1 = x + 2
+  step2 = step1 * 3
+  step3 = step2 - 4
+  return (step3)(5)
+}
+
+resCalc = calc(7)
+
+// Anonymous function passed directly
+anonTest = fn(x) {
+  fn(y) { x + y }(5)
+}
+
+anonRes = anonTest(3)
+
+// Multi-line comment in middle
+/*
+  This comment spans multiple lines.
+  It tests comment handling with code following in same block.
+*/
+
+// Chaining multiplications
+chain1 = 2(3)(4)(5)
+chain2 = (1 + 1)(2 + 2)(3 + 3)
+
+// Complex nested expression
+nestedExpr = ((1 + 2)(3 + 4) - (5 + 6))(7 + 8)
+
+// Test numbers adjacent to parentheses
+adjA = 6(7)
+adjB = 8(9 + 1)
+adjC = (2 + 3)4
+
+// Import more from Math
+sqrtVal = Math.sqrt(16)
+absVal = Math.abs(-10)
+
+// Final unit tests
+finalUnit = ()
+nothing = fn() -> Unit { return (); }
+
+// Additional variable assignments
+var21 = 21
+var22 = 22
+var23 = 23.23
+var24 = 24.24
+var25 = 25
+
+// Arithmetic expressions continued
+expr21 = var21 + var22 + var23
+expr22 = (var24 - var25)(var23 + var22)
+expr23 = 26(27 + 28)
+expr24 = (29)(30 + 1)
+expr25 = 31(32)(33)
+
+// More unary
+uop11 = -var21
+uop12 = !True
+uop13 = -(var22 + var23)
+
+// More combined
+comb7 = (var21 + var22 + var23)(var24 - var25)
+comb8 = -var25(26 + 27) + (28)(29)
+
+// Additional function series
+chainFunc = fn(x) {
+  f1 = fn(a) { return a + x; }
+  f2 = fn(b) { return b * x; }
+  f3 = fn(c) { return f1(c) - f2(c); }
+  return f3(x);
+}
+chainRes = chainFunc(4)
+
+// Final test of code
+finalA = chainRes
+finalB = chainRes + var25
+
+// Additional variable assignments continued
+var26 = 26
+var27 = 27.27
+var28 = 28.28
+var29 = 29.29
+var30 = 30.30
+var31 = 31
+var32 = 32
+var33 = 33
+var34 = 34
+var35 = 35
+var36 = 36
+var37 = 37
+var38 = 38
+var39 = 39
+var40 = 40
+var41 = 41
+var42 = 42
+var43 = 43
+var44 = 44
+var45 = 45
+var46 = 46
+var47 = 47
+var48 = 48
+var49 = 49
+var50 = 50
+var51 = 51
+var52 = 52
+var53 = 53
+var54 = 54
+var55 = 55
+var56 = 56
+var57 = 57
+var58 = 58
+var59 = 59
+var60 = 60
+
+// Additional arithmetic expressions continued
+expr26 = var26 + var27
+expr27 = var28 - var29
+expr28 = var30 * var31
+expr29 = var32 / var33
+expr30 = (var34 + var35)(var36 - var37)
+expr31 = 2(var38 + var39)
+expr32 = (var40)(var41 + var42)
+expr33 = var43 + (var44)(var45)
+expr34 = (var46 + var47)(var48 + var49)
+expr35 = (var50)(var51 + var52)
+expr36 = var53 - (var54)(var55)
+expr37 = (var56 + var57)var58
+expr38 = var59(var60 + var26)
+expr39 = (var27 + var28)(var29 + var30)
+expr40 = var31(var32 + var33)
+expr41 = (var34)(var35 + var36)
+expr42 = (var37 + var38)(var39 + var40)
+expr43 = var41 + var42(var43)
+expr44 = (var44)(var45 + var46)
+expr45 = var47(var48 + var49)
+expr46 = (var50 + var51)(var52 + var53)
+expr47 = var54(var55 + var56)
+expr48 = (var57 + var58)(var59 + var60)
+expr49 = var26(var27 + var28)
+expr50 = (var29 + var30)(var31 + var32)
+expr51 = var33(var34 + var35)
+expr52 = (var36 + var37)(var38 + var39)
+expr53 = var40(var41 + var42)
+expr54 = (var43 + var44)(var45 + var46)
+expr55 = var47(var48 + var49)
+expr56 = (var50 + var51)(var52 + var53)
+expr57 = var54(var55 + var56)
+expr58 = (var57 + var58)(var59 + var60)
+expr59 = var26(var27 + var28)
+expr60 = (var29 + var30)(var31 + var32)
+
+// More unary operators
+uop14 = -var31
+uop15 = -var42
+uop16 = !True
+uop17 = !False
+uop18 = -(var33 + var34)
+uop19 = -var35
+uop20 = !True
+uop21 = -(var36 + var37)
+uop22 = -var38
+uop23 = !False
+uop24 = -(var39 + var40)
+uop25 = -var41
+uop26 = !True
+uop27 = -(var42 + var43)
+uop28 = -var44
+uop29 = !False
+uop30 = -(var45 + var46)
+
+// More combined operations
+comb9 = (var47 + var48)(var49 + var50) - var51
+comb10 = -var52(var53 + var54) + var55
+comb11 = (var56)(var57 + var58) - var59
+comb12 = -var60(var26 + var27) + (var28)(var29)
+comb13 = (var30 + var31)(var32 + var33) - var34
+comb14 = -var35(var36 + var37) + var38
+comb15 = (var39)(var40 + var41) - var42
+comb16 = -var43(var44 + var45) + var46
+comb17 = (var47 + var48)(var49 + var50) - var51
+comb18 = -var52(var53 + var54) + var55
+comb19 = (var56)(var57 + var58) - var59
+comb20 = -var60(var26 + var27) + (var28)(var29)
+
+// Additional function definitions
+func1 = fn(x) { return x + var26; }
+func2 = fn(x) { y = x * var27 return y; }
+func3 = fn(a, b) { return a * b + var28; }
+func4 = fn(a, b) { sum = a + b return sum * var29; }
+func5 = fn(n) { result = 1 i = n while i > 0 { result = result * var30 i = i - 1 } return result; }
+func6 = fn(n) { total = 0 i = 1 while i <= n { total = total + var31 i = i + 1 } return total; }
+func7 = fn(f, x) { return f(f(x)); }
+func8 = fn(x) { inner = fn(y) { return y * var32 } return inner(x); }
+func9 = fn(a, b) { return (a + var33)(b + var34); }
+func10 = fn(x) { tmp1 = x + var35 tmp2 = tmp1 * var36 return tmp2; }
+
+// Function calls
+cf1 = func1(10)
+cf2 = func2(11)
+cf3 = func3(2,3)
+cf4 = func4(4,5)
+cf5 = func5(5)
+cf6 = func6(6)
+cf7 = func7(func1, 7)
+cf8 = func8(8)
+cf9 = func9(3,4)
+cf10 = func10(9)
+
+// Module imports
+import Sys
+import Util
+sysVal = Sys.version
+utilVal = Util.version
+
+// Triple nested loops with four levels
+nested3 = fn(n) {
+  sum = 0
+  i = 1
+  while i <= n {
+    j = 1
+    while j <= n {
+      k = 1
+      while k <= n {
+        m = 1
+        while m <= n {
+          sum = sum + (i)(j)(k)(m)
+          m = m + 1
+        }
+        k = k + 1
+      }
+      j = j + 1
+    }
+    i = i + 1
+  }
+  return sum
+}
+nestedRes3 = nested3(2)
+
+// Unit type tests
+testUnit1 = fn() -> Unit { return (); }
+testUnit2 = fn(x) -> Unit { dummy = x return (); }
+
+// Final composite function
+finalTest = fn(a, b, c) {
+  step1 = a + b
+  step2 = step1 * c
+  step3 = step2 - a
+  step4 = step3 + b
+  step5 = step4 * c
+  return step5
+}
+finalRes = finalTest(3,4,5)
+
+// Additional variable assignments continued
+var61 = 61
+var62 = 62
+var63 = 63
+var64 = 64
+var65 = 65
+var66 = 66
+var67 = 67
+var68 = 68
+var69 = 69
+var70 = 70
+var71 = 71
+var72 = 72
+var73 = 73
+var74 = 74
+var75 = 75
+var76 = 76
+var77 = 77
+var78 = 78
+var79 = 79
+var80 = 80
+
+// Additional arithmetic expressions continued
+expr61 = var61 + var62
+expr62 = var63 - var64
+expr63 = var65 * var66
+expr64 = var67 / var68
+expr65 = (var69 + var70)(var71 - var72)
+expr66 = 3(var73 + var74)
+expr67 = (var75)(var76 + var77)
+expr68 = var78 + (var79)(var80)
+expr69 = (var61 + var62)(var63 + var64)
+expr70 = var65(var66 + var67)
+expr71 = (var68 + var69)(var70 + var71)
+expr72 = var72(var73 + var74)
+expr73 = (var75 + var76)(var77 + var78)
+expr74 = var79(var80 + var61)
+expr75 = (var62 + var63)(var64 + var65)
+expr76 = var66(var67 + var68)
+expr77 = (var69 + var70)(var71 + var72)
+expr78 = var73(var74 + var75)
+expr79 = (var76 + var77)(var78 + var79)
+expr80 = var80(var61 + var62)
+
+// More unary operators
+uop31 = -var63
+uop32 = !False
+uop33 = -(var64 + var65)
+uop34 = -var66
+uop35 = !True
+uop36 = -(var67 + var68)
+uop37 = -var69
+uop38 = !False
+uop39 = -(var70 + var71)
+uop40 = -var72
+
+// More combined operations
+comb21 = (var64 + var65)(var66 + var67) - var68
+comb22 = -var69(var70 + var71) + var72
+comb23 = (var73)(var74 + var75) - var76
+comb24 = -var77(var78 + var79) + var80
+comb25 = (var61 + var62)(var63 + var64) - var65
+comb26 = -var66(var67 + var68) + var69
+comb27 = (var70)(var71 + var72) - var73
+comb28 = -var74(var75 + var76) + var77
+comb29 = (var78 + var79)(var80 + var61) - var62
+comb30 = -var63(var64 + var65) + var66
+
+// Additional function definitions
+func11 = fn(x) { return x + var69; }
+func12 = fn(x) { y = x * var70 return y; }
+func13 = fn(a, b) { return a * b + var71; }
+func14 = fn(a, b) { sum = a + b return sum * var72; }
+func15 = fn(n) { result = 1 i = n while i > 0 { result = result * var73 i = i - 1 } return result; }
+
+// More nested function definitions
+func16 = fn(n) {
+  tot = 0
+  i = 1
+  while i <= n {
+    tot = tot + i * var74
+    i = i + 1
+  }
+  return tot
+}
+
+// Function calls continued
+cf11 = func11(11)
+cf12 = func12(12)
+cf13 = func13(2,3)
+cf14 = func14(4,5)
+cf15 = func15(5)
+cf16 = func16(6)
+
+// Module imports continued
+import Net
+import Graph
+netVer = Net.version
+graphVer = Graph.version
+
+// some more of the same definitions
+var61 = 61
+var62 = 62
+var63 = 63
+var64 = 64
+var65 = 65
+var66 = 66
+var67 = 67
+var68 = 68
+var69 = 69
+var70 = 70
+var71 = 71
+var72 = 72
+var73 = 73
+var74 = 74
+var75 = 75
+var76 = 76
+var77 = 77
+var78 = 78
+var79 = 79
+var80 = 80
+
+// Additional arithmetic expressions continued
+expr61 = var61 + var62
+expr62 = var63 - var64
+expr63 = var65 * var66
+expr64 = var67 / var68
+expr65 = (var69 + var70)(var71 - var72)
+expr66 = 3(var73 + var74)
+expr67 = (var75)(var76 + var77)
+expr68 = var78 + (var79)(var80)
+expr69 = (var61 + var62)(var63 + var64)
+expr70 = var65(var66 + var67)
+expr71 = (var68 + var69)(var70 + var71)
+expr72 = var72(var73 + var74)
+expr73 = (var75 + var76)(var77 + var78)
+expr74 = var79(var80 + var61)
+expr75 = (var62 + var63)(var64 + var65)
+expr76 = var66(var67 + var68)
+expr77 = (var69 + var70)(var71 + var72)
+expr78 = var73(var74 + var75)
+expr79 = (var76 + var77)(var78 + var79)
+expr80 = var80(var61 + var62)
+
+// More unary operators
+uop31 = -var63
+uop32 = !False
+uop33 = -(var64 + var65)
+uop34 = -var66
+uop35 = !True
+uop36 = -(var67 + var68)
+uop37 = -var69
+uop38 = !False
+uop39 = -(var70 + var71)
+uop40 = -var72
+
+// More combined operations
+comb21 = (var64 + var65)(var66 + var67) - var68
+comb22 = -var69(var70 + var71) + var72
+comb23 = (var73)(var74 + var75) - var76
+comb24 = -var77(var78 + var79) + var80
+comb25 = (var61 + var62)(var63 + var64) - var65
+comb26 = -var66(var67 + var68) + var69
+comb27 = (var70)(var71 + var72) - var73
+comb28 = -var74(var75 + var76) + var77
+comb29 = (var78 + var79)(var80 + var61) - var62
+comb30 = -var63(var64 + var65) + var66
+
+// Additional function definitions
+func11 = fn(x) { return x + var69; }
+func12 = fn(x) { y = x * var70 return y; }
+func13 = fn(a, b) { return a * b + var71; }
+func14 = fn(a, b) { sum = a + b return sum * var72; }
+func15 = fn(n) { result = 1 i = n while i > 0 { result = result * var73 i = i - 1 } return result; }
+
+// More nested function definitions
+func16 = fn(n) {
+  tot = 0
+  i = 1
+  while i <= n {
+    tot = tot + i * var74
+    i = i + 1
+  }
+  return tot
+}
+
+// Function calls continued
+cf11 = func11(11)
+cf12 = func12(12)
+cf13 = func13(2,3)
+cf14 = func14(4,5)
+cf15 = func15(5)
+cf16 = func16(6)
+
+// Module imports continued
+import Net
+import Graph
+netVer = Net.version
+graphVer = Graph.version
+
+// Triple nested loops with four levels continued
+nested4 = fn(n) {
+  sum = 0
+  a = 1
+  while a <= n {
+    b = 1
+    while b <= n {
+      c = 1
+      while c <= n {
+        d = 1
+        while d <= n {
+          sum = sum + (a)(b)(c)(d)(var75)
+          d = d + 1
+        }
+        c = c + 1
+      }
+      b = b + 1
+    }
+    a = a + 1
+  }
+  return sum
+}
+nestedRes4 = nested4(2)
+
+// More unit type function tests
+unitF1 = fn(a) -> Unit { dummy = a return (); }
+unitF2 = fn(a, b) -> Unit { temp = a + b return (); }
+unitF3 = fn() -> Unit {
+  x = 5
+  y = 10
+  z = x + y
+  return ();
+}
+
+// Higher-order function continued
+hof1 = fn(f, x) { return f(f(f(x))); }
+tripleInc = hof1(inc, 2)
+
+// Complex composite function
+composite1 = fn(a, b, c, d) {
+  p1 = a + b
+  p2 = c + d
+  p3 = p1 * p2
+  p4 = p3 - a
+  p5 = p4 + b
+  return p5 * c
+}
+compRes1 = composite1(1,2,3,4)
+
+// Fibonacci with state tuple imitation
+fibState = fn(n) {
+  a = 0
+  b = 1
+  i = 0
+  while i < n {
+    tempA = a
+    tempB = b
+    a = tempB
+    b = tempA + tempB
+    i = i + 1
+  }
+  return b
+}
+fib6 = fibState(6)
+
+// Factorial with logging variables
+factLog = fn(n) {
+  result = 1
+  i = n
+  while i > 0 {
+    before = result
+    result = result * i
+    after = result
+    i = i - 1
+  }
+  return result
+}
+fact7 = factLog(7)
+
+// Summation with multiplication factor
+sumMul = fn(n, f) {
+  total = 0
+  i = 1
+  while i <= n {
+    total = total + i * f
+    i = i + 1
+  }
+  return total
+}
+sumMul5 = sumMul(10, 2)
+
+// Final large composite test
+megaTest = fn(a, b, c, d, e) {
+  v1 = a + b
+  v2 = c + d
+  v3 = v1 * v2
+  v4 = v3 - e
+  v5 = v4 + a
+  v6 = v5 * b
+  v7 = v6 - c
+  v8 = v7 + d
+  v9 = v8 * e
+  return v9
+}
+megaRes = megaTest(1,2,3,4,5)
+
+/*
+ * This is a multi-line comment.
+ * It contains slashes, stars, numbers like 12345, booleans True and False.
+ * It tests nested comment markers like /* inside the comment */
+ */
+
+// Single-line comment tests
+// Another comment line
+
+// Variable assignments
+n = 5
+x = 0.999
+b = False
+c = True
+d = 42
+e = 3.14159
+
+// Arithmetic expressions
+a1 = n + x
+a2 = n - x
+a3 = n * x
+a4 = n / x
+a5 = (n + x) * (n - x) / (2 * 3)
+a6 = 7(2 + 3) - 4(1 + 1)
+a7 = 8x + (5)(3)
+a8 = 2(3(4 + 5) - 6) + 7
+a9 = (1)(2)(3)(4)
+
+// Unary operators
+u1 = -n
+u2 = -x
+u3 = !b
+u4 = !c
+
+// Combined unary and binary
+u5 = -(n + x) * -(x - 1)
+u6 = !(b && c) // Note: && not in grammar, but included as test text
+
+// Function definitions without semicolons, implicit return
+id = fn(x) { x }
+negate = fn(x) { -x }
+logicalNot = fn(b) { !b }
+
+// Function definitions with explicit return and semicolons
+inc = fn(x) { return x + 1; }
+dec = fn(x: Num) -> Num { return x - 1; }
+double = fn(x) -> Num { return x * 2; }
+half = fn(x) -> Num { return x / 2; }
+
+// Nested function definitions
+makeAdder = fn(a) {
+  fn(b) { a + b }
+}
+
+applyTwice = fn(f, x) {
+  f(f(x))
+}
+
+// Function calls
+r1 = id(10)
+r2 = negate(r1)
+r3 = logicalNot(False)
+r4 = inc(5)
+r5 = dec(5)
+r6 = double(3)
+r7 = half(8)
+r8 = makeAdder(3)(4)
+r9 = applyTwice(double, 2)
+
+// Complex function bodies
+complex1 = fn(x) {
+  a = x + 2
+  b = a * a
+  return b - x
+}
+
+complex2 = fn(x, y) {
+  sum = x + y
+  prod = x * y
+  diff = x - y
+  return sum + prod - diff
+}
+
+complex3 = fn(x) {
+  temp = (x + 1)(x + 2)
+  return temp / (x + 3)
+}
+
+// While loops
+count1 = 3
+while count1 > 0 {
+  count1 = count1 - 1
+}
+
+count2 = 5
+while count2 > 1 {
+  count2 = count2 - 2
+}
+
+// Import and module usage
+import Math
+piVal = Math.PI
+sinVal = Math.sin(piVal)
+cosVal = Math.cos(piVal)
+
+// Unit type
+unit1 = ()
+unit2 = fn() -> Unit { return (); }
+
+// Higher-order functions
+compose = fn(f, g) {
+  fn(x) { f(g(x)) }
+}
+
+square = fn(x) { x * x }
+cube = fn(x) { x * x * x }
+squareThenCube = compose(cube, square)
+cubeThenSquare = compose(square, cube)
+v1 = squareThenCube(2)
+v2 = cubeThenSquare(2)
+
+// More arithmetic variations
+v3 = (2)(3 + 4) - (5)(6 - 1)
+v4 = 9x + 8(7 + x)
+v5 = (1 + 2)(3 + 4)(5 + 6)
+
+// Deeply nested functions and calls
+deep1 = fn(a) {
+  fn(b) {
+    fn(c) {
+      fn(d) {
+        return a + b + c + d;
+      }
+    }
+  }
+}
+
+// Test deeply nested call for parsing only
+n = deep1(1)(2)(3)(4) // underscore here is test text, not code
+
+// Loops inside functions
+fact = fn(n) {
+  result = 1
+  i = n
+  while i > 0 {
+    result = result * i
+    i = i - 1
+  }
+  return result
+}
+
+fact5 = fact(5)
+
+// Another function with while
+sumTo = fn(n) {
+  total = 0
+  i = 1
+  while i <= n {
+    total = total + i
+    i = i + 1
+  }
+  total
+}
+
+sum10 = sumTo(10)
+
+// More nested arithmetic in functions
+calc = fn(x) {
+  step1 = x + 2
+  step2 = step1 * 3
+  step3 = step2 - 4
+  return (step3)(5)
+}
+
+resCalc = calc(7)
+
+// Anonymous function passed directly
+anonTest = fn(x) {
+  fn(y) { x + y }(5)
+}
+
+anonRes = anonTest(3)
+
+// Multi-line comment in middle
+/*
+  This comment spans multiple lines.
+  It tests comment handling with code following in same block.
+*/
+
+// Chaining multiplications
+chain1 = 2(3)(4)(5)
+chain2 = (1 + 1)(2 + 2)(3 + 3)
+
+// Complex nested expression
+nestedExpr = ((1 + 2)(3 + 4) - (5 + 6))(7 + 8)
+
+// Test of numbers adjacent to parentheses
+adjA = 6(7)
+adjB = 8(9 + 1)
+adjC = (2 + 3)4
+
+// Import more from Math
+sqrtVal = Math.sqrt(16)
+absVal = Math.abs(-10)
+
+// Final unit tests
+finalUnit = ()
+nothing = fn() -> Unit { return (); }
+
+// some content from the 2000 character benchmark:
+n = 5
+x = 0.999
+b = False
+t = True
+
+// Unary operators
+negx = -x
+notb = !b
+
+// Binary arithmetic
+sum1 = x + n
+diff1 = n - x
+prod1 = x * (x + 2) - 5 / (2 * 2 * 2)
+mulimplicit = 3x + (5)(3) // implicit multiplication tests
+complexexpr = -(3 + negx) * (!b || t) // note: || and && may be future tokens
+
+/*
+ * Multi-line comment starts here
+ * It should span multiple lines,
+ * include stars * and slashes / * * /
+ */
+multicalc = ((n + x) * (n - x)) / ((2)(2))(2)
+
+/* Nested comment markers in text should not confuse lexer:
+ * like this: /* inner start */ still inside comment
+ */
+
+// Anonymous functions
+square = fn(x) { x * x }
+squareprime = fn(x) { return x * x; }
+typedsquare = fn(x: Num) -> Num { return x * x; }
+strangefn = fn() { // no parameters
+  // return Unit
+  ()
+}
+
+// First-class functions
+apply = fn(f, v) { return f(v); }
+result1 = apply(fn(y) { y + y }, n)
+result2 = apply(square, x)
+
+// Higher-order and chaining
+doublethensquare = fn(v) { fn(u) { return u * 2; }(v); }(3)
+
+// While loop
+counter = 3
+while counter > 0 {
+  // Decrement counter
+  counter = counter - 1
+  log = fn(msg) { return (); }("Count is " + counter) // string concat test?
+}
+
+// Modules import
+import Math // now Math.PI etc.
+
+// Using imported module
+pi = Math.PI
+area = pi * (n * n)
+
+// Unit type usage
+u = ()
+unitfn = fn(z) -> Unit { return (); }
+u2 = unitfn()
+
+// Edge cases for identifiers
+primetest' = fn(x) { return x / 2 == 1; }
+primetest'' = fn(x: Num) -> Bool { return (x / 2) != 0; }
+
+// Long, complex line to test lexer resilience:
+deep = ((((1 + 2) * (3 - 4)) / (5 + (6 * (7 - 8)))) - -9) * +10 / !False

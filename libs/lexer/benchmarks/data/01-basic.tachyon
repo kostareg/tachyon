@@ -1,0 +1,6 @@
+// this is a basic Tachyon program that stores two variables, adds them, and returns them.
+
+x = 1
+y = 2
+
+return x + y
