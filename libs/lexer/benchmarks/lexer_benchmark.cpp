@@ -6,7 +6,7 @@
 
 using namespace tachyon;
 
-class ParserDataFixture : public benchmark::Fixture
+class LexerDataFixture : public benchmark::Fixture
 {
   public:
     void SetUp(const ::benchmark::State &) override
@@ -26,19 +26,19 @@ class ParserDataFixture : public benchmark::Fixture
             file.seekg(0, std::ios::beg);
             std::string content(size, '\0');
             file.read(content.data(), size);
-            parser_data[included_file] = content;
+            lexer_data[included_file] = content;
         }
     }
 
-    void TearDown(const ::benchmark::State &) override { parser_data.clear(); }
+    void TearDown(const ::benchmark::State &) override { lexer_data.clear(); }
 
   protected:
-    std::unordered_map<std::string, std::string> parser_data;
+    std::unordered_map<std::string, std::string> lexer_data;
 };
 
-BENCHMARK_F(ParserDataFixture, LexBlank)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, LexBlank)(benchmark::State &state)
 {
-    std::string _00_blank = parser_data.at("00-blank");
+    std::string _00_blank = lexer_data.at("00-blank");
 
     for (auto _ : state)
     {
@@ -47,9 +47,9 @@ BENCHMARK_F(ParserDataFixture, LexBlank)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, LexBasic)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, LexBasic)(benchmark::State &state)
 {
-    std::string _01_basic = parser_data.at("01-basic");
+    std::string _01_basic = lexer_data.at("01-basic");
 
     for (auto _ : state)
     {
@@ -58,9 +58,9 @@ BENCHMARK_F(ParserDataFixture, LexBasic)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, Lex1000Chars)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, Lex1000Chars)(benchmark::State &state)
 {
-    std::string _02_1000_chars = parser_data.at("02-1000-chars");
+    std::string _02_1000_chars = lexer_data.at("02-1000-chars");
 
     for (auto _ : state)
     {
@@ -69,9 +69,9 @@ BENCHMARK_F(ParserDataFixture, Lex1000Chars)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, Lex2000Chars)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, Lex2000Chars)(benchmark::State &state)
 {
-    std::string _03_2000_chars = parser_data.at("03-2000-chars");
+    std::string _03_2000_chars = lexer_data.at("03-2000-chars");
 
     for (auto _ : state)
     {
@@ -80,9 +80,9 @@ BENCHMARK_F(ParserDataFixture, Lex2000Chars)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, Lex5000Chars)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, Lex5000Chars)(benchmark::State &state)
 {
-    std::string _04_5000_chars = parser_data.at("04-5000-chars");
+    std::string _04_5000_chars = lexer_data.at("04-5000-chars");
 
     for (auto _ : state)
     {
@@ -91,9 +91,9 @@ BENCHMARK_F(ParserDataFixture, Lex5000Chars)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, Lex10000Chars)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, Lex10000Chars)(benchmark::State &state)
 {
-    std::string _05_10000_chars = parser_data.at("05-10000-chars");
+    std::string _05_10000_chars = lexer_data.at("05-10000-chars");
 
     for (auto _ : state)
     {
@@ -102,9 +102,9 @@ BENCHMARK_F(ParserDataFixture, Lex10000Chars)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, Lex20000Chars)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, Lex20000Chars)(benchmark::State &state)
 {
-    std::string _06_20000_chars = parser_data.at("06-20000-chars");
+    std::string _06_20000_chars = lexer_data.at("06-20000-chars");
 
     for (auto _ : state)
     {
@@ -113,9 +113,9 @@ BENCHMARK_F(ParserDataFixture, Lex20000Chars)(benchmark::State &state)
     }
 };
 
-BENCHMARK_F(ParserDataFixture, LexBigComment)(benchmark::State &state)
+BENCHMARK_F(LexerDataFixture, LexBigComment)(benchmark::State &state)
 {
-    std::string _07_big_comment = parser_data.at("07-big-comment");
+    std::string _07_big_comment = lexer_data.at("07-big-comment");
 
     for (auto _ : state)
     {
