@@ -72,8 +72,16 @@ jobs:
           path: ./cache/benchmark_results.json
           key: '${{ runner.os }}-benchmarks'
 
-      - name: Run Benchmarks
-        run: nix develop --command ./build/benchmarks/benchmarks --benchmark_out=benchmark_results.json
+      - name: Run Base Benchmarks
+        run: nix develop --command ./build/benchmarks/benchmarks --benchmark_out=base_benchmark_results.json
+
+      - name: Run Lexer Benchmarks
+        working-directory: build/libs/lexer/
+        run: nix develop --command ./lexer_benchmarks --benchmark_out=../../../lexer_benchmark_results.json
+
+      - name: Merge benchmarks
+        run: |
+          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json > benchmark_results.json
 
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1

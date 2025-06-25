@@ -28,6 +28,7 @@
           llvmPackages.libunwind
           gcovr
           lcov
+          jq
         ];
 
         shellHook = ''
