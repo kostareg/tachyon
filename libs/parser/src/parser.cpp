@@ -401,6 +401,10 @@ std::expected<Token, Error> Parser::expect(TokenType tt)
 
 std::expected<Expr, Error> Parser::parse()
 {
+    // if there are no token, return a blank sequence expression
+    if (ts.empty())
+        return Expr(SequenceExpr());
+
     std::vector<Expr> stmts;
     while (true)
     {
@@ -414,10 +418,16 @@ std::expected<Expr, Error> Parser::parse()
         if (!stmt)
             return std::unexpected(stmt.error());
 
-        if (!(match(NLINE) || match(SEMIC)))
+        if (!(match(NLINE) || match(SEMIC) || match(END)))
             return std::unexpected(Error::create(ErrorKind::ParseError,
                                                  SourceSpan(peek().span.position, 1),
                                                  "expected end of statement"));
+
+        if (match(END))
+        {
+            stmts.push_back(std::move(stmt.value()));
+            break;
+        }
 
         auto _terminator = advance();
 

@@ -69,6 +69,11 @@ if (TACHYON_BUILD_BENCHMARKS)
 
     # Benchmark data files
     file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
-    message(STATUS "message")
-    message(STATUS ${CMAKE_CURRENT_BINARY_DIR})
+
+    # Watch the data files
+    set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/data
+    )
 endif ()

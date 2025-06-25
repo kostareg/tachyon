@@ -56,7 +56,7 @@ enum class TokenType
 
 using enum TokenType;
 
-// TODO: hashmap? or better way?
+// TODO: hashmap for these? or better way?
 /**
  * @brief find token as string
  * @param tt token type
@@ -140,6 +140,91 @@ inline std::string tokToStr(TokenType tt)
         return "END";
     else
         return "unrecognized token";
+}
+
+/**
+ * @brief find string of token
+ * @param str token string
+ * @return token
+ */
+inline TokenType strToTok(std::string_view str)
+{
+    if (str == "IDENT")
+        return IDENT;
+    else if (str == "NUMBER")
+        return NUMBER;
+    else if (str == "STRING")
+        return STRING;
+    else if (str == "BOOL")
+        return BOOL;
+    else if (str == "UNIT")
+        return UNIT;
+    else if (str == "EQ")
+        return EQ;
+    else if (str == "PLUS")
+        return PLUS;
+    else if (str == "MINUS")
+        return MINUS;
+    else if (str == "STAR")
+        return STAR;
+    else if (str == "FSLASH")
+        return FSLASH;
+    else if (str == "CARET")
+        return CARET;
+    else if (str == "ECOMP")
+        return ECOMP;
+    else if (str == "NECOMP")
+        return NECOMP;
+    else if (str == "LCOMP")
+        return LCOMP;
+    else if (str == "GCOMP")
+        return GCOMP;
+    else if (str == "LECOMP")
+        return LECOMP;
+    else if (str == "GECOMP")
+        return GECOMP;
+    else if (str == "NOT")
+        return NOT;
+    else if (str == "BAND")
+        return BAND;
+    else if (str == "BOR")
+        return BOR;
+    else if (str == "LPAREN")
+        return LPAREN;
+    else if (str == "RPAREN")
+        return RPAREN;
+    else if (str == "LBRACE")
+        return LBRACE;
+    else if (str == "RBRACE")
+        return RBRACE;
+    else if (str == "RARROW")
+        return RARROW;
+    else if (str == "DOT")
+        return DOT;
+    else if (str == "COLON")
+        return COLON;
+    else if (str == "SEMIC")
+        return SEMIC;
+    else if (str == "COMMA")
+        return COMMA;
+    else if (str == "IMPORT")
+        return IMPORT;
+    else if (str == "FN")
+        return FN;
+    else if (str == "RETURN")
+        return RETURN;
+    else if (str == "WHILE")
+        return WHILE;
+    else if (str == "BREAK")
+        return BREAK;
+    else if (str == "CONTINUE")
+        return CONTINUE;
+    else if (str == "NLINE")
+        return NLINE;
+    else if (str == "END")
+        return END;
+    else
+        throw std::runtime_error(std::format("failed to turn str into token type: {}", str));
 }
 
 /**

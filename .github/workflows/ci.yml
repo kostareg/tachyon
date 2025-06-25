@@ -79,9 +79,13 @@ jobs:
         working-directory: build/libs/lexer/
         run: nix develop --command ./lexer_benchmarks --benchmark_out=../../../lexer_benchmark_results.json
 
+      - name: Run Parser Benchmarks
+        working-directory: build/libs/parser/
+        run: nix develop --command ./parser_benchmarks --benchmark_out=../../../parser_benchmark_results.json
+
       - name: Merge benchmarks
         run: |
-          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json > benchmark_results.json
+          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json parser_benchmark_results.json > benchmark_results.json
 
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
