@@ -2,7 +2,7 @@ Integration tests and benchmarks are incomplete. See individual unit tests and b
 
 ## Managing CPU scaling
 
-Disable CPU scaling to denoise benchmark measurements.
+Disable CPU scaling to decrease noise in benchmark measurements.
 
 ```shell
 # check options
