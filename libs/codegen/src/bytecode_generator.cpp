@@ -19,14 +19,8 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit)
 void BytecodeGenerator::operator()(const FnExpr &fn)
 {
     // TODO: see generateProtoWithArgs definition.
-    std::expected<runtime::Proto, Error> maybe_proto = runtime::Proto{
-        .bytecode = {},
-        .constants = {},
-        .arguments = 0,
-        .name = "",
-        .span = fn.body->span,
-    };
-    if (fn.arguments.size() == 0)
+    std::expected<runtime::Proto, Error> maybe_proto;
+    if (fn.arguments.empty())
         maybe_proto = generateProto(std::move(*fn.body));
     else
     {
@@ -37,8 +31,11 @@ void BytecodeGenerator::operator()(const FnExpr &fn)
         maybe_proto = generateProtoWithArgs(std::move(*fn.body), arguments);
     }
 
+    // if there was an error, record it. if the function is impure, propagate to self.
     if (!maybe_proto)
         errors.push_back(maybe_proto.error());
+    else if (!maybe_proto->is_pure)
+        is_pure = false;
 
     constants.emplace_back<std::shared_ptr<runtime::Proto>>(
         std::make_shared<runtime::Proto>(std::move(maybe_proto.value())));
@@ -281,6 +278,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
 
     if (fnc.ref.name == "print")
     {
+        is_pure = false; // i/o is impure
         bc.push_back(runtime::PRNR);
         bc.push_back(start); // just one arg
         return;
