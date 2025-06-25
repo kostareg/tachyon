@@ -7,6 +7,8 @@ just-in-time compiler.
 
 ## Definitions
 
+<!-- definitions are sorted in alphabetical order -->
+
 ### <type of> Pipeline
 
 A <type of> Pipeline is a sequence of steps that results in the manipulation of data.
@@ -26,6 +28,22 @@ generation steps.
 Just-In-Time compilation is the concept of compiling a specific set of instructions into machine
 code just before running it. The specific instructions to compile are identified by the virtual
 machine.
+
+### Memoization
+
+[Memoization](https://en.wikipedia.org/wiki/Memoization) is the concept of storing the results
+of previously called functions in memory, such that calling the same function with the same
+arguments can just refer to the cached value, instead of executing the function again. Function
+memoization only works on pure functions, so side effects are not "skipped" when the value is
+retrieved from cache.
+
+### Pure Function
+
+A pure function is any function that always returns the same value given the same arguments, and
+has no side effects (such as writing to files, printing to a console, etc.). If a function is
+pure, it can be memoized, which involves its return value being cached and read in future calls
+with the same arguments. An impure function cannot be cached this way because it will "skip"
+these side effect operations (such as writing the output of a function to a file) during cache hits.
 
 ### Runtime
 
@@ -70,5 +88,12 @@ optimize the bytecode (or ast)? The reason is that optimizing these structures i
 difficult and, even if implemented correctly, compute-intensive. It is easier to generate a
 representation of the intent of the code (i.e. abstract individual instructions into an
 intermediate representation) than to optimize the instructions directly.
+
+### Marking Functions for Memoization
+
+During bytecode generation, the kinds of instructions are recorded. If all instructions are pure,
+the function overall is marked as pure, and the virtual machine is able to cache its input and
+return values during runtime. Function impurities propagates to parents. If function a calls
+function b that is impure, a is implicitly impure.
 
 ### Marking Instructions for Optimization (TODO)
