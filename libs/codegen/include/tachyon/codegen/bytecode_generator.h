@@ -45,6 +45,9 @@ struct BytecodeGenerator
     /// list of generated errors
     std::vector<Error> errors = {};
 
+    /// whether the function is pure (memoizable)
+    bool is_pure = true;
+
     BytecodeGenerator() = default;
 
     /**
@@ -82,7 +85,24 @@ inline std::expected<runtime::Proto, Error> generateProto(parser::Expr e)
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error::createMultiple(generator.errors));
-    return runtime::Proto(generator.bc, std::move(generator.constants), 0, "<main>", e.span);
+    return runtime::Proto(generator.bc, std::move(generator.constants), 0, generator.is_pure,
+                          "<main>", e.span);
+}
+
+/**
+ * @brief generate main function bytecode from abstract syntax tree
+ * @param e abstract syntax tree
+ * @return function prototype object or error
+ */
+inline std::expected<runtime::Proto, Error> generateMainProto(parser::Expr e)
+{
+    return generateProto(std::move(e))
+        .transform(
+            [](runtime::Proto proto)
+            {
+                proto.is_pure = false;
+                return proto;
+            });
 }
 
 // TODO: I wanted to do this with function overloading or defaults but the
@@ -107,6 +127,7 @@ inline std::expected<runtime::Proto, Error> generateProtoWithArgs(parser::Expr e
     std::visit(generator, e.kind);
     if (!generator.errors.empty())
         return std::unexpected(Error::createMultiple(generator.errors));
-    return runtime::Proto(generator.bc, std::move(generator.constants), size, "<main>", e.span);
+    return runtime::Proto(generator.bc, std::move(generator.constants), size, generator.is_pure,
+                          "<main>", e.span);
 }
 } // namespace tachyon::codegen

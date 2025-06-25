@@ -34,6 +34,9 @@ struct Proto
     /// number of arguments
     size_t arguments;
 
+    /// whether the function is pure (memoizable)
+    bool is_pure;
+
     /// memoization cache
     Cache cache;
 
@@ -45,10 +48,12 @@ struct Proto
     /// debug info source span
     SourceSpan span;
 
+    Proto() : bytecode(), constants(), arguments(), is_pure(), cache(), name(), span(0, 0) {}
+
     Proto(std::vector<uint8_t> bytecode, std::vector<Value> constants, size_t arguments,
-          std::string name, SourceSpan span)
+          bool is_pure, std::string name, SourceSpan span)
         : bytecode(std::move(bytecode)), constants(std::move(constants)), arguments(arguments),
-          cache(), name(std::move(name)), span(span)
+          is_pure(is_pure), cache(), name(std::move(name)), span(span)
     {
     }
 

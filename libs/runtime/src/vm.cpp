@@ -655,7 +655,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
 
 std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
 {
-    // first, check if the current function call is already cached. begin by loading the arguments:
+    // first, load the arguments into a list:
     Values vs;
     for (size_t i = 0; i < fn->arguments; ++i)
     {
@@ -663,13 +663,16 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
         vs.push_back(call_stack.back().registers[i + offset]);
     }
 
-    // then check the cache:
-    // TODO: you can only do this with pure functions.
-    if (auto hit = fn->cache.get(vs))
+    // then, if the function is pure, check the cache:
+    if (fn->is_pure)
     {
-        // handle the cache hit. load the return value to register 0 of this call frame and return.
-        call_stack[call_stack.size() - 1].registers[0] = *hit;
-        return {};
+        if (auto hit = fn->cache.get(vs))
+        {
+            // handle the cache hit. load the return value to register 0 of this call frame and
+            // return.
+            call_stack[call_stack.size() - 1].registers[0] = *hit;
+            return {};
+        }
     }
 
     // if we are here, we will have to run the function. begin by creating the next call frame and
@@ -693,9 +696,11 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint8_t offset)
     //  things. blocked by bytecode generation.
     call_stack[call_stack.size() - 2].registers[0] = call_stack.back().returns;
 
-    // don't forget to register in the cache before popping.
-    // TODO: you can only do this with pure functions.
-    fn->cache.put(vs, call_stack.back().returns);
+    // if the function is pure, put result in cache.
+    if (fn->is_pure)
+    {
+        fn->cache.put(vs, call_stack.back().returns);
+    }
 
     // remove call frame.
     call_stack.pop_back();

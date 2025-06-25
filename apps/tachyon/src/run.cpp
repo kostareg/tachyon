@@ -91,7 +91,7 @@ int run(char *fileName)
                          printExpr(e);
                          return e;
                      })
-                 .and_then(codegen::generateProto)
+                 .and_then(codegen::generateMainProto)
                  .and_then(
                      [](runtime::Proto proto) -> std::expected<runtime::Proto, Error>
                      {

@@ -14,6 +14,7 @@ print("the roots are: ")
 print(quadratic(0.4,6.9,10))
 print(", ")
 print(quadratic'(0.4,6.9,10))
+print("\n")
 
 x = 0
 while (x < 10000000) {
