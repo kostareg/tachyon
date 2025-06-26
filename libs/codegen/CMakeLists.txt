@@ -67,3 +67,29 @@ add_library(tachyon::codegen ALIAS tachyon_codegen)
 #            benchmark::benchmark
 #    )
 #endif ()
+
+# Benchmarks for this library
+if (TACHYON_BUILD_BENCHMARKS)
+    add_executable(codegen_benchmarks
+            benchmarks/codegen_benchmark.cpp
+    )
+
+    target_link_libraries(codegen_benchmarks
+            PRIVATE
+            tachyon_common
+            tachyon_parser
+            tachyon_runtime
+            tachyon_codegen
+            benchmark::benchmark
+    )
+
+    # Benchmark data files
+    file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
+
+    # Watch the data files
+    set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/data
+    )
+endif ()
