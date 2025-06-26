@@ -83,9 +83,13 @@ jobs:
         working-directory: build/libs/parser/
         run: nix develop --command ./parser_benchmarks --benchmark_out=../../../parser_benchmark_results.json
 
+      - name: Run Codegen Benchmarks
+        working-directory: build/libs/codegen/
+        run: nix develop --command ./codegen_benchmarks --benchmark_out=../../../codegen_benchmark_results.json
+
       - name: Merge benchmarks
         run: |
-          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json parser_benchmark_results.json > benchmark_results.json
+          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json parser_benchmark_results.json codegen_benchmark_results.json > benchmark_results.json
 
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1

@@ -309,6 +309,7 @@ BENCHMARK_DEFINE_F(CodegenDataFixture, GenerateBasic)(benchmark::State &state)
     }
 };
 
+// TODO: this is due to std::move. Can I make Expr copy?
 BENCHMARK_REGISTER_F(CodegenDataFixture, GenerateBasic)->Iterations(1);
 
 BENCHMARK_MAIN();

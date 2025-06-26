@@ -7,7 +7,7 @@
 
 using namespace tachyon;
 
-static const std::string basic_source = "1 + 1;";
+static const std::string basic_source = "x = 1; y = 2; return x + y;";
 
 static void BM_BasicPipeline(benchmark::State &state)
 {
