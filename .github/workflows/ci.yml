@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request: ~
 
+permissions:
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -87,9 +90,13 @@ jobs:
         working-directory: build/libs/codegen/
         run: nix develop --command ./codegen_benchmarks --benchmark_out=../../../codegen_benchmark_results.json
 
+      - name: Run Runtime Benchmarks
+        working-directory: build/libs/runtime/
+        run: nix develop --command ./runtime_benchmarks --benchmark_out=../../../runtime_benchmark_results.json
+
       - name: Merge benchmarks
         run: |
-          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json parser_benchmark_results.json codegen_benchmark_results.json > benchmark_results.json
+          nix develop --command jq -s '{ benchmarks: map(.benchmarks) | add }' base_benchmark_results.json lexer_benchmark_results.json parser_benchmark_results.json codegen_benchmark_results.json runtime_benchmark_results.json > benchmark_results.json
 
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
