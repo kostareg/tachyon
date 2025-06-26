@@ -1,0 +1,49 @@
+// this is a Tachyon file for benchmarking the lexer. it contains ~1000 characters of lexable
+// Tachyon content. however, some of this code may or may not compile past the lexer. it is meant to
+// be a benchmark for the lexer, not as an example of how to write Tachyon programs.
+
+import Math
+
+/* Multi-line comment test:
+ * Validate comment tokens, keywords, numbers,
+ * identifiers, operators and delimiters.
+ */
+
+n = 5
+x = 0.999
+b = False
+flag = !b
+negX = -x
+
+z = x * (x + 2) - 5 / (2 * 2 * 2)
+l = 3x + (5)(3) // implicit multiplication syntax
+
+// Anonymous functions
+square = fn(x) { x * x }
+square' = fn(x) { return x * x; }
+square'' = fn(x: Num) -> Num { return x * x; }
+
+// First-class function usage
+f(fn(x) { x })
+
+// Nested higher-order functions
+compose = fn(f, g) { fn(x) { return f(g(x)); } }
+result = compose(square, square')(4)
+
+// Loop constructs
+counter = 3
+while counter > 0 {
+  counter = counter - 1
+}
+
+// Unit type and functions returning Unit
+u = ()
+doNothing = fn() -> Unit { return (); }
+
+// Use imported module
+piVal = Math.PI
+circum = 2 * piVal * n
+
+// Additional test expressions
+a = (n)(x)
+b2 = -(n + x) + !b

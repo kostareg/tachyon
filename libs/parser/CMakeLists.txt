@@ -57,14 +57,26 @@ add_library(tachyon::parser ALIAS tachyon_parser)
 #endif ()
 
 # Benchmarks for this library
-#if (TACHYON_BUILD_BENCHMARKS)
-#    add_executable(parser_benchmarks
-#            benchmarks/parser_benchmark.cpp
-#    )
-#
-#    target_link_libraries(parser_benchmarks
-#            PRIVATE
-#            tachyon_parser
-#            benchmark::benchmark
-#    )
-#endif ()
+if (TACHYON_BUILD_BENCHMARKS)
+    add_executable(parser_benchmarks
+            benchmarks/parser_benchmark.cpp
+    )
+
+    target_link_libraries(parser_benchmarks
+            PRIVATE
+            tachyon_common
+            tachyon_lexer
+            tachyon_parser
+            benchmark::benchmark
+    )
+
+    # Benchmark data files
+    file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
+
+    # Watch the data files
+    set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/data
+    )
+endif ()

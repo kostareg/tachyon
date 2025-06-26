@@ -56,14 +56,25 @@ add_library(tachyon::runtime ALIAS tachyon_runtime)
 #endif ()
 
 # Benchmarks for this library
-#if (TACHYON_BUILD_BENCHMARKS)
-#    add_executable(runtime_benchmarks
-#            benchmarks/runtime_benchmark.cpp
-#    )
-#
-#    target_link_libraries(runtime_benchmarks
-#            PRIVATE
-#            tachyon_runtime
-#            benchmark::benchmark
-#    )
-#endif ()
+if (TACHYON_BUILD_BENCHMARKS)
+    add_executable(runtime_benchmarks
+            benchmarks/vm_benchmark.cpp
+    )
+
+    target_link_libraries(runtime_benchmarks
+            PRIVATE
+            tachyon_common
+            tachyon_runtime
+            benchmark::benchmark
+    )
+
+    # Benchmark data files
+    file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
+
+    # Watch the data files
+    set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/data
+    )
+endif ()

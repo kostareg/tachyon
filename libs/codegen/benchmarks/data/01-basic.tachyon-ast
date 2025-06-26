@@ -1,0 +1,10 @@
+LiteralExpr double 1
+LiteralExpr double 1
+LiteralExpr bool false
+LiteralExpr string "hello, world!"
+LiteralExpr double 1
+LetExpr myvar LiteralExpr double 3
+LetRefExpr myvar
+UnaryOperatorExpr ! LiteralExpr bool false
+BinaryOperatorExpr + LiteralExpr double 5 LiteralExpr double 10
+LiteralExpr double 1

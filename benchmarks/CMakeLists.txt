@@ -11,7 +11,7 @@ target_link_libraries(benchmarks
         benchmark::benchmark
 )
 
-target_include_directories(integration_tests
+target_include_directories(benchmarks
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ../libs/common/include
