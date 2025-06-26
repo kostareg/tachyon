@@ -20,7 +20,8 @@ class ParserDataFixture : public benchmark::Fixture
 
         for (const std::string &included_file : included_files)
         {
-            const std::string included_file_path = "benchmark-data/" + included_file + ".tachyon";
+            const std::string included_file_path =
+                "benchmark-data/" + included_file + ".tachyon-tokens";
             std::ifstream file(included_file_path, std::ios::binary | std::ios::ate);
             std::streamsize size = file.tellg();
             if (size == -1)
