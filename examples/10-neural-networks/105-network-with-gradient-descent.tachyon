@@ -1,0 +1,212 @@
+// this program runs a layered classification network that identifies whether a fruit is poisonous
+// by relating this value to two properties of the fruit: the size of its spots and the length of
+// its spikes.
+//
+// this program also contains a function to calculate the accuracy (cost) of the output nodes.
+
+// TODO: i need arrays :)
+network = fn (bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32) { input1 = 0
+  input2 = 0
+
+  activationFunction = fn(x) { return 1 / (1 + 2.718 ^ (0-x) ); }
+
+  nodeCost = fn(outputActivation, expectedOutput) { return (outputActivation - expectedOutput) ^ 2; }
+
+  totalCost = 0
+
+  while (input2 < 50) {
+    while (input1 < 50) {
+      // three hidden layers
+      hidden1 = activationFunction(input1 * weight11 + input2 * weight21 + bias1)
+      hidden2 = activationFunction(input1 * weight12 + input2 * weight22 + bias2)
+      hidden3 = activationFunction(input1 * weight13 + input2 * weight23 + bias3)
+  
+      // output1 > output2: safe
+      // output2 > output1: poisonous
+      output1 = activationFunction(hidden1 * hweight11 + hidden2 * hweight21 + hidden3 * hweight31 + hbias1)
+      output2 = activationFunction(hidden1 * hweight12 + hidden2 * hweight22 + hidden3 * hweight32 + hbias2)
+  
+      // some hacks to get the cost value, left side and top side are 1 rest is 0
+      expectedVal = 0
+      input1copy = input1
+      while (input1copy < 20) {
+        expectedVal = 1
+        input1copy = 999
+      }
+      input2copy = input2
+      while (input2copy < 10) {
+        expectedVal = 1
+        input2copy = 999
+      }
+  
+      val1 = nodeCost(output1, expectedVal)
+      // flip for output2
+      val2 = nodeCost(output2, 1-expectedVal)
+      totalCost = totalCost + val1 + val2
+  
+      input1 = input1 + 1
+    }
+  
+    input1 = 0
+    input2 = input2 + 1
+  }
+
+  return totalCost / (2 * 50 * 50);
+}
+
+bias1    = 0-10
+bias2    = 0-10
+bias3    =  30
+
+weight11 =  1
+weight12 =  0
+weight13 = 0-1
+weight21 =  0
+weight22 =  1
+weight23 = 0-1
+
+hbias1    = 0-2
+hbias2    = 0
+
+hweight11 = 1
+hweight12 = 0
+hweight21 = 1.1
+hweight22 = 0
+hweight31 = 1.5
+hweight32 = 0
+
+starting = network(bias1,   bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+print("the starting cost: ")
+print(starting)
+print("\n")
+
+learningRate = 1.5
+x = 0
+while (x < 10) {
+  h = 0.00001
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1+h, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  bias1 = bias1 + slope * learningRate
+
+  // do the same as above but for all of the biases and weights
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2+h, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  bias2 = bias2 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3+h, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  bias3 = bias3 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11+h, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  weight11 = weight11 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12+h, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  weight12 = weight12 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13+h, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  weight13 = weight13 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21+h, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  weight21 = weight21 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22+h, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  weight22 = weight22 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23+h, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  weight23 = weight23 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1+h, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  hbias1 = hbias1 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2+h, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  hbias2 = hbias2 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11+h, hweight12, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  hweight11 = hweight11 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12+h, hweight21, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  hweight12 = hweight12 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21+h, hweight22, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  hweight21 = hweight21 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22+h, hweight31, hweight32)
+  delta = a - b
+  slope = delta / h
+  hweight22 = hweight22 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31+h, hweight32)
+  delta = a - b
+  slope = delta / h
+  hweight31 = hweight31 + slope * learningRate
+  a = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  b = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32+h)
+  delta = a - b
+  slope = delta / h
+  hweight32 = hweight32 + slope * learningRate
+
+  currentCost = network(bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+  print("current cost: ")
+  print(currentCost)
+  print("\n")
+
+  x = x + 1
+}
+
+final = network(bias1,   bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32)
+print("final cost: ")
+print(final)
+
+/*
+produces these weights and biases:
+
+bias1    = 0-9.98238801354744
+bias2    = 0-9.987698532447068
+bias3    = 30.022227547898105
+
+weight11 =  1.1111209667864488
+weight12 =  0.24707147193575585
+weight13 = 0-0.7231863855903788
+weight21 =  0.37117858640856033
+weight22 =  1.0749445364017776
+weight23 = 0-0.48336421105449245
+
+hbias1    = 0-2.0979108648074822
+hbias2    = 0-0.07369723439426545
+
+hweight11 = 0.7751261902434461
+hweight12 = 0.07498834098257356
+hweight21 = 0.768827559907991
+hweight22 = 0.18941227309943187
+hweight31 = 1.7789706483111165
+hweight32 = 0-0.48370264137814756
+*/
+
+return 0

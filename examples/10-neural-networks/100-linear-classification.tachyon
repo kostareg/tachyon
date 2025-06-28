@@ -1,0 +1,44 @@
+// this program runs a linear classification network that identifies whether a fruit is poisonous
+// by relating this value to two properties of the fruit: the size of its spots and the length of
+// its spikes.
+
+// spot size
+input1 = 0
+
+// spike length
+input2 = 0
+
+while (input2 < 90) {
+  while (input1 < 90) {
+    bias1 = 0
+    bias2 = 0-1
+    weight11 = 0-0.9
+    weight12 = 0-0.8
+    weight21 = 0-0.8
+    weight22 = 0-0.6
+
+    // output1 > output2: safe
+    // output2 > output1: poisonous
+    output1 = input1 * weight11 + input2 * weight21 + bias1
+    output2 = input1 * weight12 + input2 * weight22 + bias2
+
+    // if stmt
+    while (output1 > output2) {
+      print("S ")
+      output1 = 0-9999
+    }
+    condn = 0-9999
+    while (output1 != condn) {
+      print("F ")
+      output1 = 0-9999;
+    }
+
+    input1 = input1 + 1
+  }
+
+  input1 = 0
+  input2 = input2 + 1
+  print("\n")
+}
+
+return 0

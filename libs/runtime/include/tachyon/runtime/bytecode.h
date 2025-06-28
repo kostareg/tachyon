@@ -21,7 +21,7 @@ namespace tachyon::runtime
  * | 0xF0  | intrinsic       |
  * +-------+-----------------+
  */
-enum Bytecode : uint8_t
+enum Bytecode : uint16_t
 {
     /* machine */
     RETV = 0x00, // return void

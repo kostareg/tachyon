@@ -28,11 +28,11 @@ struct BytecodeGenerator
     //  case. can't even search for std::monostate because people may actually
     //  use the unit type as a value.
     size_t next_free_register = 1;
-    uint8_t curr = 0;
+    uint16_t curr = 0;
 
   public:
     /// list of bytecode instructions
-    std::vector<uint8_t> bc = {};
+    std::vector<uint16_t> bc = {};
 
     /// constant lookup table
     std::vector<runtime::Value> constants = {};
