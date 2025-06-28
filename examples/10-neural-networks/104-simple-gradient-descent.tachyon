@@ -1,0 +1,26 @@
+// let's take a break from the previous example and implement a simple gradient descent algorithm
+// for a quartic function. we'll use this later to find the ideal weights for our network.
+
+learn = fn(input) { function = fn(x) { return 0.2 * x ^ 4 + 0.1 * x ^ 3 - x ^ 2 + 2; }
+  h = 0.00001
+  a = function(input + h)
+  b = function(input)
+  deltaO = a - b
+  slope = deltaO / h
+  input = input - slope * 0.05
+  return input
+}
+
+x = 0
+learned = 0-0.1
+while (x < 100) {
+  print(learned)
+  learned = learn(learned)
+  print("\n")
+  x = x + 1
+}
+
+print(learned)
+// this prints out -1.77972..., which is the global min for this function.
+
+return 0
