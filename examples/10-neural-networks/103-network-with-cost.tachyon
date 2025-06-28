@@ -1,8 +1,8 @@
-// same as 101-layered-classification, but with a sigmoid activation function.
-
 // this program runs a layered classification network that identifies whether a fruit is poisonous
 // by relating this value to two properties of the fruit: the size of its spots and the length of
 // its spikes.
+//
+// this program also contains a function to calculate the accuracy (cost) of the output nodes.
 
 // spot size
 input1 = 0
@@ -11,6 +11,10 @@ input1 = 0
 input2 = 0
 
 activationFunction = fn(x) { return 1 / (1 + 2.718 ^ (0-x) ); }
+
+nodeCost = fn(outputActivation, expectedOutput) { return (outputActivation - expectedOutput) ^ 2; }
+
+totalCost = 0
 
 while (input2 < 50) {
   while (input1 < 50) {
@@ -45,6 +49,23 @@ while (input2 < 50) {
     output1 = activationFunction(hidden1 * hweight11 + hidden2 * hweight21 + hidden3 * hweight31 + hbias1)
     output2 = activationFunction(hidden1 * hweight12 + hidden2 * hweight22 + hidden3 * hweight32 + hbias2)
 
+    // some hacks to get the cost value, left side and top side are 1 rest is 0
+    // TODO: i think this is supposed to go for both output1 and output2, here i just do output1
+    expectedVal = 0
+    input1copy = input1
+    while (input1copy <= 30) {
+      expectedVal = 1
+      input1copy = 999
+    }
+    input2copy = input2
+    while (input2copy <= 10) {
+      expectedVal = 1
+      input2copy = 999
+    }
+
+    val = nodeCost(output1, expectedVal)
+    totalCost = totalCost + val
+
     // if stmt
     while (output1 >= output2) {
       print("S ")
@@ -63,5 +84,10 @@ while (input2 < 50) {
   input2 = input2 + 1
   print("\n")
 }
+
+totalCost = totalCost / (50 * 50)
+print("average cost: ")
+print(totalCost)
+print("\n")
 
 return 0
