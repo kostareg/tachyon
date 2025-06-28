@@ -1,0 +1,67 @@
+// same as 101-layered-classification, but with a sigmoid activation function.
+
+// this program runs a layered classification network that identifies whether a fruit is poisonous
+// by relating this value to two properties of the fruit: the size of its spots and the length of
+// its spikes.
+
+// spot size
+input1 = 0
+
+// spike length
+input2 = 0
+
+activationFunction = fn(x) { return 1 / (1 + 2.718 ^ (0-x) ); }
+
+while (input2 < 50) {
+  while (input1 < 50) {
+    bias1    = 0-10
+    bias2    = 0-10
+    bias3    =  30
+
+    weight11 =  1   
+    weight12 =  0
+    weight13 = 0-1
+    weight21 =  0   
+    weight22 =  1
+    weight23 = 0-1
+
+    // three hidden layers
+    hidden1 = activationFunction(input1 * weight11 + input2 * weight21 + bias1)
+    hidden2 = activationFunction(input1 * weight12 + input2 * weight22 + bias2)
+    hidden3 = activationFunction(input1 * weight13 + input2 * weight23 + bias3)
+
+    hbias1    = 0-2
+    hbias2    = 0
+
+    hweight11 = 1
+    hweight12 = 0
+    hweight21 = 1.1
+    hweight22 = 0
+    hweight31 = 1.5
+    hweight32 = 0
+
+    // output1 > output2: safe
+    // output2 > output1: poisonous
+    output1 = activationFunction(hidden1 * hweight11 + hidden2 * hweight21 + hidden3 * hweight31 + hbias1)
+    output2 = activationFunction(hidden1 * hweight12 + hidden2 * hweight22 + hidden3 * hweight32 + hbias2)
+
+    // if stmt
+    while (output1 >= output2) {
+      print("S ")
+      output1 = 0-9999
+    }
+    condn = 0-9999
+    while (output1 != condn) {
+      print("F ")
+      output1 = 0-9999;
+    }
+
+    input1 = input1 + 1
+  }
+
+  input1 = 0
+  input2 = input2 + 1
+  print("\n")
+}
+
+return 0
