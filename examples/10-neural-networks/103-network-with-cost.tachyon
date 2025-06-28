@@ -50,21 +50,22 @@ while (input2 < 50) {
     output2 = activationFunction(hidden1 * hweight12 + hidden2 * hweight22 + hidden3 * hweight32 + hbias2)
 
     // some hacks to get the cost value, left side and top side are 1 rest is 0
-    // TODO: i think this is supposed to go for both output1 and output2, here i just do output1
     expectedVal = 0
     input1copy = input1
-    while (input1copy <= 30) {
+    while (input1copy < 50) {
       expectedVal = 1
       input1copy = 999
     }
     input2copy = input2
-    while (input2copy <= 10) {
+    while (input2copy < 50) {
       expectedVal = 1
       input2copy = 999
     }
 
-    val = nodeCost(output1, expectedVal)
-    totalCost = totalCost + val
+    val1 = nodeCost(output1, expectedVal)
+    // flip for output2
+    val2 = nodeCost(output2, 1-expectedVal)
+    totalCost = totalCost + val1 + val2
 
     // if stmt
     while (output1 >= output2) {
@@ -85,7 +86,7 @@ while (input2 < 50) {
   print("\n")
 }
 
-totalCost = totalCost / (50 * 50)
+totalCost = totalCost / (2 * 50 * 50)
 print("average cost: ")
 print(totalCost)
 print("\n")
