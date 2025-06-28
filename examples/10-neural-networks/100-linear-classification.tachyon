@@ -1,6 +1,6 @@
-// this program runs a linear neural network that identifies whether a fruit is poisonous by
-// relating this value to two properties of the fruit: the size of its spots and the length of its
-// spikes.
+// this program runs a linear classification network that identifies whether a fruit is poisonous
+// by relating this value to two properties of the fruit: the size of its spots and the length of
+// its spikes.
 
 // spot size
 input1 = 0
