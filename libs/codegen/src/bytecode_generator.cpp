@@ -74,7 +74,7 @@ void BytecodeGenerator::operator()(const UnaryOperatorExpr &unop)
 // TODO: handle fn calls
 void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
 {
-    uint16_t op = opToUint8T(binop.op);
+    uint16_t op = opToUint16T(binop.op);
     if (std::holds_alternative<LiteralExpr>(binop.left->kind))
     {
         // constant lhs
