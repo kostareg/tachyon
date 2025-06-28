@@ -15,8 +15,8 @@ namespace tachyon::runtime
 struct Proto
 {
     /// function bytecode instructions
-    // TODO: uint8_t* + malloc
-    std::vector<uint8_t> bytecode;
+    // TODO: uint16_t* + malloc
+    std::vector<uint16_t> bytecode;
 
     // TODO: it could be an optimisation to store all constants somewhere
     //  else (eg in the VM) and call from there. There may be duplicate
@@ -50,7 +50,7 @@ struct Proto
 
     Proto() : bytecode(), constants(), arguments(), is_pure(), cache(), name(), span(0, 0) {}
 
-    Proto(std::vector<uint8_t> bytecode, std::vector<Value> constants, size_t arguments,
+    Proto(std::vector<uint16_t> bytecode, std::vector<Value> constants, size_t arguments,
           bool is_pure, std::string name, SourceSpan span)
         : bytecode(std::move(bytecode)), constants(std::move(constants)), arguments(arguments),
           is_pure(is_pure), cache(), name(std::move(name)), span(span)

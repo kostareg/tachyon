@@ -74,7 +74,7 @@ void BytecodeGenerator::operator()(const UnaryOperatorExpr &unop)
 // TODO: handle fn calls
 void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
 {
-    uint8_t op = opToUint8T(binop.op);
+    uint16_t op = opToUint8T(binop.op);
     if (std::holds_alternative<LiteralExpr>(binop.left->kind))
     {
         // constant lhs
@@ -82,9 +82,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // constant <op> constant
             std::visit(*this, binop.left->kind);
-            uint8_t lhs = curr;
+            uint16_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            uint8_t rhs = curr;
+            uint16_t rhs = curr;
             bc.push_back(op);
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -96,9 +96,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // constant <op> reference
             std::visit(*this, binop.left->kind);
-            uint8_t lhs = curr;
+            uint16_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            uint8_t rhs = curr;
+            uint16_t rhs = curr;
             bc.push_back(getBytecodeNthGroup(op, 2));
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -118,9 +118,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // reference <op> constant
             std::visit(*this, binop.left->kind);
-            uint8_t lhs = curr;
+            uint16_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            uint8_t rhs = curr;
+            uint16_t rhs = curr;
             bc.push_back(getBytecodeNthGroup(op, 1));
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -132,9 +132,9 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         {
             // reference <op> reference
             std::visit(*this, binop.left->kind);
-            uint8_t lhs = curr;
+            uint16_t lhs = curr;
             std::visit(*this, binop.right->kind);
-            uint8_t rhs = curr;
+            uint16_t rhs = curr;
             bc.push_back(getBytecodeNthGroup(op, 3));
             bc.push_back(lhs);
             bc.push_back(rhs);
@@ -234,7 +234,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
     // run all of the arguments first, store their currs, then set registers.
     // TODO: reread this - does it make sense to split into two loops? i need to
     //  store start as next_free_register *after* all argument instructions.
-    std::vector<uint8_t> currs;
+    std::vector<uint16_t> currs;
     for (size_t i = 0; i < fnc.args.size(); ++i)
     {
         std::visit(*this, fnc.args[i].kind);
@@ -293,7 +293,7 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
     curr = 0;
 };
 
-void BytecodeGenerator::operator()(const parser::WhileLoopExpr &wlop)
+void BytecodeGenerator::operator()(const WhileLoopExpr &wlop)
 {
     // record the current position, evaluate condition, store register
     size_t condition_start_position = bc.size();
@@ -321,7 +321,7 @@ void BytecodeGenerator::operator()(const parser::WhileLoopExpr &wlop)
         bc.push_back(0); // to be filled in
     }
 
-    // evaluate function body
+    // evaluate loop body
     std::visit(*this, wlop.body->kind);
 
     // now jump back to condition
