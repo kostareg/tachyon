@@ -637,6 +637,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])
                 .pushBack(std::get<double>(proto.constants[src0]));
+            break;
         }
         case LIUR:
         {
@@ -644,6 +645,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])
                 .pushBack(std::get<double>(call_stack.back().registers[src0]));
+            break;
         }
         case LIOR:
         {
@@ -651,6 +653,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 std::get<Matrix>(call_stack.back().registers[src0]).popBack();
+            break;
         }
         case LISC:
         {
@@ -660,6 +663,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])(src1, src2) =
                 std::get<double>(proto.constants[src0]);
+            break;
         }
         case LISR:
         {
@@ -669,6 +673,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])(src1, src2) =
                 std::get<double>(call_stack.back().registers[src0]);
+            break;
         }
         case LIGT:
         {
@@ -678,6 +683,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
                 std::get<Matrix>(call_stack.back().registers[src0])(src1, src2);
+            break;
         }
 
         /* function */

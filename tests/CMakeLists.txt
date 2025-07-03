@@ -1,7 +1,8 @@
 # Cross-library integration tests
 add_executable(integration_tests
-        integration/pipeline_test.cpp
+        integration/array_test.cpp
         integration/comparison_test.cpp
+        integration/pipeline_test.cpp
 )
 
 target_link_libraries(integration_tests

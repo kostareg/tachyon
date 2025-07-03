@@ -26,7 +26,7 @@ struct Proto;
 
 /// runtime value
 using Value =
-    std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>, Matrix>;
+    std::variant<std::monostate, double, std::string, bool, Matrix, std::shared_ptr<Proto>>;
 using Values = std::vector<Value>;
 
 /**
@@ -48,10 +48,14 @@ inline void printValue(const Value &reg)
             }
             else if constexpr (std::is_same_v<T, Matrix>)
             {
+                std::print("[");
                 for (size_t i = 1; i <= val.size(); ++i)
                 {
+                    if (i > 1)
+                        std::print(", ");
                     std::print("{}", val(i));
                 }
+                std::print("]");
             }
             else
             {

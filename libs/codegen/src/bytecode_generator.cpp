@@ -284,6 +284,8 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
         return;
     }
 
+    // TODO: do matrix (array) push/pop operations go here?
+
     (*this)(fnc.ref); // visit ref
     bc.push_back(runtime::CALR);
     bc.push_back(curr);
@@ -368,14 +370,42 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
     }
 };
 
-void BytecodeGenerator::operator()(const MatrixConstructExpr &)
+void BytecodeGenerator::operator()(const MatrixConstructExpr &mc)
 {
-    // ... todo
+    constants.emplace_back(Matrix(mc.height, 0, mc.list.size()));
+    size_t addr = ++next_free_register;
+    bc.push_back(runtime::LOCR);
+    bc.push_back(constants.size() - 1);
+    bc.push_back(addr);
+    for (const Expr &expr : mc.list)
+    {
+        std::visit(*this, expr.kind);
+        if (std::holds_alternative<LetRefExpr>(expr.kind) ||
+            std::holds_alternative<FnCallExpr>(expr.kind) ||
+            std::holds_alternative<UnaryOperatorExpr>(expr.kind) ||
+            std::holds_alternative<BinaryOperatorExpr>(expr.kind))
+        {
+            // curr holds a register address, use LIUR
+            bc.push_back(runtime::LIUR);
+            bc.push_back(curr);
+            bc.push_back(addr);
+        }
+        else if (std::holds_alternative<LiteralExpr>(expr.kind) ||
+                 std::holds_alternative<FnExpr>(expr.kind))
+        {
+            // curr holds a constant address, use LIUC
+            bc.push_back(runtime::LIUC);
+            bc.push_back(curr);
+            bc.push_back(addr);
+        }
+    }
+
+    curr = addr;
 }
 
 void BytecodeGenerator::operator()(const SequenceExpr &seq)
 {
-    for (auto &expr : seq.sequence)
+    for (const Expr &expr : seq.sequence)
     {
         std::visit(*this, expr.kind);
     }

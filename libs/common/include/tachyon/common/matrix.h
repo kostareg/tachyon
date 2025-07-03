@@ -25,8 +25,13 @@ class Matrix
     {
     }
 
-    explicit Matrix(size_t height, size_t width)
+    Matrix(size_t height, size_t width)
         : height(height), width(width), capacity(height * width * 2), data(new double[capacity])
+    {
+    }
+
+    Matrix(size_t height, size_t width, size_t capacity)
+        : height(height), width(width), capacity(capacity), data(new double[capacity])
     {
     }
 
@@ -76,6 +81,12 @@ class Matrix
         std::uninitialized_move(list.begin(), list.end(), data);
     }
 
+    Matrix(const Matrix &other) : height(other.height), width(other.width), capacity(other.capacity)
+    {
+        data = new double[capacity];
+        std::uninitialized_copy_n(other.data, height * width, data);
+    }
+
     size_t size() const { return width * height; }
 
     size_t getCapacity() const { return capacity; }
@@ -96,7 +107,7 @@ class Matrix
             std::uninitialized_copy_n(tmp, size() - 1, data);
             delete[] tmp;
         }
-        data[size()] = elem;
+        data[size() - 1] = elem;
     }
 
     double popBack()

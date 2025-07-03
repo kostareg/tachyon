@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 /**
  * @brief always assert, ignore debug status
  */
@@ -34,7 +36,6 @@
  * @brief assert, if in debug
  */
 #if defined(TY_DEBUG) && TY_DEBUG
-#include <iostream>
 #define TY_ASSERT(...) TY_ALWAYS_ASSERT(__VA_ARGS__)
 #else
 #define TY_ASSERT(...) TY_NEVER_ASSERT(__VA_ARGS__)

@@ -55,7 +55,6 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
     }
     else if (t.type == LBRACK)
     {
-        auto _lbrack = advance();
         if (match(RBRACK))
         {
             auto _rbrack = advance();
@@ -88,7 +87,6 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
                 return std::unexpected(comma.error());
             }
         }
-        auto _rbrack = advance();
         return Expr(MatrixConstructExpr(height, std::move(list)));
     }
     else if (t.type == IDENT)
