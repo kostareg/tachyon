@@ -630,6 +630,51 @@ std::expected<void, Error> VM::run(const Proto &proto)
             break;
         }
 
+        /* lists */
+        case LIUC:
+        {
+            throw std::runtime_error("not implemented");
+        }
+        case LIUR:
+        {
+            throw std::runtime_error("not implemented");
+        }
+        case LIOC:
+        {
+            throw std::runtime_error("not implemented");
+        }
+        case LIOR:
+        {
+            throw std::runtime_error("not implemented");
+        }
+        case LISC:
+        {
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t src1 = proto.bytecode[++ptr];
+            uint16_t src2 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            std::get<Matrix>(call_stack.back().registers[dst0])(src1, src2) =
+                std::get<double>(proto.constants[src0]);
+        }
+        case LISR:
+        {
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t src1 = proto.bytecode[++ptr];
+            uint16_t src2 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            std::get<Matrix>(call_stack.back().registers[dst0])(src1, src2) =
+                std::get<double>(call_stack.back().registers[src0]);
+        }
+        case LIGT:
+        {
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t src1 = proto.bytecode[++ptr];
+            uint16_t src2 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<Matrix>(call_stack.back().registers[src0])(src1, src2);
+        }
+
         /* function */
         case CALC:
         {
