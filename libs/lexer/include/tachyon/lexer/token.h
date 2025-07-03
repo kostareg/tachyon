@@ -39,6 +39,8 @@ enum class TokenType
     RPAREN,
     LBRACE,
     RBRACE,
+    LBRACK,
+    RBRACK,
     RARROW,
     DOT,
     COLON,
@@ -112,6 +114,10 @@ inline std::string tokToStr(TokenType tt)
         return "LBRACE";
     else if (tt == RBRACE)
         return "RBRACE";
+    else if (tt == LBRACK)
+        return "LBRACK";
+    else if (tt == RBRACK)
+        return "RBRACK";
     else if (tt == RARROW)
         return "RARROW";
     else if (tt == DOT)
@@ -197,6 +203,10 @@ inline TokenType strToTok(std::string_view str)
         return LBRACE;
     else if (str == "RBRACE")
         return RBRACE;
+    else if (str == "LBRACK")
+        return LBRACK;
+    else if (str == "RBRACK")
+        return RBRACK;
     else if (str == "RARROW")
         return RARROW;
     else if (str == "DOT")
@@ -282,6 +292,10 @@ inline std::string tokToStrPretty(TokenType tt)
         return "a left brace";
     else if (tt == RBRACE)
         return "a right brace";
+    else if (tt == LBRACK)
+        return "a left bracket";
+    else if (tt == RBRACK)
+        return "a right bracket";
     else if (tt == RARROW)
         return "a right arrow";
     else if (tt == DOT)

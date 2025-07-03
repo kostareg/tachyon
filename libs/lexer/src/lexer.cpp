@@ -130,6 +130,10 @@ std::expected<Tokens, Error> lex(const std::string &s)
             tokens.emplace_back(LBRACE, pos, 1);
         else if (c == '}')
             tokens.emplace_back(RBRACE, pos, 1);
+        else if (c == '[')
+            tokens.emplace_back(LBRACK, pos, 1);
+        else if (c == ']')
+            tokens.emplace_back(RBRACK, pos, 1);
         else if (c == '.')
             tokens.emplace_back(DOT, pos, 1);
         else if (c == ':')
