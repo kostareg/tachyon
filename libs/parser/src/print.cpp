@@ -154,6 +154,16 @@ void PrintExpr::operator()(const ReturnExpr &ret) const
     std::visit(*this, ret.returns->kind);
 };
 
+void PrintExpr::operator()(const MatrixConstructExpr &mc) const
+{
+    std::print("make matrix h={} elems=", mc.height);
+    for (const Expr &e : mc.list)
+    {
+        std::visit(*this, e.kind);
+        std::print(", ");
+    }
+}
+
 void PrintExpr::operator()(const SequenceExpr &seq) const
 {
     for (const Expr &e : seq.sequence)

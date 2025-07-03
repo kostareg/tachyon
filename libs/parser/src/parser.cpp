@@ -53,6 +53,44 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
         auto _rparen = advance();
         return e;
     }
+    else if (t.type == LBRACK)
+    {
+        auto _lbrack = advance();
+        if (match(RBRACK))
+        {
+            auto _rbrack = advance();
+            return Expr(LiteralExpr(LiteralValue(Matrix())));
+        }
+        std::vector<Expr> list;
+        size_t height = 1;
+        while (!match(RBRACK))
+        {
+            auto e = parse_expr();
+            if (!e)
+            {
+                return std::unexpected(e.error());
+            }
+            list.push_back(std::move(e.value()));
+
+            if (match(RBRACK))
+            {
+                auto _rbrack = advance();
+                break;
+            }
+            if (match(SEMIC))
+            {
+                auto _semic = advance();
+                ++height;
+                continue;
+            }
+            if (auto comma = expect(COMMA); !comma)
+            {
+                return std::unexpected(comma.error());
+            }
+        }
+        auto _rbrack = advance();
+        return Expr(MatrixConstructExpr(height, std::move(list)));
+    }
     else if (t.type == IDENT)
     {
         auto value = std::get<std::string>(t.value);

@@ -38,6 +38,7 @@ struct PrintExpr
     void operator()(const ContinueExpr &) const;
     void operator()(const ImportExpr &imp) const;
     void operator()(const ReturnExpr &ret) const;
+    void operator()(const MatrixConstructExpr &mc) const;
     void operator()(const SequenceExpr &seq) const;
 };
 

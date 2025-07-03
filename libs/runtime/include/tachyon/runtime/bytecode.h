@@ -116,7 +116,6 @@ enum Bytecode : uint16_t
     /* lists */
     LIUC = 0x90, // push constant         -> register
     LIUR = 0x91, // push register         -> register
-    LIOC = 0x92, // pop  constant         -> register
     LIOR = 0x93, // pop  register         -> register
     LISC = 0x94, // set  constant -row,col-> register
     LISR = 0x95, // set  register -row,col-> register

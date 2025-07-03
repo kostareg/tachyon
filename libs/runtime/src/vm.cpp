@@ -633,19 +633,24 @@ std::expected<void, Error> VM::run(const Proto &proto)
         /* lists */
         case LIUC:
         {
-            throw std::runtime_error("not implemented");
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            std::get<Matrix>(call_stack.back().registers[dst0])
+                .pushBack(std::get<double>(proto.constants[src0]));
         }
         case LIUR:
         {
-            throw std::runtime_error("not implemented");
-        }
-        case LIOC:
-        {
-            throw std::runtime_error("not implemented");
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            std::get<Matrix>(call_stack.back().registers[dst0])
+                .pushBack(std::get<double>(call_stack.back().registers[src0]));
         }
         case LIOR:
         {
-            throw std::runtime_error("not implemented");
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            call_stack.back().registers[dst0] =
+                std::get<Matrix>(call_stack.back().registers[src0]).popBack();
         }
         case LISC:
         {

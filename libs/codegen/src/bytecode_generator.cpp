@@ -368,6 +368,11 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
     }
 };
 
+void BytecodeGenerator::operator()(const MatrixConstructExpr &)
+{
+    // ... todo
+}
+
 void BytecodeGenerator::operator()(const SequenceExpr &seq)
 {
     for (auto &expr : seq.sequence)

@@ -165,6 +165,12 @@ struct ReturnExpr
     ExprRef returns;
 };
 
+struct MatrixConstructExpr
+{
+    size_t height;
+    std::vector<Expr> list;
+};
+
 /**
  * @brief linear sequence of expressions
  *
@@ -182,7 +188,7 @@ struct SequenceExpr
  */
 using ExprKind = std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr,
                               LetRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr, ContinueExpr,
-                              ImportExpr, ReturnExpr, SequenceExpr>;
+                              ImportExpr, ReturnExpr, MatrixConstructExpr, SequenceExpr>;
 
 /**
  * @brief top-level expression type
