@@ -17,6 +17,7 @@ namespace tachyon::runtime
  * | 0x40  | positional      |
  * | 0x50  | arithmetic      |
  * | 0x70  | comparison      |
+ * | 0x90  | lists           |
  * | 0xE0  | function        |
  * | 0xF0  | intrinsic       |
  * +-------+-----------------+
@@ -111,6 +112,16 @@ enum Bytecode : uint16_t
     CGRR = 0x85, // register >  register -> register
     CHRR = 0x86, // register <= register -> register
     CFRR = 0x87, // register >= register -> register
+
+    /* lists */
+    LINE = 0x90, // create new array in register
+    LIUC = 0x91, // push constant       -> register
+    LIUR = 0x92, // push register       -> register
+    LIOC = 0x93, // pop  constant       -> register
+    LIOR = 0x94, // pop  register       -> register
+    LISC = 0x95, // set  constant -index-> register
+    LISR = 0x96, // set  register -index-> register
+    LIGT = 0x97, // get  register -> register
 
     /* function */
     CALC = 0xE0, // call constant fn

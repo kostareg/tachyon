@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tachyon/runtime/matrix.h"
+
 #include <memory>
 #include <print>
 #include <string>
@@ -20,6 +22,7 @@ struct Proto;
 //  and keeping an int? or pointer?) and benchmark alternatives.
 // TODO: can I/should I unify this value with the AST value, so that it's all
 //  the same type? and put it in tachyon::common.
+// TODO: lists of non doubles
 
 /// runtime value
 using Value = std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
@@ -41,6 +44,13 @@ inline void printValue(const Value &reg)
             else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>)
             {
                 std::print("proto");
+            }
+            else if constexpr (std::is_same_v<T, Matrix>)
+            {
+                for (const double &d : val)
+                {
+                    std::print("{}", d);
+                }
             }
             else
             {
