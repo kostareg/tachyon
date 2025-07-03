@@ -25,7 +25,8 @@ struct Proto;
 // TODO: lists of non doubles
 
 /// runtime value
-using Value = std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>>;
+using Value =
+    std::variant<std::monostate, double, std::string, bool, std::shared_ptr<Proto>, Matrix>;
 using Values = std::vector<Value>;
 
 /**
@@ -34,9 +35,9 @@ using Values = std::vector<Value>;
 inline void printValue(const Value &reg)
 {
     std::visit(
-        [](const auto &val)
+        []<typename T0>(const T0 &val)
         {
-            using T = std::decay_t<decltype(val)>;
+            using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, std::monostate>)
             {
                 std::print("()");
@@ -47,9 +48,9 @@ inline void printValue(const Value &reg)
             }
             else if constexpr (std::is_same_v<T, Matrix>)
             {
-                for (const double &d : val)
+                for (size_t i = 1; i <= val.size(); ++i)
                 {
-                    std::print("{}", d);
+                    std::print("{}", val(i));
                 }
             }
             else
@@ -63,14 +64,47 @@ inline void printValue(const Value &reg)
 // TODO: research other hashing/hash combination functions
 
 /**
+ * @brief combine hashes
+ *
+ * Credit to:
+ *   * https://www.boost.org/doc/libs/1_82_0/boost/container_hash/hash.hpp
+ *   * https://www.boost.org/doc/libs/1_82_0/boost/container_hash/detail/hash_mix.hpp.
+ *
+ * @param seed seed
+ * @param h value to combine
+ */
+inline void hash_combine(size_t &seed, size_t h)
+{
+    seed ^= h + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+}
+
+/**
  * @brief hash one value
  */
 struct ValueHash
 {
-    std::size_t operator()(const Value &v) const noexcept
+    size_t operator()(const Value &v) const noexcept
     {
-        return std::visit([]<typename T>(const T &val)
-                          { return std::hash<std::decay_t<T>>{}(val); }, v);
+        return std::visit(
+            []<typename T0>(const T0 &val) -> size_t
+            {
+                using T = std::decay_t<T0>;
+                if constexpr (std::is_same_v<T, Matrix>)
+                {
+                    size_t h = val.size();
+                    for (size_t i = 1; i <= val.size(); ++i)
+                    {
+                        ValueHash vh;
+                        hash_combine(h, vh(val(i)));
+                    }
+                    return h;
+                }
+                else
+                {
+                    return std::hash<std::decay_t<T0>>{}(val);
+                }
+            },
+            v);
     }
 };
 
@@ -79,24 +113,9 @@ struct ValueHash
  */
 struct ValuesHash
 {
-    /**
-     * @brief combine hashes
-     *
-     * Credit to:
-     *   * https://www.boost.org/doc/libs/1_82_0/boost/container_hash/hash.hpp
-     *   * https://www.boost.org/doc/libs/1_82_0/boost/container_hash/detail/hash_mix.hpp.
-     *
-     * @param seed seed
-     * @param h value to combine
-     */
-    static void hash_combine(std::size_t &seed, std::size_t h)
+    size_t operator()(const Values &vs) const noexcept
     {
-        seed ^= h + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
-    }
-
-    std::size_t operator()(const Values &vs) const noexcept
-    {
-        std::size_t h = vs.size();
+        size_t h = vs.size();
         ValueHash vh;
         for (auto &v : vs)
             hash_combine(h, vh(v));

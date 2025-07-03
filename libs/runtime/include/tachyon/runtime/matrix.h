@@ -65,6 +65,12 @@ class Matrix
         std::uninitialized_move(list.begin(), list.end(), data);
     }
 
+    size_t size() const { return width * height; }
+
+    size_t get_width() const { return width; }
+
+    size_t get_height() const { return height; }
+
     Matrix &operator=(const Matrix &other)
     {
         if (this == &other)
@@ -82,15 +88,46 @@ class Matrix
 
     /**
      * @brief get reference to value at position
+     * @param index index
+     * @return value reference
+     */
+    double &operator()(size_t index) const
+    {
+        TY_ASSERT("index is over or equal to 1" && index >= 1);
+        TY_ASSERT("index is within size" && index <= size());
+        return data[index - 1];
+    }
+
+    /**
+     * @brief get reference to value at position
      * @param row value row
      * @param col value column
      * @return value reference
      */
-    double &operator()(size_t row, size_t col)
+    double &operator()(size_t row, size_t col) const
     {
         TY_ASSERT("row and col are over or equal to 1" && row >= 1 && col >= 1);
         TY_ASSERT("row and col are within height and width" && row <= height && col <= width);
         return data[(row - 1) * width + (col - 1)];
+    }
+
+    bool operator==(const Matrix &other) const
+    {
+        if (data == nullptr && other.data == nullptr)
+            return true;
+
+        if (data == nullptr || other.data == nullptr)
+            return false;
+
+        if (width != other.width || height != other.height)
+            return false;
+
+        for (size_t i = 0; i < size(); ++i)
+        {
+            if (data[i] != other.data[i])
+                return false;
+        }
+        return true;
     }
 
     ~Matrix() { delete[] data; }
