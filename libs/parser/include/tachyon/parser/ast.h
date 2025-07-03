@@ -20,7 +20,7 @@ using Exprs = std::vector<Expr>;
 /**
  * @brief literal values ie unit, numbers, strings, booleans, matrices
  */
-using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
+using LiteralValue = std::variant<std::monostate, double, std::string, bool, Matrix>;
 
 /**
  * @brief a literal expression, or constant value
@@ -39,6 +39,7 @@ enum class BasicConcreteTypes
     String,
     Boolean,
     Unit,
+    List,
 };
 
 // fwd-decl

@@ -14,6 +14,7 @@ struct PrintLiteral
     void operator()(double dbl) const;
     void operator()(const std::string &str) const;
     void operator()(bool bl) const;
+    void operator()(const Matrix &m) const;
 };
 
 struct PrintType

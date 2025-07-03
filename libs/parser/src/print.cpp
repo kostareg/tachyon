@@ -24,6 +24,14 @@ void PrintLiteral::operator()(const bool bl) const
     std::print("{}", bl ? "true" : "false");
 };
 
+void PrintLiteral::operator()(const Matrix &m) const
+{
+    for (size_t i = 0; i < m.size(); ++i)
+    {
+        std::print("{}, ", m(i));
+    }
+}
+
 void PrintType::operator()(const BasicConcreteTypes &btyp) const
 {
     if (btyp == BasicConcreteTypes::Number)
