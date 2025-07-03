@@ -1,12 +1,10 @@
-#include "tachyon/runtime/matrix.h"
+#include "tachyon/common/matrix.h"
 
 #include <gtest/gtest.h>
 
-using namespace tachyon;
-
 TEST(MatrixTest, RowInit)
 {
-    runtime::Matrix m({1, 2, 3, 4, 5, 6});
+    Matrix m({1, 2, 3, 4, 5, 6});
 
     ASSERT_EQ(m(1, 1), 1);
     ASSERT_EQ(m(1, 2), 2);
@@ -18,7 +16,7 @@ TEST(MatrixTest, RowInit)
 
 TEST(MatrixTest, MatrixInit)
 {
-    runtime::Matrix m({1, 2, 3, 4, 5, 6}, 3);
+    Matrix m({1, 2, 3, 4, 5, 6}, 3);
 
     ASSERT_EQ(m(1, 1), 1);
     ASSERT_EQ(m(1, 2), 2);
@@ -30,7 +28,7 @@ TEST(MatrixTest, MatrixInit)
 
 TEST(MatrixTest, Assignment)
 {
-    runtime::Matrix m({1, 2, 3, 4, 5, 6}, 2);
+    Matrix m({1, 2, 3, 4, 5, 6}, 2);
     m(1, 2) = 10;
     m(5) = 15;
 
@@ -45,6 +43,6 @@ TEST(MatrixTest, Assignment)
 #ifdef TY_DEBUG
 TEST(MatrixTest, DeathUnsquareMatrix)
 {
-    EXPECT_DEATH(runtime::Matrix m({1, 2, 3, 4, 5, 6}, 4), "matrix is square");
+    EXPECT_DEATH(Matrix m({1, 2, 3, 4, 5, 6}, 4), "matrix is square");
 }
 #endif

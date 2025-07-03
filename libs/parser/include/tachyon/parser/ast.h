@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tachyon/common/error.h"
+#include "tachyon/common/matrix.h"
 #include "tachyon/common/op.h"
 
 #include <memory>
@@ -17,7 +18,7 @@ using ExprRef = std::unique_ptr<Expr>;
 using Exprs = std::vector<Expr>;
 
 /**
- * @brief literal values ie unit, numbers, strings, booleans
+ * @brief literal values ie unit, numbers, strings, booleans, matrices
  */
 using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
 

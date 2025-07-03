@@ -4,8 +4,6 @@
 
 #include <vector>
 
-namespace tachyon::runtime
-{
 // TODO: support for data other than double?
 // TODO: support for 3d data?
 // TODO: look at std::mdspan for this
@@ -132,4 +130,3 @@ class Matrix
 
     ~Matrix() { delete[] data; }
 };
-} // namespace tachyon::runtime

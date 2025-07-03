@@ -34,25 +34,25 @@ target_link_libraries(tachyon_runtime
 add_library(tachyon::runtime ALIAS tachyon_runtime)
 
 # Tests for this library
-if (TACHYON_BUILD_TESTS)
-    add_executable(runtime_tests
-            tests/matrix_test.cpp
-    )
-
-    target_link_libraries(runtime_tests
-            PRIVATE
-            tachyon_common
-            tachyon_runtime
-            gtest
-            gtest_main
-    )
-
-    # Add to test suite
-    add_test(NAME LexerTests COMMAND runtime_tests)
-
-    # Test data files
-    # file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
-endif ()
+#if (TACHYON_BUILD_TESTS)
+#    add_executable(runtime_tests
+#            tests/matrix_test.cpp
+#    )
+#
+#    target_link_libraries(runtime_tests
+#            PRIVATE
+#            tachyon_common
+#            tachyon_runtime
+#            gtest
+#            gtest_main
+#    )
+#
+#    # Add to test suite
+#    add_test(NAME LexerTests COMMAND runtime_tests)
+#
+#    # Test data files
+#    # file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
+#endif ()
 
 # Benchmarks for this library
 if (TACHYON_BUILD_BENCHMARKS)
