@@ -114,6 +114,21 @@ struct LetRefExpr
     std::string name;
 };
 
+struct MatrixAssignmentExpr
+{
+    std::string name;
+    ExprRef row;
+    ExprRef col;
+    ExprRef value;
+};
+
+struct MatrixRefExpr
+{
+    LetRefExpr ref;
+    ExprRef row;
+    ExprRef col;
+};
+
 // TODO: captures
 /**
  * @brief function call
@@ -186,9 +201,10 @@ struct SequenceExpr
 /**
  * @brief type of expression
  */
-using ExprKind = std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr,
-                              LetRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr, ContinueExpr,
-                              ImportExpr, ReturnExpr, MatrixConstructExpr, SequenceExpr>;
+using ExprKind =
+    std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
+                 MatrixAssignmentExpr, MatrixRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr,
+                 ContinueExpr, ImportExpr, ReturnExpr, MatrixConstructExpr, SequenceExpr>;
 
 /**
  * @brief top-level expression type

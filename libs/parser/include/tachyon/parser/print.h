@@ -32,6 +32,8 @@ struct PrintExpr
     void operator()(const BinaryOperatorExpr &binop) const;
     void operator()(const LetExpr &vdecl) const;
     void operator()(const LetRefExpr &vref) const;
+    void operator()(const MatrixAssignmentExpr &mass) const;
+    void operator()(const MatrixRefExpr &mref) const;
     void operator()(const FnCallExpr &fnc) const;
     void operator()(const WhileLoopExpr &wlop) const;
     void operator()(const BreakExpr &brk) const;

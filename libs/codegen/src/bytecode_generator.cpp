@@ -50,6 +50,7 @@ void BytecodeGenerator::operator()(const UnaryOperatorExpr &unop)
 
     std::visit(*this, unop.right->kind);
     if (std::holds_alternative<LetRefExpr>(unop.right->kind) ||
+        std::holds_alternative<MatrixRefExpr>(unop.right->kind) ||
         std::holds_alternative<FnCallExpr>(unop.right->kind) ||
         std::holds_alternative<UnaryOperatorExpr>(unop.right->kind) ||
         std::holds_alternative<BinaryOperatorExpr>(unop.right->kind))
@@ -91,6 +92,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             bc.push_back(next_free_register); // target
         }
         else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                 std::holds_alternative<MatrixRefExpr>(binop.right->kind) ||
                  std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
                  std::holds_alternative<BinaryOperatorExpr>(binop.right->kind))
         {
@@ -110,7 +112,8 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
         }
     }
     else if (std::holds_alternative<LetRefExpr>(binop.left->kind) ||
-             std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
+             std::holds_alternative<MatrixRefExpr>(binop.left->kind) ||
+             std::holds_alternative<UnaryOperatorExpr>(binop.left->kind) ||
              std::holds_alternative<BinaryOperatorExpr>(binop.left->kind))
     {
         // reference lhs
@@ -127,6 +130,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             bc.push_back(next_free_register); // target
         }
         else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                 std::holds_alternative<MatrixRefExpr>(binop.right->kind) ||
                  std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
                  std::holds_alternative<BinaryOperatorExpr>(binop.right->kind))
         {
@@ -153,6 +157,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop)
             // fn_call() <op> constant
         }
         else if (std::holds_alternative<LetRefExpr>(binop.right->kind) ||
+                 std::holds_alternative<MatrixRefExpr>(binop.right->kind) ||
                  std::holds_alternative<UnaryOperatorExpr>(binop.right->kind) ||
                  std::holds_alternative<BinaryOperatorExpr>(binop.right->kind))
         {
@@ -225,6 +230,54 @@ void BytecodeGenerator::operator()(const LetRefExpr &vref)
     }
 };
 
+void BytecodeGenerator::operator()(const MatrixAssignmentExpr &)
+{
+    // todo
+}
+
+void BytecodeGenerator::operator()(const MatrixRefExpr &mref)
+{
+    std::visit(*this, mref.row->kind);
+    uint16_t src0 = curr;
+
+    // TODO: hack: load the constants to a register instead of having a dedicated bytecode
+    //  instruction for each combination.
+    if (std::holds_alternative<LiteralExpr>(mref.row->kind) ||
+        std::holds_alternative<FnExpr>(mref.row->kind))
+    {
+        // we were given a constant, load it into curr.
+        size_t dst0 = next_free_register++;
+        bc.push_back(runtime::LOCR);
+        bc.push_back(curr);
+        bc.push_back(dst0);
+        src0 = dst0;
+    }
+
+    std::visit(*this, mref.col->kind);
+    uint16_t src1 = curr;
+
+    if (std::holds_alternative<LiteralExpr>(mref.col->kind) ||
+        std::holds_alternative<FnExpr>(mref.col->kind))
+    {
+        // we were given a constant, load it into curr.
+        size_t dst0 = next_free_register++;
+        bc.push_back(runtime::LOCR);
+        bc.push_back(curr);
+        bc.push_back(dst0);
+        src1 = dst0;
+    }
+
+    (*this)(mref.ref);
+    uint16_t src2 = curr;
+    size_t dst0 = next_free_register++;
+    bc.push_back(runtime::GRRR);
+    bc.push_back(src0);
+    bc.push_back(src1);
+    bc.push_back(src2);
+    bc.push_back(dst0);
+    curr = dst0;
+}
+
 // TODO: CALC? I don't think the ast can generate that.
 void BytecodeGenerator::operator()(const FnCallExpr &fnc)
 {
@@ -246,7 +299,8 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc)
     {
         if (std::holds_alternative<UnaryOperatorExpr>(fnc.args[i].kind) ||
             std::holds_alternative<BinaryOperatorExpr>(fnc.args[i].kind) ||
-            std::holds_alternative<LetRefExpr>(fnc.args[i].kind))
+            std::holds_alternative<LetRefExpr>(fnc.args[i].kind) ||
+            std::holds_alternative<MatrixRefExpr>(fnc.args[i].kind))
         {
             // we have the register index.
             bc.push_back(runtime::LORR);
@@ -305,6 +359,7 @@ void BytecodeGenerator::operator()(const WhileLoopExpr &wlop)
     // in the body.
     size_t end_reference_position = bc.size() + 2;
     if (std::holds_alternative<LetRefExpr>(wlop.condition->kind) ||
+        std::holds_alternative<MatrixRefExpr>(wlop.condition->kind) ||
         std::holds_alternative<FnCallExpr>(wlop.condition->kind) ||
         std::holds_alternative<UnaryOperatorExpr>(wlop.condition->kind) ||
         std::holds_alternative<BinaryOperatorExpr>(wlop.condition->kind))
@@ -353,6 +408,7 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
 {
     std::visit(*this, ret.returns->kind);
     if (std::holds_alternative<LetRefExpr>(ret.returns->kind) ||
+        std::holds_alternative<MatrixRefExpr>(ret.returns->kind) ||
         std::holds_alternative<FnCallExpr>(ret.returns->kind) ||
         std::holds_alternative<UnaryOperatorExpr>(ret.returns->kind) ||
         std::holds_alternative<BinaryOperatorExpr>(ret.returns->kind))
@@ -373,7 +429,7 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
 void BytecodeGenerator::operator()(const MatrixConstructExpr &mc)
 {
     constants.emplace_back(Matrix(mc.height, 0, mc.list.size()));
-    size_t addr = ++next_free_register;
+    size_t addr = next_free_register++;
     bc.push_back(runtime::LOCR);
     bc.push_back(constants.size() - 1);
     bc.push_back(addr);
@@ -381,6 +437,7 @@ void BytecodeGenerator::operator()(const MatrixConstructExpr &mc)
     {
         std::visit(*this, expr.kind);
         if (std::holds_alternative<LetRefExpr>(expr.kind) ||
+            std::holds_alternative<MatrixRefExpr>(expr.kind) ||
             std::holds_alternative<FnCallExpr>(expr.kind) ||
             std::holds_alternative<UnaryOperatorExpr>(expr.kind) ||
             std::holds_alternative<BinaryOperatorExpr>(expr.kind))

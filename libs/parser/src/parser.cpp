@@ -133,6 +133,25 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
 
             return Expr(FnCallExpr(std::move(ref), std::move(args)), t.span);
         }
+        else if (match(LBRACK))
+        {
+            // we are working with a matrix reference
+            auto _lbrack = advance();
+            auto row = parse_expr();
+            if (!row)
+                return std::unexpected(row.error());
+            auto comma = expect(COMMA);
+            if (!comma)
+                return std::unexpected(comma.error());
+            auto col = parse_expr();
+            if (!col)
+                return std::unexpected(col.error());
+            auto rbrack = expect(RBRACK);
+            if (!rbrack)
+                return std::unexpected(rbrack.error());
+            return Expr(MatrixRefExpr(ref, std::make_unique<Expr>(std::move(row.value())),
+                                      std::make_unique<Expr>(std::move(col.value()))));
+        }
         else
             return Expr(ref, t.span);
     }
@@ -365,6 +384,7 @@ std::expected<Expr, Error> Parser::parse_stmt()
 {
     if (match(IDENT) && match(EQ, 1))
     {
+        // assignment
         auto l = advance();
         if (!l)
             return std::unexpected(l.error());
@@ -379,8 +399,43 @@ std::expected<Expr, Error> Parser::parse_stmt()
             LetExpr(std::get<std::string>(l->value), std::make_unique<Expr>(std::move(r.value()))),
             l->span);
     }
+    else if (match(IDENT) && match(LBRACK, 1))
+    {
+        // matrix assignment
+        auto l = advance();
+        if (!l)
+            return std::unexpected(l.error());
+
+        auto _lbrack = advance();
+        auto row = parse_expr();
+        if (!row)
+            return std::unexpected(row.error());
+        auto comma = expect(COMMA);
+        if (!comma)
+            return std::unexpected(comma.error());
+        auto col = parse_expr();
+        if (!col)
+            return std::unexpected(col.error());
+        auto rbrack = expect(RBRACK);
+        if (!rbrack)
+            return std::unexpected(rbrack.error());
+
+        auto eq = expect(EQ);
+        if (!eq)
+            return std::unexpected(eq.error());
+
+        auto r = parse_expr();
+        if (!r)
+            return std::unexpected(r.error());
+
+        return Expr(MatrixAssignmentExpr(std::get<std::string>(l->value),
+                                         std::make_unique<Expr>(std::move(row.value())),
+                                         std::make_unique<Expr>(std::move(col.value())),
+                                         std::make_unique<Expr>(std::move(r.value()))));
+    }
     else if (match(IMPORT))
     {
+        // import
         auto _import = advance();
 
         std::string path;
@@ -402,6 +457,7 @@ std::expected<Expr, Error> Parser::parse_stmt()
         return Expr(ImportExpr(path));
     }
 
+    // plain expression
     return parse_expr();
 }
 

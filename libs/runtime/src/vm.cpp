@@ -655,34 +655,32 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<Matrix>(call_stack.back().registers[src0]).popBack();
             break;
         }
-        case LISC:
+        // TODO: these use narrowing conversions. have a dedicated size type or come up with another
+        //  solution.
+        case GRRC:
         {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t src2 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
-            std::get<Matrix>(call_stack.back().registers[dst0])(src1, src2) =
-                std::get<double>(proto.constants[src0]);
+            call_stack.back().registers[dst0] = std::get<Matrix>(proto.constants[src2])(
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src0]))),
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src1]))));
             break;
         }
-        case LISR:
+        case GRRR:
         {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t src2 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
-            std::get<Matrix>(call_stack.back().registers[dst0])(src1, src2) =
-                std::get<double>(call_stack.back().registers[src0]);
-            break;
-        }
-        case LIGT:
-        {
-            uint16_t src0 = proto.bytecode[++ptr];
-            uint16_t src1 = proto.bytecode[++ptr];
-            uint16_t src2 = proto.bytecode[++ptr];
-            uint16_t dst0 = proto.bytecode[++ptr];
-            call_stack.back().registers[dst0] =
-                std::get<Matrix>(call_stack.back().registers[src0])(src1, src2);
+            call_stack.back().registers[dst0] = std::get<Matrix>(call_stack.back().registers[src2])(
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src0]))),
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src1]))));
             break;
         }
 

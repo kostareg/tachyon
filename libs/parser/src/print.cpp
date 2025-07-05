@@ -110,6 +110,25 @@ void PrintExpr::operator()(const LetRefExpr &vref) const
     std::print("{}", vref.name);
 };
 
+void PrintExpr::operator()(const MatrixAssignmentExpr &mass) const
+{
+    std::print("matrix {}->(", mass.name);
+    std::visit(*this, mass.row->kind);
+    std::print(", ");
+    std::visit(*this, mass.col->kind);
+    std::print(") = ");
+    std::visit(*this, mass.value->kind);
+}
+
+void PrintExpr::operator()(const MatrixRefExpr &mref) const
+{
+    std::print("matrix {}->(", mref.ref.name);
+    std::visit(*this, mref.row->kind);
+    std::print(", ");
+    std::visit(*this, mref.col->kind);
+    std::print(")");
+}
+
 void PrintExpr::operator()(const FnCallExpr &fnc) const
 {
     std::print("call {} with: ", fnc.ref.name);

@@ -114,12 +114,19 @@ enum Bytecode : uint16_t
     CFRR = 0x87, // register >= register -> register
 
     /* lists */
-    LIUC = 0x90, // push constant         -> register
-    LIUR = 0x91, // push register         -> register
-    LIOR = 0x92, // pop  register         -> register
-    LISC = 0x93, // set  constant -row,col-> register
-    LISR = 0x94, // set  register -row,col-> register
-    LIGT = 0x95, // get  register -row,col-> register
+    LIUC = 0x90, // push constant                              -> register
+    LIUR = 0x91, // push register                              -> register
+    LIOR = 0x92, // pop  register                              -> register
+    GRRC = 0x93, // get register row register col constant val of register
+    GRRR = 0x94, // get register row register col register val of register
+    SCCC = 0x95, // set constant row constant col constant val of register
+    SRCC = 0x96, // set register row constant col constant val of register
+    SRRC = 0x97, // set register row register col constant val of register
+    SRRR = 0x98, // set register row register col register val of register
+    SCRR = 0x99, // set constant row register col register val of register
+    SCCR = 0x9A, // set constant row constant col register val of register
+    SCRC = 0x9B, // set constant row register col constant val of register
+    SRCR = 0x9C, // set register row constant col register val of register
 
     /* function */
     CALC = 0xE0, // call constant fn

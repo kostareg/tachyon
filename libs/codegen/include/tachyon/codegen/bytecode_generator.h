@@ -65,6 +65,8 @@ struct BytecodeGenerator
     void operator()(const parser::BinaryOperatorExpr &binop);
     void operator()(const parser::LetExpr &vdecl);
     void operator()(const parser::LetRefExpr &vref);
+    void operator()(const parser::MatrixAssignmentExpr &mass);
+    void operator()(const parser::MatrixRefExpr &mref);
     void operator()(const parser::FnCallExpr &fnc);
     void operator()(const parser::WhileLoopExpr &wlop);
     void operator()(const parser::BreakExpr &brk);
