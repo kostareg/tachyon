@@ -683,6 +683,34 @@ std::expected<void, Error> VM::run(const Proto &proto)
                     std::round(std::get<double>(call_stack.back().registers[src1]))));
             break;
         }
+        case SRRC:
+        {
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t src1 = proto.bytecode[++ptr];
+            uint16_t src2 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            std::get<Matrix>(call_stack.back().registers[dst0])(
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src0]))),
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src1])))) =
+                std::get<double>(proto.constants[src2]);
+            break;
+        }
+        case SRRR:
+        {
+            uint16_t src0 = proto.bytecode[++ptr];
+            uint16_t src1 = proto.bytecode[++ptr];
+            uint16_t src2 = proto.bytecode[++ptr];
+            uint16_t dst0 = proto.bytecode[++ptr];
+            std::get<Matrix>(call_stack.back().registers[dst0])(
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src0]))),
+                static_cast<size_t>(
+                    std::round(std::get<double>(call_stack.back().registers[src1])))) =
+                std::get<double>(call_stack.back().registers[src2]);
+            break;
+        }
 
         /* function */
         case CALC:

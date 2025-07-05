@@ -428,7 +428,7 @@ std::expected<Expr, Error> Parser::parse_stmt()
         if (!r)
             return std::unexpected(r.error());
 
-        return Expr(MatrixAssignmentExpr(std::get<std::string>(l->value),
+        return Expr(MatrixAssignmentExpr(LetRefExpr(std::get<std::string>(l->value)),
                                          std::make_unique<Expr>(std::move(row.value())),
                                          std::make_unique<Expr>(std::move(col.value())),
                                          std::make_unique<Expr>(std::move(r.value()))));

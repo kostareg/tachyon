@@ -112,7 +112,7 @@ void PrintExpr::operator()(const LetRefExpr &vref) const
 
 void PrintExpr::operator()(const MatrixAssignmentExpr &mass) const
 {
-    std::print("matrix {}->(", mass.name);
+    std::print("matrix {}->(", mass.ref.name);
     std::visit(*this, mass.row->kind);
     std::print(", ");
     std::visit(*this, mass.col->kind);

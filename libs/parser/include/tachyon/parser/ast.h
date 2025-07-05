@@ -116,7 +116,7 @@ struct LetRefExpr
 
 struct MatrixAssignmentExpr
 {
-    std::string name;
+    LetRefExpr ref;
     ExprRef row;
     ExprRef col;
     ExprRef value;
