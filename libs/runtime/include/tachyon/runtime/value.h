@@ -49,11 +49,13 @@ inline void printValue(const Value &reg)
             else if constexpr (std::is_same_v<T, Matrix>)
             {
                 std::print("[");
-                for (size_t i = 1; i <= val.size(); ++i)
+                for (size_t i = 1; i <= val.getCurrent(); ++i)
                 {
-                    if (i > 1)
+                    if (i > 1 && i - 1 != val.getWidth())
                         std::print(", ");
                     std::print("{}", val(i));
+                    if (i == val.getWidth())
+                        std::print("; ");
                 }
                 std::print("]");
             }

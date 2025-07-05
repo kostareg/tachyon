@@ -501,7 +501,7 @@ void BytecodeGenerator::operator()(const ReturnExpr &ret)
 
 void BytecodeGenerator::operator()(const MatrixConstructExpr &mc)
 {
-    constants.emplace_back(Matrix(mc.height, 0, mc.list.size()));
+    constants.emplace_back(Matrix(mc.height, mc.list.size() / mc.height, mc.list.size()));
     size_t addr = next_free_register++;
     bc.push_back(runtime::LOCR);
     bc.push_back(constants.size() - 1);

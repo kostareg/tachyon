@@ -64,6 +64,9 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
         size_t height = 1;
         while (!match(RBRACK))
         {
+            while (match(NLINE))
+                auto _nline = advance();
+
             auto e = parse_expr();
             if (!e)
             {
@@ -82,10 +85,17 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
                 ++height;
                 continue;
             }
+
+            while (match(NLINE))
+                auto _nline = advance();
+
             if (auto comma = expect(COMMA); !comma)
             {
                 return std::unexpected(comma.error());
             }
+
+            while (match(NLINE))
+                auto _nline = advance();
         }
         return Expr(MatrixConstructExpr(height, std::move(list)));
     }
@@ -297,6 +307,10 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t)
 
         if (auto lb = expect(LBRACE); !lb)
             return std::unexpected(lb.error());
+
+        // skip any newlines
+        while (match(NLINE))
+            auto _nline = advance();
 
         std::vector<Expr> stmts;
         while (1)
