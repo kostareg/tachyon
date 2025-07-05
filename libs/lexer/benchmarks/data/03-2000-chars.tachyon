@@ -15,7 +15,7 @@ notb = !b
 // Binary arithmetic
 sum1 = x + n
 diff1 = n - x
-prod1 = x * (x + 2) - 5 / (2 * 2 * 2)
+prod1 = [x, 1, 2] * (x + 2) - 5 / (2 * 2 * 2)
 mulimplicit = 3x + (5)(3) // implicit multiplication tests
 complexexpr = -(3 + negx) * (!b || t) // note: || and && may be future tokens
 
@@ -24,7 +24,7 @@ complexexpr = -(3 + negx) * (!b || t) // note: || and && may be future tokens
  * It should span multiple lines,
  * include stars * and slashes / * * /
  */
-multicalc = ((n + x) * (n - x)) / ((2)(2))(2)
+multicalc = [((n + x) * (n - x)) / ((2)(2))(2)]
 
 /* Nested comment markers in text should not confuse lexer:
  * like this: /* inner start */ still inside comment

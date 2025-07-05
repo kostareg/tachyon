@@ -15,6 +15,7 @@ add_library(tachyon::common ALIAS tachyon_common)
 if (TACHYON_BUILD_TESTS)
     add_executable(common_tests
             tests/error_test.cpp
+            tests/matrix_test.cpp
     )
 
     target_link_libraries(common_tests

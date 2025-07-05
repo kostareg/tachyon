@@ -8,7 +8,8 @@
 
 using namespace tachyon;
 
-static const std::string all_operators_source = "1 < 1; 2 > 2; x = 5; y = 2; x == 5; y < 1;";
+static const std::string all_operators_source =
+    "1 < 1; 2 > 2; x = 5; y = 2; x == 5; y < 1; return 0;";
 
 TEST(ComparisonTest, AllOperators)
 {
@@ -18,5 +19,6 @@ TEST(ComparisonTest, AllOperators)
         .and_then(parser::parse)
         .and_then(codegen::generateProto)
         .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error>
-                  { return vm.run(proto); });
+                  { return vm.run(proto); })
+        .value();
 }

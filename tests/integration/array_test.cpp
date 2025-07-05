@@ -8,14 +8,14 @@
 
 using namespace tachyon;
 
-static const std::string basic_source = "1 + 1; return 0;";
+static const std::string _0 = "x = [1, 2, 3]; return 0;";
 
-TEST(PipelineTest, BasicPipeline)
+TEST(ArrayTest, ConstructsWithlet)
 {
-    lexer::lex(basic_source)
+    lexer::lex(_0)
         .and_then(parser::parse)
         .and_then(codegen::generateProto)
         .and_then([](const runtime::Proto &proto) -> std::expected<void, Error>
-                  { return runtime::VM().run(proto); })
+                  { return runtime::VM{}.run(proto); })
         .value();
 }

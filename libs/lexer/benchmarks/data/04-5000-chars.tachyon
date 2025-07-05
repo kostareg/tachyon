@@ -24,7 +24,7 @@ var6 = 6.25
 var7 = 7.77
 var8 = 8.888
 var9 = 9.0
-var10 = 10
+var10 = [10, 11, 12]
 
 // Arithmetic expressions
 expr1 = var1 + var2
@@ -89,7 +89,7 @@ outerFunc = fn(a) {
 }
 
 // Function calls
-r1 = idFunc(5)
+r1 = [idFunc(5), 1, 2, 3]
 r2 = negFunc(r1)
 r3 = notFunc(False)
 r4 = addFunc(2, 3)
@@ -256,7 +256,7 @@ expr14 = var17 / var18
 expr15 = (var11 + var12)(var13 - var14)
 expr16 = 3(4 + 5)(6 + 7)
 expr17 = (8 + 9)(10 + 11)
-expr18 = 12(13 + 14)(15 + 16)
+expr18 = [] + 12(13 + 14)(15 + 16)
 expr19 = (17 + 18)(19 + 20)
 expr20 = (var19 + var20)(var18 - var17)
 

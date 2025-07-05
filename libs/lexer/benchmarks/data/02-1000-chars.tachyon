@@ -13,7 +13,7 @@ n = 5
 x = 0.999
 b = False
 flag = !b
-negX = -x
+negX = [-x]
 
 z = x * (x + 2) - 5 / (2 * 2 * 2)
 l = 3x + (5)(3) // implicit multiplication syntax
@@ -42,7 +42,7 @@ doNothing = fn() -> Unit { return (); }
 
 // Use imported module
 piVal = Math.PI
-circum = 2 * piVal * n
+circum = 2 * piVal * n + [1, 2, 3]
 
 // Additional test expressions
 a = (n)(x)

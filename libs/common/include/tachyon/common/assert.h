@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 /**
  * @brief always assert, ignore debug status
  */

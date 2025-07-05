@@ -20,7 +20,7 @@ x = 0.999
 b = False
 c = True
 d = 42
-e = 3.14159
+e = [3.14159]
 
 // Arithmetic expressions
 a1 = n + x
@@ -78,7 +78,7 @@ r9 = applyTwice(double, 2)
 complex1 = fn(x) {
   a = x + 2
   b = a * a
-  return b - x
+  return [b - x, 1, 2]
 }
 
 complex2 = fn(x, y) {
@@ -136,7 +136,7 @@ deep1 = fn(a) {
   fn(b) {
     fn(c) {
       fn(d) {
-        return a + b + c + d;
+        return [a + b + c + d];
       }
     }
   }
@@ -218,7 +218,7 @@ nothing = fn() -> Unit { return (); }
 var21 = 21
 var22 = 22
 var23 = 23.23
-var24 = 24.24
+var24 = [24.24]
 var25 = 25
 
 // Arithmetic expressions continued
@@ -283,9 +283,9 @@ var54 = 54
 var55 = 55
 var56 = 56
 var57 = 57
-var58 = 58
-var59 = 59
-var60 = 60
+var58 = [58]
+var59 = [59]
+var60 = [60]
 
 // Additional arithmetic expressions continued
 expr26 = var26 + var27
