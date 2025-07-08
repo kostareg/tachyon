@@ -88,31 +88,32 @@ int run(char *fileName)
                  .and_then(
                      [](parser::Expr e) -> std::expected<parser::Expr, Error>
                      {
-                         printExpr(e);
+                         // printExpr(e);
                          return e;
                      })
                  .and_then(codegen::generateMainProto)
                  .and_then(
                      [](runtime::Proto proto) -> std::expected<runtime::Proto, Error>
                      {
-                         std::println("function {}", proto.name);
-                         for (auto bc : proto.bytecode)
-                         {
-                             std::println("0x{:02x}", bc);
-                         }
-                         for (auto constant : proto.constants)
-                         {
-                             if (std::holds_alternative<std::shared_ptr<runtime::Proto>>(constant))
-                             {
-                                 auto proto_new =
-                                     std::get<std::shared_ptr<runtime::Proto>>(constant);
-                                 std::println("function {}", proto_new->name);
-                                 for (auto bc : proto_new->bytecode)
-                                 {
-                                     std::println("0x{:x}", bc);
-                                 }
-                             }
-                         }
+                         // std::println("function {}", proto.name);
+                         // for (auto bc : proto.bytecode)
+                         // {
+                         //     std::println("0x{:02x}", bc);
+                         // }
+                         // for (auto constant : proto.constants)
+                         // {
+                         //     if
+                         //     (std::holds_alternative<std::shared_ptr<runtime::Proto>>(constant))
+                         //     {
+                         //         auto proto_new =
+                         //             std::get<std::shared_ptr<runtime::Proto>>(constant);
+                         //         std::println("function {}", proto_new->name);
+                         //         for (auto bc : proto_new->bytecode)
+                         //         {
+                         //             std::println("0x{:x}", bc);
+                         //         }
+                         //     }
+                         // }
                          return proto;
                      })
                  .and_then(

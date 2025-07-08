@@ -51,11 +51,11 @@ inline void printValue(const Value &reg)
                 std::print("[");
                 for (size_t i = 1; i <= val.getCurrent(); ++i)
                 {
-                    if (i > 1 && i - 1 != val.getWidth())
+                    if (i > 1)
                         std::print(", ");
                     std::print("{}", val(i));
                     if (i == val.getWidth())
-                        std::print("; ");
+                        std::print(";");
                 }
                 std::print("]");
             }
