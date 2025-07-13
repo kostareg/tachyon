@@ -24,6 +24,14 @@ void PrintLiteral::operator()(const bool bl) const
     std::print("{}", bl ? "true" : "false");
 };
 
+void PrintLiteral::operator()(const Matrix &m) const
+{
+    for (size_t i = 0; i < m.size(); ++i)
+    {
+        std::print("{}, ", m(i));
+    }
+}
+
 void PrintType::operator()(const BasicConcreteTypes &btyp) const
 {
     if (btyp == BasicConcreteTypes::Number)
@@ -102,6 +110,25 @@ void PrintExpr::operator()(const LetRefExpr &vref) const
     std::print("{}", vref.name);
 };
 
+void PrintExpr::operator()(const MatrixAssignmentExpr &mass) const
+{
+    std::print("matrix {}->(", mass.ref.name);
+    std::visit(*this, mass.row->kind);
+    std::print(", ");
+    std::visit(*this, mass.col->kind);
+    std::print(") = ");
+    std::visit(*this, mass.value->kind);
+}
+
+void PrintExpr::operator()(const MatrixRefExpr &mref) const
+{
+    std::print("matrix {}->(", mref.ref.name);
+    std::visit(*this, mref.row->kind);
+    std::print(", ");
+    std::visit(*this, mref.col->kind);
+    std::print(")");
+}
+
 void PrintExpr::operator()(const FnCallExpr &fnc) const
 {
     std::print("call {} with: ", fnc.ref.name);
@@ -145,6 +172,16 @@ void PrintExpr::operator()(const ReturnExpr &ret) const
     std::print("return ");
     std::visit(*this, ret.returns->kind);
 };
+
+void PrintExpr::operator()(const MatrixConstructExpr &mc) const
+{
+    std::print("make matrix h={} elems=", mc.height);
+    for (const Expr &e : mc.list)
+    {
+        std::visit(*this, e.kind);
+        std::print(", ");
+    }
+}
 
 void PrintExpr::operator()(const SequenceExpr &seq) const
 {

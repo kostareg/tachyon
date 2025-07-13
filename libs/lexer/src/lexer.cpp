@@ -130,6 +130,10 @@ std::expected<Tokens, Error> lex(const std::string &s)
             tokens.emplace_back(LBRACE, pos, 1);
         else if (c == '}')
             tokens.emplace_back(RBRACE, pos, 1);
+        else if (c == '[')
+            tokens.emplace_back(LBRACK, pos, 1);
+        else if (c == ']')
+            tokens.emplace_back(RBRACK, pos, 1);
         else if (c == '.')
             tokens.emplace_back(DOT, pos, 1);
         else if (c == ':')
@@ -193,10 +197,10 @@ std::expected<Tokens, Error> lex(const std::string &s)
         }
         else if (isalpha(c))
         {
-            // idents must start with alpha, nums and ' accepted after.
+            // idents must start with alpha, nums or _ or ' are accepted after.
             std::string i;
             size_t start_pos = pos;
-            while (isalpha(s[pos]) || isdigit(s[pos]) || s[pos] == '\'')
+            while (isalpha(s[pos]) || isdigit(s[pos]) || s[pos] == '\'' || s[pos] == '_')
             {
                 i += s[pos];
                 ++pos;

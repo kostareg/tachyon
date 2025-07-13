@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tachyon/common/error.h"
+#include "tachyon/common/matrix.h"
 #include "tachyon/common/op.h"
 
 #include <memory>
@@ -17,9 +18,9 @@ using ExprRef = std::unique_ptr<Expr>;
 using Exprs = std::vector<Expr>;
 
 /**
- * @brief literal values ie unit, numbers, strings, booleans
+ * @brief literal values ie unit, numbers, strings, booleans, matrices
  */
-using LiteralValue = std::variant<std::monostate, double, std::string, bool>;
+using LiteralValue = std::variant<std::monostate, double, std::string, bool, Matrix>;
 
 /**
  * @brief a literal expression, or constant value
@@ -38,6 +39,7 @@ enum class BasicConcreteTypes
     String,
     Boolean,
     Unit,
+    List,
 };
 
 // fwd-decl
@@ -112,6 +114,21 @@ struct LetRefExpr
     std::string name;
 };
 
+struct MatrixAssignmentExpr
+{
+    LetRefExpr ref;
+    ExprRef row;
+    ExprRef col;
+    ExprRef value;
+};
+
+struct MatrixRefExpr
+{
+    LetRefExpr ref;
+    ExprRef row;
+    ExprRef col;
+};
+
 // TODO: captures
 /**
  * @brief function call
@@ -163,6 +180,12 @@ struct ReturnExpr
     ExprRef returns;
 };
 
+struct MatrixConstructExpr
+{
+    size_t height;
+    std::vector<Expr> list;
+};
+
 /**
  * @brief linear sequence of expressions
  *
@@ -178,9 +201,10 @@ struct SequenceExpr
 /**
  * @brief type of expression
  */
-using ExprKind = std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr,
-                              LetRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr, ContinueExpr,
-                              ImportExpr, ReturnExpr, SequenceExpr>;
+using ExprKind =
+    std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
+                 MatrixAssignmentExpr, MatrixRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr,
+                 ContinueExpr, ImportExpr, ReturnExpr, MatrixConstructExpr, SequenceExpr>;
 
 /**
  * @brief top-level expression type

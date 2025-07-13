@@ -17,11 +17,12 @@ namespace tachyon::runtime
  * | 0x40  | positional      |
  * | 0x50  | arithmetic      |
  * | 0x70  | comparison      |
+ * | 0x90  | lists           |
  * | 0xE0  | function        |
  * | 0xF0  | intrinsic       |
  * +-------+-----------------+
  */
-enum Bytecode : uint8_t
+enum Bytecode : uint16_t
 {
     /* machine */
     RETV = 0x00, // return void
@@ -111,6 +112,15 @@ enum Bytecode : uint8_t
     CGRR = 0x85, // register >  register -> register
     CHRR = 0x86, // register <= register -> register
     CFRR = 0x87, // register >= register -> register
+
+    /* lists */
+    LIUC = 0x90, // push constant                              -> register
+    LIUR = 0x91, // push register                              -> register
+    LIOR = 0x92, // pop  register                              -> register
+    GRRC = 0x93, // get register row register col constant val of register
+    GRRR = 0x94, // get register row register col register val of register
+    SRRC = 0x95, // set register row register col constant val of register
+    SRRR = 0x96, // set register row register col register val of register
 
     /* function */
     CALC = 0xE0, // call constant fn

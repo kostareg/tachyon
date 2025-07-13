@@ -77,9 +77,9 @@ inline const char *opToStr(Op op)
  *
  * Doesn't support Op::Not, since it's the only unary operator.
  */
-inline uint8_t opToUint8T(Op op)
+inline uint16_t opToUint16T(Op op)
 {
-    if (auto num = static_cast<uint8_t>(op); num < 3)
+    if (auto num = static_cast<uint16_t>(op); num < 3)
         return num + 0x32;
     else if (num < 9)
         return num - 3 + 0x70;
@@ -91,7 +91,7 @@ inline uint8_t opToUint8T(Op op)
 /**
  * @brief get nth next group of bytecode
  */
-inline uint8_t getBytecodeNthGroup(uint8_t addr, int n)
+inline uint16_t getBytecodeNthGroup(uint16_t addr, int n)
 {
     if (addr < 0x50) // boolean operators
         return addr + 2 * n;

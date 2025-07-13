@@ -28,11 +28,11 @@ struct BytecodeGenerator
     //  case. can't even search for std::monostate because people may actually
     //  use the unit type as a value.
     size_t next_free_register = 1;
-    uint8_t curr = 0;
+    uint16_t curr = 0;
 
   public:
     /// list of bytecode instructions
-    std::vector<uint8_t> bc = {};
+    std::vector<uint16_t> bc = {};
 
     /// constant lookup table
     std::vector<runtime::Value> constants = {};
@@ -65,12 +65,15 @@ struct BytecodeGenerator
     void operator()(const parser::BinaryOperatorExpr &binop);
     void operator()(const parser::LetExpr &vdecl);
     void operator()(const parser::LetRefExpr &vref);
+    void operator()(const parser::MatrixAssignmentExpr &mass);
+    void operator()(const parser::MatrixRefExpr &mref);
     void operator()(const parser::FnCallExpr &fnc);
     void operator()(const parser::WhileLoopExpr &wlop);
     void operator()(const parser::BreakExpr &brk);
     void operator()(const parser::ContinueExpr &cont);
     void operator()(const parser::ImportExpr &);
     void operator()(const parser::ReturnExpr &ret);
+    void operator()(const parser::MatrixConstructExpr &mc);
     void operator()(const parser::SequenceExpr &seq);
 };
 

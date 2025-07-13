@@ -29,7 +29,7 @@ class VM
      * @param offset argument offset
      * @return void or error
      */
-    std::expected<void, Error> call(std::shared_ptr<Proto> fn, uint8_t offset);
+    std::expected<void, Error> call(std::shared_ptr<Proto> fn, uint16_t offset);
 
   public:
     VM()

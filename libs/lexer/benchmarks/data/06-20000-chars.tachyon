@@ -19,7 +19,7 @@ x = 0.999
 b = False
 c = True
 d = 42
-e = 3.14159
+e = [3.14159]
 
 // Arithmetic expressions
 a1 = n + x
@@ -29,7 +29,7 @@ a4 = n / x
 a5 = (n + x) * (n - x) / (2 * 3)
 a6 = 7(2 + 3) - 4(1 + 1)
 a7 = 8x + (5)(3)
-a8 = 2(3(4 + 5) - 6) + 7
+a8 = [2(3(4 + 5) - 6) + 7]
 a9 = (1)(2)(3)(4)
 
 // Unary operators
@@ -142,7 +142,7 @@ deep1 = fn(a) {
 }
 
 // Test nested call for parsing only
-dummy = deep1(1)(2)(3)(4)
+dummy = [deep1(1)(2)(3)(4), 1, 2, 3]
 
 // Loops inside functions
 fact = fn(n) {
@@ -214,11 +214,11 @@ finalUnit = ()
 nothing = fn() -> Unit { return (); }
 
 // Additional variable assignments
-var21 = 21
-var22 = 22
-var23 = 23.23
-var24 = 24.24
-var25 = 25
+var21 = [21]
+var22 = [22]
+var23 = [23.23]
+var24 = [24.24]
+var25 = [25]
 
 // Arithmetic expressions continued
 expr21 = var21 + var22 + var23
@@ -243,7 +243,7 @@ chainFunc = fn(x) {
   f3 = fn(c) { return f1(c) - f2(c); }
   return f3(x);
 }
-chainRes = chainFunc(4)
+chainRes = [chainFunc(4), 1, 2]
 
 // Final test of code
 finalA = chainRes

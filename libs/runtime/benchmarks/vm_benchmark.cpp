@@ -119,7 +119,7 @@ class VMDataFixture : public benchmark::Fixture
             std::string content(size, '\0');
             file.read(content.data(), size);
 
-            std::vector<uint8_t> instructions;
+            std::vector<uint16_t> instructions;
             // parse content as bytecode or numbers
             for (size_t i = 0; i < content.size(); ++i)
             {
@@ -134,7 +134,7 @@ class VMDataFixture : public benchmark::Fixture
                 if (std::isdigit(instruction[0]))
                 {
                     // parse as number
-                    uint8_t number = std::stoi(instruction);
+                    uint16_t number = std::stoi(instruction);
                     instructions.push_back(number);
                 }
                 else
@@ -152,12 +152,12 @@ class VMDataFixture : public benchmark::Fixture
     void TearDown(const ::benchmark::State &) override { vm_data.clear(); }
 
   protected:
-    std::unordered_map<std::string, std::vector<uint8_t>> vm_data;
+    std::unordered_map<std::string, std::vector<uint16_t>> vm_data;
 };
 
 BENCHMARK_F(VMDataFixture, RunBlank)(benchmark::State &state)
 {
-    std::vector<uint8_t> _00_blank = vm_data["00-blank"];
+    std::vector<uint16_t> _00_blank = vm_data["00-blank"];
     const runtime::Proto proto(_00_blank, {}, 0, false, "<main>", SourceSpan(0, 0));
 
     for (auto _ : state)
@@ -170,7 +170,7 @@ BENCHMARK_F(VMDataFixture, RunBlank)(benchmark::State &state)
 
 BENCHMARK_F(VMDataFixture, RunBasic)(benchmark::State &state)
 {
-    std::vector<uint8_t> _01_basic = vm_data["01-basic"];
+    std::vector<uint16_t> _01_basic = vm_data["01-basic"];
     const runtime::Proto proto(_01_basic, {runtime::Value(1.), runtime::Value(2.)}, 0, false,
                                "<main>", SourceSpan(0, 0));
 
