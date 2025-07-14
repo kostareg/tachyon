@@ -32,39 +32,39 @@ Which, by itself, is not bad. It takes about 1ms to lex 20000 characters, which 
 significantly large Tachyon program. The benchmark program `06-20000-chars.tachyon` is over 1000
 lines of code. However, there are some key performance issues that I think can provide
 significant performance benefits to Tachyon. By the end of this performance refactor, my
-benchmarks will look like this:
+benchmarks will look like this (target `RelWithDebInfo`):
 
 ```shell
 /home/areg/projects/tachyon/cmake-build-release-benchmarks-only/libs/lexer/lexer_benchmarks
-2025-07-14T11:32:02-04:00
+2025-07-14T12:09:32-04:00
 Running /home/areg/projects/tachyon/cmake-build-release-benchmarks-only/libs/lexer/lexer_benchmarks
-Run on (8 X 3000.02 MHz CPU s)
+Run on (8 X 3100.2 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x4)
   L1 Instruction 32 KiB (x4)
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB (x1)
-Load Average: 2.05, 1.75, 1.67
+Load Average: 1.72, 1.55, 1.49
 -------------------------------------------------------------------------
 Benchmark                               Time             CPU   Iterations
 -------------------------------------------------------------------------
-LexerDataFixture/LexBlank             101 ns          100 ns      5965491
-LexerDataFixture/LexBasic             272 ns          270 ns      2662059
-LexerDataFixture/Lex1000Chars        5496 ns         5460 ns       124523
-LexerDataFixture/Lex2000Chars        9805 ns         9744 ns        73129
-LexerDataFixture/Lex5000Chars       35751 ns        35499 ns        19799
-LexerDataFixture/Lex10000Chars      79851 ns        79392 ns         9028
-LexerDataFixture/Lex20000Chars     150807 ns       149841 ns         4814
-LexerDataFixture/LexBigComment      14335 ns        14260 ns        48979
+LexerDataFixture/LexBlank             113 ns          112 ns      6341061
+LexerDataFixture/LexBasic             287 ns          286 ns      2402244
+LexerDataFixture/Lex1000Chars        3662 ns         3650 ns       172662
+LexerDataFixture/Lex2000Chars        6921 ns         6899 ns       102302
+LexerDataFixture/Lex5000Chars       30090 ns        29996 ns        23380
+LexerDataFixture/Lex10000Chars      71156 ns        70868 ns         9913
+LexerDataFixture/Lex20000Chars     134971 ns       134296 ns         5357
+LexerDataFixture/LexBigComment      17539 ns        17469 ns        39073
 
 Process finished with exit code 0
 ```
 
-Notably, lexing 20000 characters received a 556% performance boost, and now runs faster than it
+Notably, lexing 20000 characters received a 619% performance boost, and now runs faster than it
 used to take to lex just 5000 characters.[^1]
 
-[^1]: the blank fixture is now running ~40ns slower. I think this is because of when I reserve
-lots of memory for the token and constant vectors. Since this is only a 40ns loss for something
+[^1]: the blank fixture is now running ~50ns slower. I think this is because of when I reserve
+lots of memory for the token and constant vectors. Since this is only a 50ns loss for something
 that saves lots more with larger inputs, I'm o.k. with this loss. You can see, for example, that
 LexBasic is already much faster.
 
@@ -72,7 +72,7 @@ Below, you can find a quick walkthrough behind the thought process for each opti
 can find the pre-optimization code at or before commit
 [`48f2f4a260c7e877209d46f064bea549b335d03b`](https://github.com/kostareg/tachyon/tree/48f2f4a260c7e877209d46f064bea549b335d03b),
 and the post-optimization code at or after commit
-[`4fca311c70612fd8b1bc2011010bbb56a5e5d9c5`](https://github.com/kostareg/tachyon/tree/4fca311c70612fd8b1bc2011010bbb56a5e5d9c5).
+[`1770d4c62dcce461e8c9ede78bfea75183c03e06`](https://github.com/kostareg/tachyon/tree/1770d4c62dcce461e8c9ede78bfea75183c03e06).
 
 ## 1. Keyword hash tables
 
@@ -360,31 +360,31 @@ table for reading all of these characters instead.
 
 I analyzed my existing codebase to see where my initial implementation could benefit in
 optimizations. I used tools like the standard `std::vector::reserve`, GNU's `gperf`, and the Linux
-`perf` tool to optimize and better understand my program. In the end, I ended up with a 556% boost
-in performance, and the program is now able to lex 20000 characters in just 150000ns.
+`perf` tool to optimize and better understand my program. In the end, I ended up with a 619% boost
+in performance, and the program is now able to lex 20000 characters in just 0.135 milliseconds.
 
 ```shell
 /home/areg/projects/tachyon/cmake-build-release-benchmarks-only/libs/lexer/lexer_benchmarks
-2025-07-14T11:32:02-04:00
+2025-07-14T12:09:32-04:00
 Running /home/areg/projects/tachyon/cmake-build-release-benchmarks-only/libs/lexer/lexer_benchmarks
-Run on (8 X 3000.02 MHz CPU s)
+Run on (8 X 3100.2 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x4)
   L1 Instruction 32 KiB (x4)
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB (x1)
-Load Average: 2.05, 1.75, 1.67
+Load Average: 1.72, 1.55, 1.49
 -------------------------------------------------------------------------
 Benchmark                               Time             CPU   Iterations
 -------------------------------------------------------------------------
-LexerDataFixture/LexBlank             101 ns          100 ns      5965491
-LexerDataFixture/LexBasic             272 ns          270 ns      2662059
-LexerDataFixture/Lex1000Chars        5496 ns         5460 ns       124523
-LexerDataFixture/Lex2000Chars        9805 ns         9744 ns        73129
-LexerDataFixture/Lex5000Chars       35751 ns        35499 ns        19799
-LexerDataFixture/Lex10000Chars      79851 ns        79392 ns         9028
-LexerDataFixture/Lex20000Chars     150807 ns       149841 ns         4814
-LexerDataFixture/LexBigComment      14335 ns        14260 ns        48979
+LexerDataFixture/LexBlank             113 ns          112 ns      6341061
+LexerDataFixture/LexBasic             287 ns          286 ns      2402244
+LexerDataFixture/Lex1000Chars        3662 ns         3650 ns       172662
+LexerDataFixture/Lex2000Chars        6921 ns         6899 ns       102302
+LexerDataFixture/Lex5000Chars       30090 ns        29996 ns        23380
+LexerDataFixture/Lex10000Chars      71156 ns        70868 ns         9913
+LexerDataFixture/Lex20000Chars     134971 ns       134296 ns         5357
+LexerDataFixture/LexBigComment      17539 ns        17469 ns        39073
 
 Process finished with exit code 0
 ```

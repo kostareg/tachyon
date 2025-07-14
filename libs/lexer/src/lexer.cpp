@@ -41,6 +41,8 @@ void Lexer::lex(const std::string &source_code) {
 
         // fast path: hot single/double character tokens
         switch (*current) {
+        case '\t':
+        case ' ': ++current; continue;
         case '\n': consume_and_push(NLINE); continue;
         case '=':
             if (*(current + 1) == '=') consume_and_push(ECOMP, 2);
@@ -137,7 +139,9 @@ void Lexer::lex(const std::string &source_code) {
             continue;
         }
 
-        ++current; // todo: remove
+        errors.push_back(
+            Error::create(ErrorKind::LexError, SourceSpan(0, 0), "could not recognize token"));
+        ++current;
     }
     tokens.emplace_back(END, std::string_view(current - 1));
 }

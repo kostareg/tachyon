@@ -36,20 +36,27 @@ TEST(LexerTest, RecognizesAllTokens) {
 
     //   assert_eq whole vector
     ASSERT_EQ(lhs_tts, rhs_tts);
+
+    // 3. assert no errors
+    ASSERT_EQ(lexed.errors.size(), 0);
 }
 
 TEST(LexerTest, IgnoresComments) {
     // these lexed values should only include END.
-    Tokens rhs_1 = lex("// comment with newline\n").tokens;
-    Tokens rhs_2 = lex("// comment with EOF").tokens;
-    Tokens rhs_3 = lex("/* multiline comment */").tokens;
+    Lexer rhs_1 = lex("// comment with newline\n");
+    Lexer rhs_2 = lex("// comment with EOF");
+    Lexer rhs_3 = lex("/* multiline comment */");
 
-    ASSERT_EQ(END, rhs_1.at(0).type);
-    ASSERT_EQ(1, rhs_1.size());
-    ASSERT_EQ(END, rhs_2.at(0).type);
-    ASSERT_EQ(1, rhs_2.size());
-    ASSERT_EQ(END, rhs_3.at(0).type);
-    ASSERT_EQ(1, rhs_3.size());
+    ASSERT_EQ(END, rhs_1.tokens.at(0).type);
+    ASSERT_EQ(1, rhs_1.tokens.size());
+    ASSERT_EQ(END, rhs_2.tokens.at(0).type);
+    ASSERT_EQ(1, rhs_2.tokens.size());
+    ASSERT_EQ(END, rhs_3.tokens.at(0).type);
+    ASSERT_EQ(1, rhs_3.tokens.size());
+
+    ASSERT_EQ(rhs_1.errors.size(), 0);
+    ASSERT_EQ(rhs_2.errors.size(), 0);
+    ASSERT_EQ(rhs_3.errors.size(), 0);
 }
 
 // TODO: test for token positions
