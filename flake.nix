@@ -29,6 +29,7 @@
           gcovr
           lcov
           jq
+          gperf
         ];
 
         shellHook = ''
