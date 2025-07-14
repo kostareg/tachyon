@@ -56,7 +56,8 @@ class ParserDataFixture : public benchmark::Fixture {
                         throw std::runtime_error("didn't find ending \" for ident");
 
                     constants.emplace_back(content.substr(ident_start, i - ident_start));
-                    tokens.emplace_back(tt, std::string_view(&content[ident_start], &content[i]));
+                    tokens.emplace_back(tt, std::string_view(&content[ident_start], &content[i]),
+                                        constants.size() - 1);
 
                     ++i; // "
                 } else if (tt == lexer::NUMBER) {
@@ -68,12 +69,11 @@ class ParserDataFixture : public benchmark::Fixture {
                         ++i;
 
                     constants.emplace_back(std::stod(content.substr(number_start, i - start)));
-                    tokens.emplace_back(tt, std::string_view(&content[number_start], &content[i]));
+                    tokens.emplace_back(tt, std::string_view(&content[number_start], &content[i]),
+                                        constants.size() - 1);
                 } else if (tt == lexer::TRUE) {
-                    constants.emplace_back(true);
                     tokens.emplace_back(tt, std::string_view(&content[start], &content[i]));
                 } else if (tt == lexer::FALSE) {
-                    constants.emplace_back(false);
                     tokens.emplace_back(tt, std::string_view(&content[start], &content[i]));
                 } else {
                     lexer::Token t(tt, std::string_view(&content[start], &content[i]));
