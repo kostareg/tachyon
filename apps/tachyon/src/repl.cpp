@@ -10,16 +10,13 @@
 
 using namespace tachyon;
 
-int repl()
-{
+int repl() {
     runtime::VM vm;
     std::string source, line;
     std::string prefix = "> ";
 
-    while (std::print("{}", prefix), std::getline(std::cin, line))
-    {
-        if (line.ends_with(";;"))
-        {
+    while (std::print("{}", prefix), std::getline(std::cin, line)) {
+        if (line.ends_with(";;")) {
             // add the line to the source, without the ;;.
             source += line.substr(0, line.size() - 2) + '\n';
             prefix = "  ";
@@ -30,18 +27,23 @@ int repl()
         //  return 0 each time. Could also be return void.
         source += line + "\nreturn 0;";
 
-        if (source.empty())
-            continue;
+        if (source.empty()) continue;
 
         // pipeline
-        auto m = lexer::lex(source)
-                     .and_then(parser::parse)
+        auto lexer = lexer::lex(source);
+        if (!lexer.errors.empty()) {
+            Error e = Error::createMultiple(std::move(lexer.errors));
+            e.source = source;
+            std::cerr << e << std::flush;
+            return 1;
+        }
+        auto m = parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
                      .and_then(codegen::generateProto)
-                     .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error>
-                               { return vm.run(proto); });
+                     .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error> {
+                         return vm.run(proto);
+                     });
 
-        if (!m)
-        {
+        if (!m) {
             Error e = m.error();
             e.source = source;
             std::cerr << e << std::flush;

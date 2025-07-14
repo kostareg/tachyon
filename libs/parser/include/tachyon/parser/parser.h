@@ -6,13 +6,11 @@
 #include <expected>
 #include <utility>
 
-namespace tachyon::parser
-{
+namespace tachyon::parser {
 /**
  * @brief generates abstract syntax tree from list of tokens
  */
-class Parser
-{
+class Parser {
     /**
      * @brief token index
      */
@@ -22,6 +20,8 @@ class Parser
      * @brief token parse list
      */
     lexer::Tokens ts;
+
+    std::vector<lexer::Value> lexer_constants;
 
     /**
      * @brief left denotation (binary operators with infix positions)
@@ -74,7 +74,8 @@ class Parser
     std::expected<lexer::Token, Error> expect(lexer::TokenType tt);
 
   public:
-    explicit Parser(lexer::Tokens ts) : ts(std::move(ts)) {}
+    Parser(lexer::Tokens ts, std::vector<lexer::Value> cs)
+        : ts(std::move(ts)), lexer_constants(std::move(cs)) {}
 
     std::expected<Expr, Error> parse();
 };
@@ -84,9 +85,8 @@ class Parser
  * @param ts tokens
  * @see Parser::parse
  */
-inline std::expected<Expr, Error> parse(lexer::Tokens ts)
-{
-    Parser parser(std::move(ts));
+inline std::expected<Expr, Error> parse(lexer::Tokens ts, std::vector<lexer::Value> cs) {
+    Parser parser(std::move(ts), std::move(cs));
     return parser.parse();
 }
 } // namespace tachyon::parser

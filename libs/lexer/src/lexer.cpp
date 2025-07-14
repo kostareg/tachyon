@@ -5,6 +5,7 @@
 #include "fast_float/fast_float.h"
 
 namespace tachyon::lexer {
+// TODO: map here?
 inline bool is_starting_number_char(const char *ch) {
     return (*ch >= '0' && *ch <= '9');
 }
@@ -13,8 +14,13 @@ inline bool is_number_char(const char *ch) {
     return (*ch >= '0' && *ch <= '9') || *ch == '.';
 }
 
-inline bool is_identifier_char(const char *ch) {
+inline bool is_starting_identifier_char(const char *ch) {
     return (*ch >= 'A' && *ch <= 'Z') || (*ch >= 'a' && *ch <= 'z') || *ch == '_' || *ch == '\'';
+}
+
+inline bool is_identifier_char(const char *ch) {
+    return (*ch >= 'A' && *ch <= 'Z') || (*ch >= 'a' && *ch <= 'z') || (*ch >= '0' && *ch <= '9') ||
+           *ch == '_' || *ch == '\'';
 }
 
 void Lexer::lex(const std::string &source_code) {
@@ -109,7 +115,7 @@ void Lexer::lex(const std::string &source_code) {
             continue;
         }
 
-        if (is_identifier_char(current)) {
+        if (is_starting_identifier_char(current)) {
             const char *start = current;
             while (is_identifier_char(++current)) {
             }
