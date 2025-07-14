@@ -347,7 +347,8 @@ inline bool is_identifier_char(const char *ch) {
 }
 ```
 
-And I did the same for `is_starting_number_char` and `is_number_char`. This gives us:
+And I did the same for `is_starting_identifier_char`, `is_starting_number_char` and
+`is_number_char`. This gives us:
 
 ```shell
 -    0.00%  lexer_benchmark  lexer_benchmarks  [.] tachyon::lexer::is_identifier_char(char const*) (inlined)                                                                                                                                 ◆
@@ -388,3 +389,9 @@ LexerDataFixture/LexBigComment      17539 ns        17469 ns        39073
 
 Process finished with exit code 0
 ```
+
+Some next steps for improving the performance of the lexer are:
+
+* Parse integers separately
+* Constant lookup table for `is_identifier_char` and friends
+* Look into other kinds of list storage structures or memory allocators
