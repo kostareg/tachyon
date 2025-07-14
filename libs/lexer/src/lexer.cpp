@@ -2,17 +2,19 @@
 
 #include "tachyon/lexer/keyword_hash.h"
 
+#include "fast_float/fast_float.h"
+
 namespace tachyon::lexer {
 inline bool is_starting_number_char(const char *ch) {
-    return isdigit(*ch);
+    return (*ch >= '0' && *ch <= '9');
 }
 
 inline bool is_number_char(const char *ch) {
-    return isdigit(*ch) || *ch == '.';
+    return (*ch >= '0' && *ch <= '9') || *ch == '.';
 }
 
 inline bool is_identifier_char(const char *ch) {
-    return isalpha(*ch) || *ch == '_' || *ch == '\'';
+    return (*ch >= 'A' && *ch <= 'Z') || (*ch >= 'a' && *ch <= 'z') || *ch == '_' || *ch == '\'';
 }
 
 void Lexer::lex(const std::string &source_code) {
@@ -92,7 +94,12 @@ void Lexer::lex(const std::string &source_code) {
             const char *start = current;
             while (is_number_char(++current)) {
             }
-            constants.emplace_back(std::stod(std::string(start, current - start)));
+            double value;
+            auto answer = fast_float::from_chars(start, current, value);
+            if (answer.ec != std::errc())
+                errors.emplace_back(
+                    Error::create(ErrorKind::LexError, SourceSpan(0, 0), "failed to read number"));
+            constants.emplace_back(value);
             tokens.emplace_back(NUMBER, std::string_view(start, current), constants.size() - 1);
             ++current;
             continue;

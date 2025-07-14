@@ -3,6 +3,15 @@ add_library(tachyon_lexer STATIC
         src/lexer.cpp
 )
 
+# depend on fast_float
+include(FetchContent)
+FetchContent_Declare(
+        fast_float
+        GIT_REPOSITORY https://github.com/fastfloat/fast_float.git
+        GIT_TAG v8.0.2
+)
+FetchContent_MakeAvailable(fast_float)
+
 # Public headers - what other libraries can use
 target_include_directories(tachyon_lexer
         PUBLIC
@@ -26,6 +35,7 @@ target_compile_definitions(tachyon_lexer
 target_link_libraries(tachyon_lexer
         PRIVATE
         tachyon::common
+        fast_float
 )
 
 # Alias for consistent naming
