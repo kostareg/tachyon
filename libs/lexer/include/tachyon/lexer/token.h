@@ -18,7 +18,8 @@ enum class TokenType
     IDENT,
     NUMBER,
     STRING,
-    BOOL,
+    TRUE,
+    FALSE,
     UNIT,
     EQ,
     PLUS,
@@ -72,8 +73,10 @@ inline std::string tokToStr(TokenType tt)
         return "NUMBER";
     else if (tt == STRING)
         return "STRING";
-    else if (tt == BOOL)
-        return "BOOL";
+    else if (tt == TRUE)
+        return "TRUE";
+    else if (tt == FALSE)
+        return "FALSE";
     else if (tt == UNIT)
         return "UNIT";
     else if (tt == EQ)
@@ -161,8 +164,10 @@ inline TokenType strToTok(std::string_view str)
         return NUMBER;
     else if (str == "STRING")
         return STRING;
-    else if (str == "BOOL")
-        return BOOL;
+    else if (str == "TRUE")
+        return TRUE;
+    else if (str == "FALSE")
+        return FALSE;
     else if (str == "UNIT")
         return UNIT;
     else if (str == "EQ")
@@ -250,7 +255,9 @@ inline std::string tokToStrPretty(TokenType tt)
         return "a number";
     else if (tt == STRING)
         return "a string";
-    else if (tt == BOOL)
+    else if (tt == TRUE)
+        return "a boolean";
+    else if (tt == FALSE)
         return "a boolean";
     else if (tt == UNIT)
         return "a unit";
@@ -423,39 +430,17 @@ struct Token
     /// token type
     TokenType type;
 
-    /// value, defaults to std::monostate
-    std::variant<std::monostate, double, bool, std::string> value;
-
     /// relevant source region
-    SourceSpan span;
+    std::string_view source;
 
-    Token(TokenType type, size_t pos, size_t len) : type(type), span(pos, len) {}
-    Token(TokenType type, size_t pos, size_t len, double value)
-        : type(type), value(value), span(pos, len)
-    {
-    }
-    Token(TokenType type, size_t pos, size_t len, bool value)
-        : type(type), value(value), span(pos, len)
-    {
-    }
-    Token(TokenType type, size_t pos, size_t len, std::string value)
-        : type(type), value(value), span(pos, len)
-    {
-    }
+    /// pointer to constant value, uninitialized if TokenType does not need it
+    size_t constant_ptr;
 
-    /**
-     * @brief print token
-     */
-    void print()
+    Token(TokenType type, std::string_view source) : type(type), source(source) {}
+    Token(TokenType type, std::string_view source, size_t constant_ptr)
+        : type(type), source(source), constant_ptr(constant_ptr)
     {
-        std::cout << tokToStr(type);
-        if (std::holds_alternative<double>(value))
-            std::cout << " " << std::get<double>(value);
-        if (std::holds_alternative<bool>(value))
-            std::cout << " " << (std::get<bool>(value) ? "TRUE" : "FALSE");
-        if (std::holds_alternative<std::string>(value))
-            std::cout << " " << std::get<std::string>(value);
-    };
+    }
 };
 
 /// list of tokens

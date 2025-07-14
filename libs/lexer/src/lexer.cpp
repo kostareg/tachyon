@@ -1,248 +1,159 @@
 #include "tachyon/lexer/lexer.h"
 
-#include <expected>
+#include "tachyon/lexer/keyword_hash.h"
 
-namespace tachyon::lexer
-{
-// TODO: consider taking a string_view, then duplicating the string_view as many times as needed for
-//  spans. benchmark difference.
-std::expected<Tokens, Error> lex(const std::string &s)
-{
-    std::vector<Token> tokens;
-    std::vector<Error> errors;
-    size_t pos = 0;
+#include "fast_float/fast_float.h"
 
-    // TODO: half of this could just be a really fast hashmap. benchmark.
-    while (1)
-    {
-        if (pos == s.size())
-        {
-            tokens.emplace_back(END, pos, 0);
-            break;
-        }
+namespace tachyon::lexer {
+// TODO: map here?
+inline bool is_starting_number_char(const char *ch) {
+    return (*ch >= '0' && *ch <= '9');
+}
 
-        char c = s[pos];
+inline bool is_number_char(const char *ch) {
+    return (*ch >= '0' && *ch <= '9') || *ch == '.';
+}
 
-        if (c == ' ')
-        {
-        }
-        else if (c == '\n')
-        {
-            tokens.emplace_back(NLINE, pos, 1);
-        }
-        else if (c == '/' && s[pos + 1] == '*')
-        {
-            size_t start_pos = pos;
-            pos += 3;
-            while (!(s[pos - 1] == '*' && s[pos] == '/'))
-            {
-                ++pos;
-                // EOF
-                if (pos >= s.size())
-                {
-                    return std::unexpected(Error::create(ErrorKind::LexError,
-                                                         SourceSpan(start_pos, 2),
-                                                         "comment left open")
-                                               .withCode("E0002")
-                                               .withHint("complete the comment with `*/`."));
+inline bool is_starting_identifier_char(const char *ch) {
+    return (*ch >= 'A' && *ch <= 'Z') || (*ch >= 'a' && *ch <= 'z') || *ch == '_' || *ch == '\'';
+}
+
+inline bool is_identifier_char(const char *ch) {
+    return (*ch >= 'A' && *ch <= 'Z') || (*ch >= 'a' && *ch <= 'z') || (*ch >= '0' && *ch <= '9') ||
+           *ch == '_' || *ch == '\'';
+}
+
+void Lexer::lex(const std::string &source_code) {
+    current = &source_code[0];
+    while (*current != '\0') {
+        // consume comments
+        if (*current == '/') {
+            if (*(current + 1) == '/') {
+                while (*current != '\n' && *current != '\0') {
+                    ++current;
                 }
+                // consume newline
+                if (*current == '\n') ++current;
+                continue;
+            } else if (*(current + 1) == '*') {
+                ++current;
+                while (!(*current == '/' && *(current - 1) == '*')) {
+                    ++current;
+                }
+                ++current;
+                continue;
             }
         }
-        else if (c == '/' && s[pos + 1] == '/')
-        {
-            pos += 2;
-            while (s[pos] != '\n')
-            {
-                ++pos;
-            }
-        }
-        else if (c == '=')
-        {
-            // could be ==
-            if (s[pos + 1] == '=')
-                tokens.emplace_back(ECOMP, pos++, 2);
-            else
-                tokens.emplace_back(EQ, pos, 1);
-        }
-        else if (c == '!')
-        {
-            // could be !=
-            if (s[pos + 1] == '=')
-                tokens.emplace_back(NECOMP, pos++, 2);
-            else
-                tokens.emplace_back(NOT, pos, 1);
-        }
-        else if (c == '+')
-            tokens.emplace_back(PLUS, pos, 1);
-        else if (c == '-')
-        {
-            // could be ->
-            if (s[pos + 1] == '>')
-            {
-                tokens.emplace_back(RARROW, pos, 2);
-                ++pos;
-            }
-            else
-            {
-                tokens.emplace_back(MINUS, pos, 1);
-            }
-        }
-        else if (c == '*')
-            tokens.emplace_back(STAR, pos, 1);
-        else if (c == '/')
-            tokens.emplace_back(FSLASH, pos, 1);
-        else if (c == '^')
-            tokens.emplace_back(CARET, pos, 1);
-        else if (c == '<')
-        {
-            // could be <=
-            if (s[pos + 1] == '=')
-                tokens.emplace_back(LECOMP, pos++, 2);
-            else
-                tokens.emplace_back(LCOMP, pos, 1);
-        }
-        else if (c == '>')
-        {
-            // could be >=
-            if (s[pos + 1] == '=')
-                tokens.emplace_back(GECOMP, pos++, 2);
-            else
-                tokens.emplace_back(GCOMP, pos, 1);
-        }
-        else if (c == '&' && s[pos + 1] == '&')
-            tokens.emplace_back(BAND, pos++, 2);
-        else if (c == '|' && s[pos + 1] == '|')
-            tokens.emplace_back(BOR, pos++, 2);
-        else if (c == '(')
-        {
-            // may be unit type ()
-            if (s[pos + 1] == ')')
-            {
-                tokens.emplace_back(UNIT, pos, 2);
-                ++pos;
-            }
-            else
-                tokens.emplace_back(LPAREN, pos, 1);
-        }
-        else if (c == ')')
-            tokens.emplace_back(RPAREN, pos, 1);
-        else if (c == '{')
-            tokens.emplace_back(LBRACE, pos, 1);
-        else if (c == '}')
-            tokens.emplace_back(RBRACE, pos, 1);
-        else if (c == '[')
-            tokens.emplace_back(LBRACK, pos, 1);
-        else if (c == ']')
-            tokens.emplace_back(RBRACK, pos, 1);
-        else if (c == '.')
-            tokens.emplace_back(DOT, pos, 1);
-        else if (c == ':')
-            tokens.emplace_back(COLON, pos, 1);
-        else if (c == ';')
-            tokens.emplace_back(SEMIC, pos, 1);
-        else if (c == ',')
-            tokens.emplace_back(COMMA, pos, 1);
-        else if (c == '"')
-        {
-            std::string content;
-            int start_pos = pos;
-            ++pos;
-            while (s[pos] != '"')
-            {
-                content += s[pos];
-                ++pos;
-            }
-            tokens.emplace_back(STRING, start_pos, pos + 1 - start_pos, content);
-        }
-        else if (s.substr(pos, 4) == "True" && !isalpha(s[pos + 4]))
-        {
-            // ^- `True a` -> bool ident, `Truea` -> ident.
-            tokens.emplace_back(BOOL, pos, 4, true);
-            pos += 3;
-        }
-        else if (s.substr(pos, 5) == "False" && !isalpha(s[pos + 5]))
-        {
-            tokens.emplace_back(BOOL, pos, 5, false);
-            pos += 4;
-        }
-        else if (s.substr(pos, 6) == "import" && !isalpha(s[pos + 6]))
-        {
-            tokens.emplace_back(IMPORT, pos, 6);
-            pos += 5;
-        }
-        else if (s.substr(pos, 2) == "fn" && !isalpha(s[pos + 2]))
-        {
-            tokens.emplace_back(FN, pos, 2);
-            pos += 1;
-        }
-        else if (s.substr(pos, 6) == "return" && !isalpha(s[pos + 6]))
-        {
-            tokens.emplace_back(RETURN, pos, 6);
-            pos += 5;
-        }
-        else if (s.substr(pos, 5) == "while" && !isalpha(s[pos + 5]))
-        {
-            tokens.emplace_back(WHILE, pos, 5);
-            pos += 4;
-        }
-        else if (s.substr(pos, 5) == "break" && !isalpha(s[pos + 5]))
-        {
-            tokens.emplace_back(BREAK, pos, 5);
-            pos += 4;
-        }
-        else if (s.substr(pos, 8) == "continue" && !isalpha(s[pos + 8]))
-        {
-            tokens.emplace_back(CONTINUE, pos, 8);
-            pos += 7;
-        }
-        else if (isalpha(c))
-        {
-            // idents must start with alpha, nums or _ or ' are accepted after.
-            std::string i;
-            size_t start_pos = pos;
-            while (isalpha(s[pos]) || isdigit(s[pos]) || s[pos] == '\'' || s[pos] == '_')
-            {
-                i += s[pos];
-                ++pos;
-            }
-            size_t len = pos - start_pos;
-            tokens.emplace_back(IDENT, start_pos, len, i);
-            --pos;
-        }
-        else if (isdigit(c))
-        {
-            std::string n;
-            size_t start_pos = pos;
-            while ((isdigit(s[pos]) && !isspace(s[pos])) || s[pos] == '.')
-            {
-                n += s[pos];
-                ++pos;
-            }
-            size_t len = pos - start_pos;
-            tokens.emplace_back(NUMBER, start_pos, len, std::stod(n));
-            --pos;
-        }
-        else
-            errors.push_back(
-                Error::create(ErrorKind::LexError, SourceSpan(pos, 1), "unknown character")
-                    .withCode("E0001"));
 
-        ++pos;
+        // fast path: hot single/double character tokens
+        switch (*current) {
+        case '\t':
+        case ' ': ++current; continue;
+        case '\n': consume_and_push(NLINE); continue;
+        case '=':
+            if (*(current + 1) == '=') consume_and_push(ECOMP, 2);
+            else consume_and_push(EQ, 1);
+            continue;
+        case '!':
+            if (*(current + 1) == '=') consume_and_push(NECOMP, 2);
+            else consume_and_push(NOT);
+            continue;
+        case '+': consume_and_push(PLUS); continue;
+        case '-':
+            if (*(current + 1) == '>') consume_and_push(RARROW, 2);
+            else consume_and_push(MINUS);
+            continue;
+        case '*': consume_and_push(STAR); continue;
+        case '/': consume_and_push(FSLASH); continue;
+        case '^': consume_and_push(CARET); continue;
+        case '<':
+            if (*(current + 1) == '=') consume_and_push(LECOMP, 2);
+            else consume_and_push(LCOMP);
+            continue;
+        case '>':
+            if (*(current + 1) == '=') consume_and_push(GECOMP, 2);
+            else consume_and_push(GCOMP);
+            continue;
+        case '&':
+            if (*(current + 1) == '&') {
+                consume_and_push(BAND, 2);
+                continue;
+            }
+        case '|':
+            if (*(current + 1) == '|') {
+                consume_and_push(BOR, 2);
+                continue;
+            }
+        case '(':
+            if (*(current + 1) == ')') consume_and_push(UNIT, 2);
+            else consume_and_push(LPAREN);
+            continue;
+        case ')': consume_and_push(RPAREN); continue;
+        case '{': consume_and_push(LBRACE); continue;
+        case '}': consume_and_push(RBRACE); continue;
+        case '[': consume_and_push(LBRACK); continue;
+        case ']': consume_and_push(RBRACK); continue;
+        case '.': consume_and_push(DOT); continue;
+        case ':': consume_and_push(COLON); continue;
+        case ';': consume_and_push(SEMIC); continue;
+        case ',': consume_and_push(COMMA); continue;
+        default:
+        }
+
+        // numbers, identifiers/keywords, and strings
+        if (is_starting_number_char(current)) {
+            const char *start = current;
+            while (is_number_char(++current)) {
+            }
+            double value;
+            auto answer = fast_float::from_chars(start, current, value);
+            if (answer.ec != std::errc())
+                errors.emplace_back(
+                    Error::create(ErrorKind::LexError, SourceSpan(0, 0), "failed to read number"));
+            constants.emplace_back(value);
+            tokens.emplace_back(NUMBER, std::string_view(start, current), constants.size() - 1);
+            continue;
+        }
+
+        if (is_starting_identifier_char(current)) {
+            const char *start = current;
+            while (is_identifier_char(++current)) {
+            }
+            std::string_view word_view(start, current);
+
+            // at this point, content can either be a regular identifier or a keyword. let's use the
+            // hash table generated by gperf to check.
+            const auto *kw = KeywordHash::in_word_set(word_view.data(), word_view.size());
+            if (kw) {
+                tokens.emplace_back(kw->type, word_view);
+                continue;
+            }
+
+            constants.emplace_back(std::string(word_view));
+            tokens.emplace_back(IDENT, word_view, constants.size() - 1);
+            continue;
+        }
+
+        if (*current == '"') {
+            const char *start = ++current;
+            while (*current != '"') {
+                ++current;
+            }
+            constants.emplace_back(std::string(start, current - start));
+            tokens.emplace_back(STRING, std::string_view(start, current), constants.size() - 1);
+            ++current;
+            continue;
+        }
+
+        errors.push_back(
+            Error::create(ErrorKind::LexError, SourceSpan(0, 0), "could not recognize token"));
+        ++current;
     }
+    tokens.emplace_back(END, std::string_view(current - 1));
+}
 
-    if (!errors.empty())
-    {
-        return std::unexpected(Error::createMultiple(errors));
-    }
-
-    // log
-    // for (auto tok : tokens)
-    // {
-    // tok.print();
-    // std::printf("\n");
-    // }
-    // std::cout << std::endl;
-
-    return tokens;
+inline void Lexer::consume_and_push(TokenType tt, size_t length) {
+    tokens.emplace_back(tt, std::string_view(current, length));
+    current += length;
 }
 } // namespace tachyon::lexer

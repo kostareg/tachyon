@@ -29,6 +29,8 @@
           gcovr
           lcov
           jq
+          gperf
+          linuxKernel.packages.linux_6_6.perf
         ];
 
         shellHook = ''

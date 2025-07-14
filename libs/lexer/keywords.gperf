@@ -1,0 +1,31 @@
+%{
+#include "token.h"
+
+namespace tachyon::lexer {
+%}
+
+%language=C++
+%struct-type
+%define slot-name name
+%define class-name KeywordHash
+%readonly-tables
+%define lookup-function-name in_word_set
+%define initializer-suffix ,TokenType::RETURN
+%compare-strncmp
+
+struct Keyword {
+  const char* name;
+  TokenType type;
+};
+
+%%
+import,   TokenType::IMPORT
+fn,       TokenType::FN
+return,   TokenType::RETURN
+while,    TokenType::WHILE
+break,    TokenType::BREAK
+continue, TokenType::CONTINUE
+True,     TokenType::TRUE
+False,    TokenType::FALSE
+%%
+} // namespace tachyon::lexer
