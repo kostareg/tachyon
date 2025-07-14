@@ -17,4 +17,7 @@ done
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
   echo powersave | sudo tee $cpu > /dev/null
 done
+
+# or
+sudo cpupower frequency-set -g performance
 ```
