@@ -23,12 +23,14 @@ void Lexer::lex(const std::string &source_code) {
         // consume comments
         if (*current == '/') {
             if (*(current + 1) == '/') {
-                while (*current != '\n' || *current != '\0') {
+                while (*current != '\n' && *current != '\0') {
                     ++current;
                 }
-                ++current;
+                // consume newline
+                if (*current == '\n') ++current;
                 continue;
             } else if (*(current + 1) == '*') {
+                ++current;
                 while (!(*current == '/' && *(current - 1) == '*')) {
                     ++current;
                 }
@@ -39,6 +41,7 @@ void Lexer::lex(const std::string &source_code) {
 
         // fast path: hot single/double character tokens
         switch (*current) {
+        case '\n': consume_and_push(NLINE); continue;
         case '=':
             if (*(current + 1) == '=') consume_and_push(ECOMP, 2);
             else consume_and_push(EQ, 1);
@@ -101,7 +104,6 @@ void Lexer::lex(const std::string &source_code) {
                     Error::create(ErrorKind::LexError, SourceSpan(0, 0), "failed to read number"));
             constants.emplace_back(value);
             tokens.emplace_back(NUMBER, std::string_view(start, current), constants.size() - 1);
-            ++current;
             continue;
         }
 
