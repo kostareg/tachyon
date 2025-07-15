@@ -31,6 +31,7 @@
           jq
           gperf
           linuxKernel.packages.linux_6_6.perf
+          python312Packages.numpy
         ];
 
         shellHook = ''
