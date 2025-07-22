@@ -12,6 +12,7 @@ using namespace tachyon;
 
 int repl() {
     runtime::VM vm;
+    vm.set_mode(runtime::Mode::Repl);
     std::string source, line;
     std::string prefix = "> ";
 
@@ -23,11 +24,9 @@ int repl() {
             continue;
         }
 
-        // TODO: we could have a different mode of the VM for the REPL, that way we don't have to
-        //  return 0 each time. Could also be return void.
-        source += line + "\nreturn 0;";
+        if (line.empty()) continue;
 
-        if (source.empty()) continue;
+        source += line + "\n";
 
         // pipeline
         auto lexer = lexer::lex(source);

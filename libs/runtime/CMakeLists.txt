@@ -1,5 +1,6 @@
 # libs/runtime/CMakeLists.txt
 add_library(tachyon_runtime STATIC
+        src/value.cpp
         src/cache.cpp
         src/vm.cpp
 )

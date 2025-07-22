@@ -9,13 +9,16 @@
 #include <expected>
 #include <vector>
 
-namespace tachyon::runtime
-{
+namespace tachyon::runtime {
+enum class Mode {
+    Run,
+    Repl,
+};
+
 /**
  * @brief Tachyon virtual machine
  */
-class VM
-{
+class VM {
     /// call stack for all functions
     std::vector<CallFrame> call_stack;
 
@@ -31,12 +34,15 @@ class VM
      */
     std::expected<void, Error> call(std::shared_ptr<Proto> fn, uint16_t offset);
 
+    Mode mode = Mode::Run;
+
   public:
-    VM()
-    {
+    VM() {
         CallFrame initial_frame{};
         call_stack.push_back(std::move(initial_frame));
     }
+
+    void set_mode(Mode mode) { this->mode = mode; }
 
     /**
      * @brief run function

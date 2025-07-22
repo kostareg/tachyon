@@ -8,8 +8,7 @@
 #include <variant>
 #include <vector>
 
-namespace tachyon::runtime
-{
+namespace tachyon::runtime {
 // fwd-decl, see proto.h
 struct Proto;
 
@@ -32,40 +31,7 @@ using Values = std::vector<Value>;
 /**
  * @brief small visitor for printing values
  */
-inline void printValue(const Value &reg)
-{
-    std::visit(
-        []<typename T0>(const T0 &val)
-        {
-            using T = std::decay_t<T0>;
-            if constexpr (std::is_same_v<T, std::monostate>)
-            {
-                std::print("()");
-            }
-            else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>)
-            {
-                std::print("proto");
-            }
-            else if constexpr (std::is_same_v<T, Matrix>)
-            {
-                std::print("[");
-                for (size_t i = 1; i <= val.getCurrent(); ++i)
-                {
-                    if (i > 1)
-                        std::print(", ");
-                    std::print("{}", val(i));
-                    if (i == val.getWidth())
-                        std::print(";");
-                }
-                std::print("]");
-            }
-            else
-            {
-                std::print("{}", val);
-            }
-        },
-        reg);
-}
+void printValue(const Value &reg);
 
 // TODO: research other hashing/hash combination functions
 
@@ -79,34 +45,26 @@ inline void printValue(const Value &reg)
  * @param seed seed
  * @param h value to combine
  */
-inline void hash_combine(size_t &seed, size_t h)
-{
+inline void hash_combine(size_t &seed, size_t h) {
     seed ^= h + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
 }
 
 /**
  * @brief hash one value
  */
-struct ValueHash
-{
-    size_t operator()(const Value &v) const noexcept
-    {
+struct ValueHash {
+    size_t operator()(const Value &v) const noexcept {
         return std::visit(
-            []<typename T0>(const T0 &val) -> size_t
-            {
+            []<typename T0>(const T0 &val) -> size_t {
                 using T = std::decay_t<T0>;
-                if constexpr (std::is_same_v<T, Matrix>)
-                {
+                if constexpr (std::is_same_v<T, Matrix>) {
                     size_t h = val.size();
-                    for (size_t i = 1; i <= val.size(); ++i)
-                    {
+                    for (size_t i = 1; i <= val.size(); ++i) {
                         ValueHash vh;
                         hash_combine(h, vh(val(i)));
                     }
                     return h;
-                }
-                else
-                {
+                } else {
                     return std::hash<std::decay_t<T0>>{}(val);
                 }
             },
@@ -117,10 +75,8 @@ struct ValueHash
 /**
  * @brief hash combine values
  */
-struct ValuesHash
-{
-    size_t operator()(const Values &vs) const noexcept
-    {
+struct ValuesHash {
+    size_t operator()(const Values &vs) const noexcept {
         size_t h = vs.size();
         ValueHash vh;
         for (auto &v : vs)

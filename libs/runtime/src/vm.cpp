@@ -668,8 +668,17 @@ std::expected<void, Error> VM::run(const Proto &proto) {
         ++ptr;
     }
 
-    return std::unexpected(Error::create(ErrorKind::InternalError, SourceSpan(0, 0),
-                                         "should not reach end of vm::run without exit"));
+    switch (mode) {
+    case Mode::Run:
+        return std::unexpected(Error::create(ErrorKind::InternalError, SourceSpan(0, 0),
+                                             "should not reach end of vm::run without exit"));
+    case Mode::Repl:
+        if (ptr >= 1) {
+            printValue(call_stack.back().registers[proto.bytecode[ptr - 1]]);
+            std::cout << std::endl;
+        }
+        return {};
+    }
 }
 
 std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) {
