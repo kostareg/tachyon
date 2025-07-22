@@ -3,8 +3,10 @@
 // its spikes.
 //
 // this program also contains a function to calculate the accuracy (cost) of the output nodes.
+//
+// you can find a more generalized version of this code (that uses arrays instead of manually
+// naming the weights/biases in `./106-with-lists.tachyon`.
 
-// TODO: i need arrays :)
 network = fn (bias1, bias2, bias3, weight11, weight12, weight13, weight21, weight22, weight23, hbias1, hbias2, hweight11, hweight12, hweight21, hweight22, hweight31, hweight32) { input1 = 0
   input2 = 0
 

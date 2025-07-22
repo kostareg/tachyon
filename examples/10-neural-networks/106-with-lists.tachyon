@@ -90,7 +90,7 @@ biases = [
 // form of the layer sizes.
 // TODO: eventually, we won't even need the shadow of the real data
 // TODO: for now this is rectangular since the matrix constructor assumes a rectangular matrix. but
-// i should really make this have any variation of sizes.
+//  i should really make this have any variation of sizes.
 layer_data = [0, 0; 0, 0; 0, 0; 0, 0; 0, 0; 0, 0]
 // each element is a layer's height, excl. the input layer
 layer_sizes  = [2, 2, 2, 2, 2, 2]

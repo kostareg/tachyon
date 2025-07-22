@@ -146,8 +146,8 @@ x = @lim x -> 0 of sin x / x // indeterminate: apply l'hopitals rule = cos x / 1
 // }
 
 // match r {
-//     Ok(v) => @todo // prints todo and quits
-//     Err(msg) => @todo
+//     Ok(v) => @to-do // prints "to-do" and quits
+//     Err(msg) => @to-do
 // }
 
 // String interpolation
