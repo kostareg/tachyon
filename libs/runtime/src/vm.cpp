@@ -1,6 +1,7 @@
 #include "tachyon/runtime/vm.h"
 
 #include "tachyon/common/assert.h"
+#include "tachyon/common/log.h"
 #include "tachyon/runtime/bytecode.h"
 
 #include <expected>
@@ -9,53 +10,42 @@
 
 // TODO: consider moving from uint16_t to size_t
 
-namespace tachyon::runtime
-{
-std::expected<void, Error> VM::run(const Proto &proto)
-{
+namespace tachyon::runtime {
+std::expected<void, Error> VM::run(const Proto &proto) {
     size_t ptr = 0;
-    while (ptr < proto.bytecode.size())
-    {
-        uint16_t op = proto.bytecode[ptr];
-        // std::println("0x{:02X}", op);
+    while (ptr < proto.bytecode.size()) {
+        TY_TRACE_HEX(proto.bytecode[ptr], "[" << ptr << "]");
 
-        switch (op)
-        {
+        switch (proto.bytecode[ptr]) {
         /* machine */
         default:
-        case RETV:
-        {
+        case RETV: {
             return {};
         }
-        case RETC:
-        {
+        case RETC: {
             uint16_t src0 = proto.bytecode[++ptr];
             TY_ASSERT(src0 < proto.constants.size());
             call_stack.back().returns = proto.constants[src0];
             return {};
         }
-        case RETR:
-        {
+        case RETR: {
             uint16_t src0 = proto.bytecode[++ptr];
             call_stack.back().returns = call_stack.back().registers[src0];
             return {};
         }
-        case NOOP:
-        {
+        case NOOP: {
             break;
         }
 
         /* register */
-        case LOCR:
-        {
+        case LOCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             TY_ASSERT(src0 < proto.constants.size());
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = proto.constants[src0];
             break;
         }
-        case LORR:
-        {
+        case LORR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = call_stack.back().registers[src0];
@@ -63,22 +53,19 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
 
         /* boolean logic */
-        case BNOC:
-        {
+        case BNOC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = !std::get<bool>(proto.constants[src0]);
             break;
         }
-        case BNOR:
-        {
+        case BNOR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] = !std::get<bool>(call_stack.back().registers[src0]);
             break;
         }
-        case BACC:
-        {
+        case BACC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -86,8 +73,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<bool>(proto.constants[src0]) && std::get<bool>(proto.constants[src1]);
             break;
         }
-        case BOCC:
-        {
+        case BOCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -95,8 +81,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<bool>(proto.constants[src0]) || std::get<bool>(proto.constants[src1]);
             break;
         }
-        case BARC:
-        {
+        case BARC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -104,8 +89,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<bool>(proto.constants[src1]);
             break;
         }
-        case BORC:
-        {
+        case BORC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -113,8 +97,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<bool>(proto.constants[src1]);
             break;
         }
-        case BACR:
-        {
+        case BACR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -122,8 +105,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<bool>(call_stack.back().registers[src1]);
             break;
         }
-        case BOCR:
-        {
+        case BOCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -131,8 +113,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<bool>(call_stack.back().registers[src1]);
             break;
         }
-        case BARR:
-        {
+        case BARR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -140,8 +121,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<bool>(call_stack.back().registers[src1]);
             break;
         }
-        case BORR:
-        {
+        case BORR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -151,50 +131,41 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
 
         /* positional */
-        case JMPU:
-        {
+        case JMPU: {
             ptr = proto.bytecode[++ptr];
             continue; // do not increment
         }
-        case JMCI:
-        {
+        case JMCI: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
-            if (std::get<bool>(proto.constants[src0]))
-            {
+            if (std::get<bool>(proto.constants[src0])) {
                 ptr = dst0;
                 continue;
             }
             break;
         }
-        case JMCN:
-        {
+        case JMCN: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
-            if (!std::get<bool>(proto.constants[src0]))
-            {
+            if (!std::get<bool>(proto.constants[src0])) {
                 ptr = dst0;
                 continue;
             }
             break;
         }
-        case JMRI:
-        {
+        case JMRI: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
-            if (std::get<bool>(call_stack.back().registers[src0]))
-            {
+            if (std::get<bool>(call_stack.back().registers[src0])) {
                 ptr = dst0;
                 continue;
             }
             break;
         }
-        case JMRN:
-        {
+        case JMRN: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
-            if (!std::get<bool>(call_stack.back().registers[src0]))
-            {
+            if (!std::get<bool>(call_stack.back().registers[src0])) {
                 ptr = dst0;
                 continue;
             }
@@ -206,8 +177,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         //  doubles. we can handle other issues either in the typechecker or by
         //  allowing weak types. or, we can make it a runtime error. Or consider
         //  using TY_ASSERT for all of these.
-        case MACC:
-        {
+        case MACC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -215,8 +185,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) + std::get<double>(proto.constants[src1]);
             break;
         }
-        case MSCC:
-        {
+        case MSCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -224,8 +193,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) - std::get<double>(proto.constants[src1]);
             break;
         }
-        case MMCC:
-        {
+        case MMCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -233,8 +201,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) * std::get<double>(proto.constants[src1]);
             break;
         }
-        case MDCC:
-        {
+        case MDCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -242,8 +209,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) / std::get<double>(proto.constants[src1]);
             break;
         }
-        case MPCC:
-        {
+        case MPCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -251,8 +217,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                     std::get<double>(proto.constants[src1]));
             break;
         }
-        case MARC:
-        {
+        case MARC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -261,8 +226,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case MSRC:
-        {
+        case MSRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -271,8 +235,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case MMRC:
-        {
+        case MMRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -281,8 +244,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case MDRC:
-        {
+        case MDRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -291,8 +253,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case MPRC:
-        {
+        case MPRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -301,8 +262,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                     std::get<double>(proto.constants[src1]));
             break;
         }
-        case MACR:
-        {
+        case MACR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -310,8 +270,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MSCR:
-        {
+        case MSCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -319,8 +278,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MMCR:
-        {
+        case MMCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -328,8 +286,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MDCR:
-        {
+        case MDCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -337,8 +294,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MPCR:
-        {
+        case MPCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -347,8 +303,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                     std::get<double>(call_stack.back().registers[src1]));
             break;
         }
-        case MARR:
-        {
+        case MARR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -357,8 +312,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MSRR:
-        {
+        case MSRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -367,8 +321,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MMRR:
-        {
+        case MMRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -377,8 +330,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MDRR:
-        {
+        case MDRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -387,8 +339,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case MPRR:
-        {
+        case MPRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -401,8 +352,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         /* comparison */
         // TODO: support things other than double
         // TODO: don't allow function comparison in type checker
-        case CECC:
-        {
+        case CECC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -410,8 +360,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) == std::get<double>(proto.constants[src1]);
             break;
         }
-        case CNCC:
-        {
+        case CNCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -419,8 +368,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) != std::get<double>(proto.constants[src1]);
             break;
         }
-        case CLCC:
-        {
+        case CLCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -428,8 +376,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) < std::get<double>(proto.constants[src1]);
             break;
         }
-        case CGCC:
-        {
+        case CGCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -437,8 +384,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) > std::get<double>(proto.constants[src1]);
             break;
         }
-        case CHCC:
-        {
+        case CHCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -446,8 +392,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) <= std::get<double>(proto.constants[src1]);
             break;
         }
-        case CFCC:
-        {
+        case CFCC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -455,8 +400,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src0]) >= std::get<double>(proto.constants[src1]);
             break;
         }
-        case CERC:
-        {
+        case CERC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -465,8 +409,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case CNRC:
-        {
+        case CNRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -475,8 +418,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case CLRC:
-        {
+        case CLRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -485,8 +427,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case CGRC:
-        {
+        case CGRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -495,8 +436,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case CHRC:
-        {
+        case CHRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -505,8 +445,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case CFRC:
-        {
+        case CFRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -515,8 +454,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src1]);
             break;
         }
-        case CECR:
-        {
+        case CECR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -524,8 +462,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CNCR:
-        {
+        case CNCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -533,8 +470,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CLCR:
-        {
+        case CLCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -542,8 +478,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CGCR:
-        {
+        case CGCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -551,8 +486,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CHCR:
-        {
+        case CHCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -560,8 +494,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CFCR:
-        {
+        case CFCR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -569,8 +502,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CERR:
-        {
+        case CERR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -579,8 +511,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CNRR:
-        {
+        case CNRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -589,8 +520,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CLRR:
-        {
+        case CLRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -599,8 +529,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CGRR:
-        {
+        case CGRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -609,8 +538,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CHRR:
-        {
+        case CHRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -619,8 +547,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(call_stack.back().registers[src1]);
             break;
         }
-        case CFRR:
-        {
+        case CFRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
@@ -631,24 +558,21 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
 
         /* lists */
-        case LIUC:
-        {
+        case LIUC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])
                 .pushBack(std::get<double>(proto.constants[src0]));
             break;
         }
-        case LIUR:
-        {
+        case LIUR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])
                 .pushBack(std::get<double>(call_stack.back().registers[src0]));
             break;
         }
-        case LIOR:
-        {
+        case LIOR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
@@ -657,8 +581,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
         // TODO: these use narrowing conversions. have a dedicated size type or come up with another
         //  solution.
-        case GRRC:
-        {
+        case GRRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t src2 = proto.bytecode[++ptr];
@@ -670,8 +593,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                     std::round(std::get<double>(call_stack.back().registers[src1]))));
             break;
         }
-        case GRRR:
-        {
+        case GRRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t src2 = proto.bytecode[++ptr];
@@ -683,8 +605,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                     std::round(std::get<double>(call_stack.back().registers[src1]))));
             break;
         }
-        case SRRC:
-        {
+        case SRRC: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t src2 = proto.bytecode[++ptr];
@@ -697,8 +618,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 std::get<double>(proto.constants[src2]);
             break;
         }
-        case SRRR:
-        {
+        case SRRR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t src1 = proto.bytecode[++ptr];
             uint16_t src2 = proto.bytecode[++ptr];
@@ -713,8 +633,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
 
         /* function */
-        case CALC:
-        {
+        case CALC: {
             uint16_t src0 = proto.bytecode[++ptr];
             TY_ASSERT(src0 < proto.constants.size());
             uint16_t offset = proto.bytecode[++ptr];
@@ -724,8 +643,7 @@ std::expected<void, Error> VM::run(const Proto &proto)
                 return std::unexpected(called_fn.error());
             break;
         }
-        case CALR:
-        {
+        case CALR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t offset = proto.bytecode[++ptr];
             auto fn = std::get<std::shared_ptr<Proto>>(call_stack.back().registers[src0]);
@@ -736,14 +654,12 @@ std::expected<void, Error> VM::run(const Proto &proto)
         }
 
         /* intrinsic */
-        case PRNC:
-        {
+        case PRNC: {
             uint16_t src0 = proto.bytecode[++ptr];
             printValue(proto.constants[src0]);
             break;
         }
-        case PRNR:
-        {
+        case PRNR: {
             uint16_t src0 = proto.bytecode[++ptr];
             printValue(call_stack.back().registers[src0]);
             break;
@@ -756,21 +672,17 @@ std::expected<void, Error> VM::run(const Proto &proto)
                                          "should not reach end of vm::run without exit"));
 }
 
-std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset)
-{
+std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) {
     // first, load the arguments into a list:
     Values vs;
-    for (size_t i = 0; i < fn->arguments; ++i)
-    {
+    for (size_t i = 0; i < fn->arguments; ++i) {
         // start at offset + i.
         vs.push_back(call_stack.back().registers[i + offset]);
     }
 
     // then, if the function is pure, check the cache:
-    if (fn->is_pure)
-    {
-        if (auto hit = fn->cache.get(vs))
-        {
+    if (fn->is_pure) {
+        if (auto hit = fn->cache.get(vs)) {
             // handle the cache hit. load the return value to register 0 of this call frame and
             // return.
             call_stack[call_stack.size() - 1].registers[0] = *hit;
@@ -781,16 +693,14 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset)
     // if we are here, we will have to run the function. begin by creating the next call frame and
     // preparing it with the arguments:
     std::array<Value, 256> registers;
-    for (size_t i = 0; i < fn->arguments; ++i)
-    {
+    for (size_t i = 0; i < fn->arguments; ++i) {
         // start at +1 + i index.
         registers[i + 1] = vs[i];
     }
     CallFrame frame{std::move(registers), 0.0};
     call_stack.push_back(frame);
 
-    if (auto post_fn = run(*fn); !post_fn)
-        return std::unexpected(post_fn.error());
+    if (auto post_fn = run(*fn); !post_fn) return std::unexpected(post_fn.error());
 
     // load the return value of the function to register 0 of this
     // call frame.
@@ -800,8 +710,7 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset)
     call_stack[call_stack.size() - 2].registers[0] = call_stack.back().returns;
 
     // if the function is pure, put result in cache.
-    if (fn->is_pure)
-    {
+    if (fn->is_pure) {
         fn->cache.put(vs, call_stack.back().returns);
     }
 
@@ -811,13 +720,10 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset)
     return {};
 }
 
-void VM::doctor() const
-{
+void VM::doctor() const {
     std::println("vm state:");
-    for (const CallFrame &call : call_stack)
-    {
-        for (const Value &reg : call.registers)
-        {
+    for (const CallFrame &call : call_stack) {
+        for (const Value &reg : call.registers) {
             printValue(reg);
             std::print(" ");
         }
