@@ -1,9 +1,7 @@
-# libs/lexer/CMakeLists.txt
 add_library(tachyon_lexer STATIC
         src/lexer.cpp
 )
 
-# depend on fast_float
 include(FetchContent)
 FetchContent_Declare(
         fast_float
@@ -12,7 +10,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fast_float)
 
-# Public headers - what other libraries can use
 target_include_directories(tachyon_lexer
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -21,10 +18,8 @@ target_include_directories(tachyon_lexer
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Compiler-specific optimizations
 target_compile_features(tachyon_lexer PUBLIC cxx_std_23)
 
-# Preprocessor definitions
 target_compile_definitions(tachyon_lexer
         PRIVATE
         TACHYON_LEXER_VERSION="${PROJECT_VERSION}"
@@ -38,15 +33,11 @@ target_link_libraries(tachyon_lexer
         fast_float
 )
 
-# Alias for consistent naming
 add_library(tachyon::lexer ALIAS tachyon_lexer)
 
-# Tests for this library
 if (TACHYON_BUILD_TESTS)
     add_executable(lexer_tests
-            #            tests/lexer_test.cpp
             tests/lexer_test.cpp
-            #            tests/unicode_test.cpp
     )
 
     target_link_libraries(lexer_tests
@@ -57,14 +48,9 @@ if (TACHYON_BUILD_TESTS)
             gtest_main
     )
 
-    # Add to test suite
     add_test(NAME LexerTests COMMAND lexer_tests)
-
-    # Test data files
-    #file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
 endif ()
 
-# Benchmarks for this library
 if (TACHYON_BUILD_BENCHMARKS)
     add_executable(lexer_benchmarks
             benchmarks/lexer_benchmark.cpp
@@ -77,10 +63,8 @@ if (TACHYON_BUILD_BENCHMARKS)
             benchmark::benchmark
     )
 
-    # Benchmark data files
     file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
 
-    # Watch the data files
     set_property(
             DIRECTORY
             APPEND

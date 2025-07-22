@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(tachyon
         VERSION 1.0.0
-        DESCRIPTION "A just-in-time compiled programming language optimized for mathematical operations."
+        DESCRIPTION "A just-in-time compiler optimized for mathematical operations."
         LANGUAGES CXX
 )
 
@@ -43,7 +43,7 @@ if (TACHYON_BUILD_TESTS)
 endif ()
 
 if (TACHYON_BUILD_BENCHMARKS)
-    # Disable internal benchmark tests
+    # disable internal benchmark tests
     set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
     set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
     set(BENCHMARK_ENABLE_ASSEMBLY_TESTS OFF CACHE BOOL "" FORCE)
@@ -56,16 +56,16 @@ if (TACHYON_BUILD_BENCHMARKS)
     )
     FetchContent_MakeAvailable(googlebenchmark)
 
-    # Optional: forcibly unset any benchmark test registration with CTest
+    # optional: forcibly unset any benchmark test registration with CTest
     set_property(DIRECTORY "${benchmark_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "")
 endif ()
 
 if (TACHYON_BUILD_WITH_COVERAGE)
-  if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(--coverage -O0 -g)
-    add_link_options(--coverage)
-  endif()
-endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(--coverage -O0 -g)
+        add_link_options(--coverage)
+    endif ()
+endif ()
 
 add_subdirectory(libs/common)
 add_subdirectory(libs/lexer)
@@ -77,7 +77,7 @@ if (TACHYON_BUILD_TOOLS)
     add_subdirectory(apps/tachyon)
 endif ()
 
-## for integration tests only.
+# for integration tests only.
 if (TACHYON_BUILD_TESTS)
     add_subdirectory(tests)
 endif ()

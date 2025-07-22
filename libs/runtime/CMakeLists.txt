@@ -1,11 +1,9 @@
-# libs/runtime/CMakeLists.txt
 add_library(tachyon_runtime STATIC
         src/value.cpp
         src/cache.cpp
         src/vm.cpp
 )
 
-# Public headers - what other libraries can use
 target_include_directories(tachyon_runtime
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -14,10 +12,8 @@ target_include_directories(tachyon_runtime
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Compiler-specific optimizations
 target_compile_features(tachyon_runtime PUBLIC cxx_std_23)
 
-# Preprocessor definitions
 target_compile_definitions(tachyon_runtime
         PRIVATE
         TACHYON_RUNTIME_VERSION="${PROJECT_VERSION}"
@@ -31,31 +27,8 @@ target_link_libraries(tachyon_runtime
         tachyon::parser
 )
 
-# Alias for consistent naming
 add_library(tachyon::runtime ALIAS tachyon_runtime)
 
-# Tests for this library
-#if (TACHYON_BUILD_TESTS)
-#    add_executable(runtime_tests
-#            tests/matrix_test.cpp
-#    )
-#
-#    target_link_libraries(runtime_tests
-#            PRIVATE
-#            tachyon_common
-#            tachyon_runtime
-#            gtest
-#            gtest_main
-#    )
-#
-#    # Add to test suite
-#    add_test(NAME LexerTests COMMAND runtime_tests)
-#
-#    # Test data files
-#    # file(COPY tests/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test_data/)
-#endif ()
-
-# Benchmarks for this library
 if (TACHYON_BUILD_BENCHMARKS)
     add_executable(runtime_benchmarks
             benchmarks/vm_benchmark.cpp
@@ -68,10 +41,8 @@ if (TACHYON_BUILD_BENCHMARKS)
             benchmark::benchmark
     )
 
-    # Benchmark data files
     file(COPY benchmarks/data/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/benchmark-data/)
 
-    # Watch the data files
     set_property(
             DIRECTORY
             APPEND
