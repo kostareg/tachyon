@@ -136,10 +136,28 @@ void Lexer::lex(const std::string &source_code) {
 
         if (*current == '"') {
             const char *start = ++current;
-            while (*current != '"') {
-                ++current;
+            std::string string;
+            while (*current != '"' && *current != EOF) {
+                if (*current == '\\' && *(current + 1) != EOF) [[unlikely]] {
+                    switch (*(current + 1)) {
+                    case 'n':
+                        string += '\n';
+                        current += 2;
+                        continue;
+                    case 'r':
+                        string += '\r';
+                        current += 2;
+                        continue;
+                    case 't':
+                        string += '\t';
+                        current += 2;
+                        continue;
+                    default: string += *(current++);
+                    }
+                } else [[likely]]
+                    string += *(current++);
             }
-            constants.emplace_back(std::string(start, current - start));
+            constants.emplace_back(std::move(string));
             tokens.emplace_back(STRING, std::string_view(start, current), constants.size() - 1);
             ++current;
             continue;
