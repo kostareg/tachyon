@@ -669,6 +669,7 @@ std::expected<void, Error> VM::run(const Proto &proto) {
     }
 
     switch (mode) {
+    default:
     case Mode::Run:
         return std::unexpected(Error::create(ErrorKind::InternalError, SourceSpan(0, 0),
                                              "should not reach end of vm::run without exit"));
