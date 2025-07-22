@@ -127,14 +127,15 @@ is that it's a generator tool, so adding new keywords to the lexer just consists
 in the gperf input (keywords.gperf) and regenerating the source. Hand writing and testing a perfect
 hash function like in Strager's video is doable for a language like JavaScript, where the
 standard-defined keyword set is unlikely to change tomorrow. Tachyon, however, is still very much a
-work in progress, so it helps a lot that modifying keywords is a fast part of my workflow.
+work in progress, so it helps a lot that modifying keywords is a fast part of my development
+workflow.
 
 ## 2. Reserving capacity for token and constant lists
 
 Another thing that I thought of was that we must be spending so much time on vector reallocations
 for token and constant lists. When a vector is initialized with `std::vector<T> v;`, it starts
 with a capacity of 0. It then scales geometrically when values are inserted, usually growing by
-1.5-2x. As an example, let's assume a growth factor of 2x[^3], and plot the sizes of the vector as
+1.5-2x. As an example, let's assume a growth factor of 2x[^3], and chart the sizes of the vector as
 the lexer continues lexing tokens.
 
 [^3]: implementation defined.
@@ -235,39 +236,7 @@ Samples: 3K of event 'cycles:Pu', Event count (approx.): 3299930785
      0.48%     0.19%  lexer_benchmark  libc++.so.1.0         [.] std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::~basic_string()@plt                                                                  ▒
 ```
 
-Looks like we're spending the most time inside of `lex`. Makes sense. After expanding `lex`, I get:
-
-```shell
-
--   55.46%    54.33%  lexer_benchmark  lexer_benchmarks      [.] tachyon::lexer::Lexer::lex(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)                                                    ◆
-     1.14% tachyon::lexer::Lexer::lex(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)                                                                                                          ▒
-+   12.83%    12.83%  lexer_benchmark  libc.so.6             [.] __GI_____strtod_l_internal                                                                                                                                                  ▒
-+    6.51%     0.00%  lexer_benchmark  [unknown]             [.] 0x005555555fa66000                                                                                                                                                          ▒
-+    5.32%     3.12%  lexer_benchmark  lexer_benchmarks      [.] LexerDataFixture_Lex20000Chars_Benchmark::BenchmarkCase(benchmark::State&)                                                                                                  ▒
-+    4.53%     4.18%  lexer_benchmark  libc.so.6             [.] round_and_return                                                                                                                                                            ▒
-+    4.30%     3.15%  lexer_benchmark  libc++.so.1.0         [.] std::__1::stod(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, unsigned long*)                                                ▒
-+    3.35%     3.35%  lexer_benchmark  libc.so.6             [.] __strlen_avx2                                                                                                                                                               ▒
-+    3.16%     2.58%  lexer_benchmark  libc.so.6             [.] __memmove_avx_unaligned_erms                                                                                                                                                ▒
-+    3.13%     3.11%  lexer_benchmark  libc.so.6             [.] str_to_mpn.part.0.constprop.0                                                                                                                                               ▒
-+    3.08%     0.00%  lexer_benchmark  [unknown]             [.] 0xaa8000736e6f0073                                                                                                                                                          ▒
-+    2.89%     1.85%  lexer_benchmark  libc.so.6             [.] __ctype_b_loc                                                                                                                                                               ▒
-+    2.81%     2.16%  lexer_benchmark  lexer_benchmarks      [.] decltype(auto) std::__1::__variant_detail::__visitation::__base::__dispatcher<2ul>::__dispatch[abi:ne190107]<std::__1::__variant_detail::__dtor<std::__1::__variant_detail::▒
-+    2.56%     1.04%  lexer_benchmark  lexer_benchmarks      [.] __ctype_b_loc@plt                                                                                                                                                           ▒
-+    1.79%     1.45%  lexer_benchmark  lexer_benchmarks      [.] decltype(auto) std::__1::__variant_detail::__visitation::__base::__dispatcher<1ul>::__dispatch[abi:ne190107]<std::__1::__variant_detail::__dtor<std::__1::__variant_detail::▒
-+    1.75%     1.46%  lexer_benchmark  libc.so.6             [.] __mpn_construct_double                                                                                                                                                      ▒
-+    1.11%     1.11%  lexer_benchmark  libc.so.6             [.] __mpn_lshift                                                                                                                                                                ▒
-     1.01%     0.58%  lexer_benchmark  lexer_benchmarks      [.] memmove@plt                                                                                                                                                                 ▒
-     1.01%     0.88%  lexer_benchmark  libc.so.6             [.] round_away                                                                                                                                                                  ▒
-+    0.66%     0.00%  lexer_benchmark  [unknown]             [.] 0x8000736e6f007300                                                                                                                                                          ▒
-     0.64%     0.54%  lexer_benchmark  libc.so.6             [.] __strncmp_avx2                                                                                                                                                              ▒
-     0.62%     0.44%  lexer_benchmark  libc++.so.1.0         [.] std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::~basic_string()                                                                      ▒
-+    0.57%     0.00%  lexer_benchmark  [unknown]             [.] 0xaa8000736e6f0000                                                                                                                                                          ▒
-     0.55%     0.34%  lexer_benchmark  libc.so.6             [.] __errno_location                                                                                                                                                            ▒
-     0.53%     0.34%  lexer_benchmark  lexer_benchmarks      [.] std::__1::stod(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, unsigned long*)@plt                                            ▒
-     0.48%     0.19%  lexer_benchmark  libc++.so.1.0         [.] std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::~basic_string()@plt                                                                  ▒
-```
-
-Where I notice that we spend the most time in `std::stod` (to lex doubles). This is valuable
+Here, I notice that we spend a lot of time in `std::stod` (to lex doubles). This is valuable
 information. Stubbing the `stod` call with `0.` gives over a 1.5x performance improvement. Some
 research into `stod` shows that it does a lot, like locale handling, compliance, error checking,
 etc. Since Tachyon is a relatively small language, I don't need a lot of those features (especially
@@ -327,7 +296,7 @@ not decide to have native integer types in the virtual machine.
 
 ## 4. `isalpha`
 
-Let's see another section of the perf results (I'm now using `--call-graph=dwarf` for a better call
+Let's see another section of the perf results (I'm now using `--call-graph=dwarf` for a fuller call
 graph).
 
 ```shell

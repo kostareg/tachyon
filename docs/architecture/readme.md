@@ -1,14 +1,25 @@
 # Architecture documentation
 
+In this directory, I outline a few key "architectural" ideas around Tachyon. Some of these documents
+are meant as explanations to the concepts that are key to Tachyon, like `pipeline/readme.md`). Some
+are meant as a sort of walk-through of how I tackled some problem in Tachyon (such as
+`optimizations/lexer.md`). I hope that these documents will give the reader a better understanding
+of what has been going through my mind as I write this code.
+
+In addition, code itself is documented inline, so you can find some unique insights into
+implementation details there, too.
+
 ## Definitions
+
+These definitions aim to disambiguate the concepts mentioned in other documents in this directory.
+The definitions here are intended for the purposes of Tachyon only.
 
 <!-- definitions are sorted in alphabetical order -->
 
 ### <type of> Pipeline
 
-A <type of> Pipeline is a sequence of steps that results in the manipulation of data.
-
-These definitions are intended for the purposes of this document only.
+A <type of> Pipeline is a sequence of steps in Tachyon that results in the manipulation of data
+with the goal of eventually executing user intent.
 
 ### Bytecode
 
