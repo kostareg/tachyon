@@ -40,5 +40,3 @@ while (input2 < 90) {
   input2 = input2 + 1
   print("\n")
 }
-
-return 0

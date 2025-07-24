@@ -22,5 +22,3 @@ while (x < 100) {
 
 print(learned)
 // this prints out -1.77972..., which is the global min for this function.
-
-return 0

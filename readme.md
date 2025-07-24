@@ -12,11 +12,10 @@ The next steps for this project are, in no particular order:
 
 * Complete grammar
     * High priority:
-        * Extended conditionals:
-            * Else/else-if
+        * Conditionals:
+            * If/else/else-if
             * Continue/break
     * Medium priority:
-        * Arrays
         * Enums
         * Structs
         * Imports

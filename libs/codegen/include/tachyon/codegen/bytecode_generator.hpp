@@ -1,13 +1,13 @@
 #pragma once
 
 #include "tachyon/parser/ast.hpp"
+#include "tachyon/runtime/bytecode.hpp"
 #include "tachyon/runtime/vm.hpp"
 
 #include <unordered_map>
 #include <vector>
 
-namespace tachyon::codegen
-{
+namespace tachyon::codegen {
 /**
  * @brief generate bytecode from abstract syntax tree
  *
@@ -19,8 +19,7 @@ namespace tachyon::codegen
  * @see tachyon::parser::Expr
  * @see tachyon::runtime::Bytecode
  */
-struct BytecodeGenerator
-{
+struct BytecodeGenerator {
   private:
     // TODO: not optimal. consider garbage collection or something to keep track
     //  of the variable so you can free registers when they're not needed
@@ -54,8 +53,8 @@ struct BytecodeGenerator
      * @brief preload a variable name lookup table, for function argument names
      * @param vars existing variable name lookup table
      */
-    explicit BytecodeGenerator(std::unordered_map<std::string, size_t> vars) : vars(std::move(vars))
-    {
+    explicit BytecodeGenerator(std::unordered_map<std::string, size_t> vars)
+        : vars(std::move(vars)) {
         next_free_register = this->vars.size() + 1;
     };
 
@@ -82,12 +81,10 @@ struct BytecodeGenerator
  * @param e abstract syntax tree
  * @return function prototype object or error
  */
-inline std::expected<runtime::Proto, Error> generateProto(parser::Expr e)
-{
+inline std::expected<runtime::Proto, Error> generate_proto(parser::Expr e) {
     BytecodeGenerator generator;
     std::visit(generator, e.kind);
-    if (!generator.errors.empty())
-        return std::unexpected(Error::createMultiple(generator.errors));
+    if (!generator.errors.empty()) return std::unexpected(Error::createMultiple(generator.errors));
     return runtime::Proto(generator.bc, std::move(generator.constants), 0, generator.is_pure,
                           "<main>", e.span);
 }
@@ -97,15 +94,12 @@ inline std::expected<runtime::Proto, Error> generateProto(parser::Expr e)
  * @param e abstract syntax tree
  * @return function prototype object or error
  */
-inline std::expected<runtime::Proto, Error> generateMainProto(parser::Expr e)
-{
-    return generateProto(std::move(e))
-        .transform(
-            [](runtime::Proto proto)
-            {
-                proto.is_pure = false;
-                return proto;
-            });
+inline std::expected<runtime::Proto, Error> generate_main_proto(parser::Expr e) {
+    return generate_proto(std::move(e)).transform([](runtime::Proto proto) {
+        proto.is_pure = false;
+        proto.bytecode.push_back(runtime::RETV);
+        return proto;
+    });
 }
 
 // TODO: I wanted to do this with function overloading or defaults but the
@@ -116,20 +110,17 @@ inline std::expected<runtime::Proto, Error> generateMainProto(parser::Expr e)
  * @param args ordered list of argument names
  * @return function prototype object or error
  */
-inline std::expected<runtime::Proto, Error> generateProtoWithArgs(parser::Expr e,
-                                                                  std::vector<std::string> args)
-{
+inline std::expected<runtime::Proto, Error>
+generate_proto_with_args(parser::Expr e, std::vector<std::string> args) {
     size_t size = args.size();
     std::unordered_map<std::string, size_t> map;
-    for (size_t i = 1; i <= size; ++i)
-    {
+    for (size_t i = 1; i <= size; ++i) {
         map[args[i - 1]] = i;
     }
 
     BytecodeGenerator generator(std::move(map));
     std::visit(generator, e.kind);
-    if (!generator.errors.empty())
-        return std::unexpected(Error::createMultiple(generator.errors));
+    if (!generator.errors.empty()) return std::unexpected(Error::createMultiple(generator.errors));
     return runtime::Proto(generator.bc, std::move(generator.constants), size, generator.is_pure,
                           "<main>", e.span);
 }

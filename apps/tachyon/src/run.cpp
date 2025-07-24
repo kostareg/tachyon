@@ -3,7 +3,6 @@
 #include "tachyon/codegen/bytecode_generator.hpp"
 #include "tachyon/lexer/lexer.hpp"
 #include "tachyon/parser/parser.hpp"
-#include "tachyon/parser/print.hpp"
 #include "tachyon/runtime/vm.hpp"
 
 #include <filesystem>
@@ -34,7 +33,7 @@ int run(char *fileName) {
         return 1;
     }
     auto m = parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
-                 .and_then(codegen::generateProto)
+                 .and_then(codegen::generate_main_proto)
                  .and_then([](const runtime::Proto &proto) -> std::expected<void, Error> {
                      runtime::VM vm;
                      return vm.run(proto);

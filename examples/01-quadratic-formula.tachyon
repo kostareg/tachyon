@@ -7,5 +7,3 @@ print("the roots are: ")
 print(quadratic(0.4,6.9,10))
 print(", ")
 print(quadratic'(0.4,6.9,10))
-
-return 0;

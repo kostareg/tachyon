@@ -22,7 +22,7 @@ TEST(ComparisonTest, AllOperators) {
         ASSERT_EQ(0, 1);
     }
     parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
-        .and_then(codegen::generateProto)
+        .and_then(codegen::generate_proto)
         .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error> {
             return vm.run(proto);
         })

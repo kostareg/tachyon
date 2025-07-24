@@ -11,5 +11,3 @@ print("\nthe list after: ")
 print(y)
 print("\nan element: ")
 print(y[1, 3])
-
-return 0

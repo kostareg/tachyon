@@ -90,5 +90,3 @@ totalCost = totalCost / (2 * 50 * 50)
 print("average cost: ")
 print(totalCost)
 print("\n")
-
-return 0

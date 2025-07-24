@@ -13,7 +13,7 @@ static void BM_BasicPipeline(benchmark::State &state) {
     for (auto _ : state) {
         lexer::Lexer lexer = lexer::lex(basic_source);
         parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
-            .and_then(codegen::generateProto)
+            .and_then(codegen::generate_proto)
             .and_then([](const auto &proto) -> std::expected<void, Error> {
                 return runtime::VM().run(proto);
             });

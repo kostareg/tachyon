@@ -22,5 +22,3 @@ while (x < 10000000) {
   quadratic'(0.4,6.9,10)
   x = x + 1;
 }
-
-return 0;

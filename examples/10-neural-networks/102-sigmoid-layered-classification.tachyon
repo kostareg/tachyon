@@ -63,5 +63,3 @@ while (input2 < 50) {
   input2 = input2 + 1
   print("\n")
 }
-
-return 0

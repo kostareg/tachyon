@@ -158,5 +158,3 @@ while gens <= 100 {
 
   gens = gens + 1
 }
-
-return 0

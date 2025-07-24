@@ -2,7 +2,6 @@
 
 #include <cstdint>
 
-// TODO: check naming convention for enum class values
 namespace tachyon::parser {
 /**
  * @brief basic operators
@@ -33,7 +32,7 @@ enum class Op {
  * @brief show operator
  * @sa Op
  */
-inline const char *opToStr(Op op) {
+inline const char *op_to_str(Op op) {
     switch (op) {
     case Op::And: return "&&";
     case Op::Or: return "||";
@@ -58,7 +57,7 @@ inline const char *opToStr(Op op) {
  *
  * Doesn't support Op::Not, since it's the only unary operator.
  */
-inline uint16_t opToUint16T(Op op) {
+inline uint16_t op_to_uint16_t(Op op) {
     if (auto num = static_cast<uint16_t>(op); num < 3) return num + 0x32;
     else if (num < 9) return num - 3 + 0x70;
     else return num - 9 + 0x50;
@@ -68,7 +67,7 @@ inline uint16_t opToUint16T(Op op) {
 /**
  * @brief get nth next group of bytecode
  */
-inline uint16_t getBytecodeNthGroup(uint16_t addr, int n) {
+inline uint16_t get_bytecode_nth_group(uint16_t addr, int n) {
     if (addr < 0x50) // boolean operators
         return addr + 2 * n;
     if (addr < 0x70) // comparison operators
