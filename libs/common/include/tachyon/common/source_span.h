@@ -2,13 +2,11 @@
 
 #include <cstddef>
 
-namespace tachyon
-{
+namespace tachyon {
 /**
  * @brief represents a region of source code
  */
-struct SourceSpan final
-{
+struct SourceSpan final {
     /// source byte offset
     size_t position;
     /// source byte length

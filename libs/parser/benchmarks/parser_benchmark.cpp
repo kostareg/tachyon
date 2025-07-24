@@ -37,7 +37,7 @@ class ParserDataFixture : public benchmark::Fixture {
                     ++i;
 
                 std::string substr = content.substr(start, i - start);
-                lexer::TokenType tt = lexer::strToTok(substr);
+                lexer::TokenType tt = lexer::str_to_tok(substr);
 
                 // continue consuming for some token types
                 if (tt == lexer::IDENT || tt == lexer::STRING) {

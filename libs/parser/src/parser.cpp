@@ -17,9 +17,9 @@ using namespace tachyon::lexer;
 
 namespace tachyon::parser {
 std::expected<Expr, Error> Parser::parse_expr_led(Token t, Expr l) {
-    auto r = parse_expr(getLbp(t.type));
+    auto r = parse_expr(get_lbp(t.type));
     if (!r) return std::unexpected(r.error());
-    return Expr(BinaryOperatorExpr(tokToOp(t.type), std::make_unique<Expr>(std::move(l)),
+    return Expr(BinaryOperatorExpr(tok_to_op(t.type), std::make_unique<Expr>(std::move(l)),
                                    std::make_unique<Expr>(std::move(r.value()))));
 }
 
@@ -184,26 +184,27 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t) {
             auto name = expect(IDENT);
             if (!name) return std::unexpected(name.error());
 
-            MaybeType maybeArgumentType;
+            MaybeType maybe_argument_type;
             if (match(COLON)) {
                 // we have a type
-                auto _colon = advance();
-                auto argumentType = expect(IDENT);
-                if (!argumentType) return std::unexpected(argumentType.error());
+                auto colon = advance();
+                auto argument_type = expect(IDENT);
+                if (!argument_type) return std::unexpected(argument_type.error());
 
-                auto namedType = std::get<std::string>(lexer_constants[argumentType->constant_ptr]);
+                auto named_type =
+                    std::get<std::string>(lexer_constants[argument_type->constant_ptr]);
 
-                if (namedType == "Num") maybeArgumentType = BasicConcreteTypes::Number;
-                else if (namedType == "Str") maybeArgumentType = BasicConcreteTypes::String;
-                else if (namedType == "Bool") maybeArgumentType = BasicConcreteTypes::Boolean;
-                else if (namedType == "Unit") maybeArgumentType = BasicConcreteTypes::Unit;
-                else if (namedType == "Fn") {
+                if (named_type == "Num") maybe_argument_type = BasicConcreteTypes::Number;
+                else if (named_type == "Str") maybe_argument_type = BasicConcreteTypes::String;
+                else if (named_type == "Bool") maybe_argument_type = BasicConcreteTypes::Boolean;
+                else if (named_type == "Unit") maybe_argument_type = BasicConcreteTypes::Unit;
+                else if (named_type == "Fn") {
                     // TODO
-                } else maybeArgumentType = namedType;
+                } else maybe_argument_type = named_type;
             }
 
             args.emplace_back(std::get<std::string>(lexer_constants[name->constant_ptr]),
-                              maybeArgumentType);
+                              maybe_argument_type);
 
             if (match(COMMA)) {
                 auto _comma = advance();
@@ -215,21 +216,21 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t) {
         if (auto rp = expect(RPAREN); !rp) return std::unexpected(rp.error());
 
         // parse return type (-> Type)
-        MaybeType maybeReturnType;
+        MaybeType maybe_return_type;
         if (match(RARROW)) {
-            auto _rarrow = advance();
-            auto argumentType = expect(IDENT);
-            if (!argumentType) return std::unexpected(argumentType.error());
+            auto rarrow = advance();
+            auto argument_type = expect(IDENT);
+            if (!argument_type) return std::unexpected(argument_type.error());
 
-            auto namedType = std::get<std::string>(lexer_constants[argumentType->constant_ptr]);
+            auto named_type = std::get<std::string>(lexer_constants[argument_type->constant_ptr]);
 
-            if (namedType == "Num") maybeReturnType = BasicConcreteTypes::Number;
-            else if (namedType == "Str") maybeReturnType = BasicConcreteTypes::String;
-            else if (namedType == "Bool") maybeReturnType = BasicConcreteTypes::Boolean;
-            else if (namedType == "Unit") maybeReturnType = BasicConcreteTypes::Unit;
-            else if (namedType == "Fn") {
+            if (named_type == "Num") maybe_return_type = BasicConcreteTypes::Number;
+            else if (named_type == "Str") maybe_return_type = BasicConcreteTypes::String;
+            else if (named_type == "Bool") maybe_return_type = BasicConcreteTypes::Boolean;
+            else if (named_type == "Unit") maybe_return_type = BasicConcreteTypes::Unit;
+            else if (named_type == "Fn") {
                 // TODO
-            } else maybeReturnType = namedType;
+            } else maybe_return_type = named_type;
         }
 
         if (auto lb = expect(LBRACE); !lb) return std::unexpected(lb.error());
@@ -271,7 +272,7 @@ std::expected<Expr, Error> Parser::parse_expr_nud(Token t) {
         auto sequence = SequenceExpr(std::move(stmts));
 
         // finally, we can construct our function type
-        return Expr(FnExpr(args, maybeReturnType, std::make_unique<Expr>(std::move(sequence))));
+        return Expr(FnExpr(args, maybe_return_type, std::make_unique<Expr>(std::move(sequence))));
     } else if (t.type == RETURN) {
         auto e = parse_expr();
         if (!e) return std::unexpected(e.error());
@@ -292,7 +293,7 @@ std::expected<Expr, Error> Parser::parse_expr(int rbp) {
 
     while (true) {
         auto next = peek();
-        if (rbp >= getLbp(next.type)) break;
+        if (rbp >= get_lbp(next.type)) break;
 
         t = advance();
         if (!t) return std::unexpected(t.error());
@@ -389,7 +390,7 @@ std::expected<Token, Error> Parser::expect(TokenType tt) {
     if (match(tt)) return advance();
     else
         return std::unexpected(Error::create(ErrorKind::ParseError, SourceSpan(0, 0),
-                                             std::format("expected {}", tokToStrPretty(tt))));
+                                             std::format("expected {}", tok_to_str_pretty(tt))));
 }
 
 std::expected<Expr, Error> Parser::parse() {

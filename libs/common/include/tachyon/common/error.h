@@ -9,13 +9,11 @@
 #include <utility>
 #include <vector>
 
-namespace tachyon
-{
+namespace tachyon {
 /**
  * @brief classification of errors that can occur throughout all of Tachyon
  */
-enum class ErrorKind
-{
+enum class ErrorKind {
     LexError,
     ParseError,
     InferenceError,
@@ -31,10 +29,11 @@ enum class ErrorKind
  *
  * @see ErrorKind
  */
-struct [[nodiscard]] Error final
-{
+struct [[nodiscard]] Error final {
     /// classification of error
     ErrorKind kind;
+
+    // TODO: move to string_view
 
     /// region that the error applies to
     SourceSpan span;
@@ -76,31 +75,21 @@ struct [[nodiscard]] Error final
           std::vector<Error> additional_errors)
         : kind(kind), span(span), message_short(std::move(message_short)),
           message_long(std::move(message_long)), message_code(std::move(message_code)),
-          hints(std::move(hints)), additional_errors(std::move(additional_errors)), source()
-    {
-    }
+          hints(std::move(hints)), additional_errors(std::move(additional_errors)), source() {}
 
     /**
      * @brief get name of error kind
      * @param kind kind
      * @return name
      */
-    static std::string getNameOfErrorKind(const ErrorKind &kind)
-    {
-        switch (kind)
-        {
-        case ErrorKind::LexError:
-            return "lexical";
-        case ErrorKind::ParseError:
-            return "parsing";
-        case ErrorKind::InferenceError:
-            return "type inference";
-        case ErrorKind::BytecodeGenerationError:
-            return "bytecode generation";
-        case ErrorKind::InternalError:
-            return "internal";
-        default:
-            return "unknown";
+    static std::string getNameOfErrorKind(const ErrorKind &kind) {
+        switch (kind) {
+        case ErrorKind::LexError: return "lexical";
+        case ErrorKind::ParseError: return "parsing";
+        case ErrorKind::InferenceError: return "type inference";
+        case ErrorKind::BytecodeGenerationError: return "bytecode generation";
+        case ErrorKind::InternalError: return "internal";
+        default: return "unknown";
         }
     }
 
@@ -113,8 +102,7 @@ struct [[nodiscard]] Error final
      * @param position byte offset
      * @return line offset
      */
-    size_t getLineNumber(size_t position) const
-    {
+    size_t getLineNumber(size_t position) const {
         return std::count(source.begin(), source.begin() + position + 1, '\n') + 1;
     }
 
@@ -123,14 +111,11 @@ struct [[nodiscard]] Error final
      * @param position byte offset
      * @return digits of line offset
      */
-    size_t getLineNumberDigits(size_t position) const
-    {
+    size_t getLineNumberDigits(size_t position) const {
         size_t n = getLineNumber(position);
-        if (n == 0)
-            return 1;
+        if (n == 0) return 1;
         size_t digits = 0;
-        while (n > 0)
-        {
+        while (n > 0) {
             ++digits;
             n /= 10;
         }
@@ -145,8 +130,7 @@ struct [[nodiscard]] Error final
      * @param message_short initial description
      * @return error
      */
-    static Error create(ErrorKind kind, SourceSpan span, std::string message_short)
-    {
+    static Error create(ErrorKind kind, SourceSpan span, std::string message_short) {
         return {kind, span, std::move(message_short), "", "", {}, {}};
     }
 
@@ -156,8 +140,7 @@ struct [[nodiscard]] Error final
      * @return errors in one object
      * @see Error::additional_errors
      */
-    static Error createMultiple(std::vector<Error> errors)
-    {
+    static Error createMultiple(std::vector<Error> errors) {
         if (errors.empty())
             throw std::range_error("cannot initialize list of errors with no errors");
 
@@ -169,29 +152,25 @@ struct [[nodiscard]] Error final
     }
 
     /// add detailed message to error
-    Error &withLongMessage(const std::string &message_long)
-    {
+    Error &withLongMessage(const std::string &message_long) {
         this->message_long = message_long;
         return *this;
     }
 
     /// add error code to error
-    Error &withCode(const std::string &message_code)
-    {
+    Error &withCode(const std::string &message_code) {
         this->message_code = message_code;
         return *this;
     }
 
     /// add hint to error
-    Error &withHint(const std::string &hint)
-    {
+    Error &withHint(const std::string &hint) {
         this->hints.push_back(hint);
         return *this;
     }
 
     /// add additional error to error
-    Error &withAdditional(const Error &additional_error)
-    {
+    Error &withAdditional(const Error &additional_error) {
         this->additional_errors.push_back(additional_error);
         return *this;
     }
@@ -200,8 +179,7 @@ struct [[nodiscard]] Error final
      * @brief format error to a stream
      * @param os write stream
      */
-    void format(std::ostream &os) const
-    {
+    void format(std::ostream &os) const {
         // wind position to beginning and end of the lines.
         size_t start = span.position;
         size_t end = span.position + span.length;
@@ -211,35 +189,26 @@ struct [[nodiscard]] Error final
             ++end;
 
         // print the message code and short form, then the line numbers | source.
-        if (!additional_errors.empty())
-            os << "\033[31m1.\033[0m ";
+        if (!additional_errors.empty()) os << "\033[31m1.\033[0m ";
         os << "\033[31merror:\033[0m ";
         os << "encountered " << getNameOfErrorKind(kind) << " error on L" << getLineNumber(start)
            << "C" << span.position - start << ": " << std::endl;
-        if (!message_code.empty())
-            os << message_code << ": ";
+        if (!message_code.empty()) os << message_code << ": ";
         os << message_short << std::endl;
-        for (size_t i = start; i < end; ++i)
-        {
+        for (size_t i = start; i < end; ++i) {
             char byte = source[i];
-            if (i == 0)
-            {
+            if (i == 0) {
                 os << "\n" << getLineNumber(i) << " | " << byte;
-            }
-            else if (byte == '\n')
-            {
+            } else if (byte == '\n') {
                 os << "\n" << getLineNumber(i) << " | ";
-            }
-            else
-            {
+            } else {
                 os << byte;
             }
         }
 
         // we can only highlight values if there is just one line of source (how would we underline
         // something that has a line of source under it?).
-        if (getLineNumber(start) + 1 == getLineNumber(end))
-        {
+        if (getLineNumber(start) + 1 == getLineNumber(end)) {
             os << std::endl;
             // print spaces up to the line numbers + position, then red carets up to end of length.
             os << "   "; // " | "
@@ -256,15 +225,12 @@ struct [[nodiscard]] Error final
         os << std::endl;
 
         // print the long message and any hints
-        if (!message_long.empty())
-            os << std::endl << message_long << std::endl;
-        for (std::string hint : hints)
-        {
+        if (!message_long.empty()) os << std::endl << message_long << std::endl;
+        for (std::string hint : hints) {
             os << " |-> \033[34mhint:\033[0m " << hint << std::endl;
         }
 
-        if (kind == ErrorKind::InternalError)
-        {
+        if (kind == ErrorKind::InternalError) {
             os << std::endl
                << "\033[31mTHIS IS AN INTERNAL ERROR AND IS A BUG IN TACHYON. PLEASE REPORT THIS AT"
                   " www.github.com/kostareg/tachyon/issues.\033[0m"
@@ -272,8 +238,7 @@ struct [[nodiscard]] Error final
         }
 
         // print additional errors
-        for (size_t i = 0; i < additional_errors.size(); ++i)
-        {
+        for (size_t i = 0; i < additional_errors.size(); ++i) {
             Error additional_error = additional_errors[i];
             additional_error.source = source;
             os << std::endl << "\033[31m" << i + 2 << ".\033[0m " << additional_error;
@@ -294,8 +259,7 @@ struct [[nodiscard]] Error final
     friend std::ostream &operator<<(std::ostream &os, const Error &s);
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Error &s)
-{
+inline std::ostream &operator<<(std::ostream &os, const Error &s) {
     s.format(os);
     return os;
 }

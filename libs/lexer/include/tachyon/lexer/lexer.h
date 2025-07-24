@@ -3,6 +3,8 @@
 #include "tachyon/common/error.h"
 #include "tachyon/lexer/token.h"
 
+#include <variant>
+
 namespace tachyon::lexer {
 // TODO: fix this, some other name or merge with runtime::Value in common
 using Value = std::variant<std::monostate, double, std::string, bool>;

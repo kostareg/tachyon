@@ -562,21 +562,21 @@ std::expected<void, Error> VM::run(const Proto &proto) {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])
-                .pushBack(std::get<double>(proto.constants[src0]));
+                .push_back(std::get<double>(proto.constants[src0]));
             break;
         }
         case LIUR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             std::get<Matrix>(call_stack.back().registers[dst0])
-                .pushBack(std::get<double>(call_stack.back().registers[src0]));
+                .push_back(std::get<double>(call_stack.back().registers[src0]));
             break;
         }
         case LIOR: {
             uint16_t src0 = proto.bytecode[++ptr];
             uint16_t dst0 = proto.bytecode[++ptr];
             call_stack.back().registers[dst0] =
-                std::get<Matrix>(call_stack.back().registers[src0]).popBack();
+                std::get<Matrix>(call_stack.back().registers[src0]).pop_back();
             break;
         }
         // TODO: these use narrowing conversions. have a dedicated size type or come up with another
@@ -656,12 +656,12 @@ std::expected<void, Error> VM::run(const Proto &proto) {
         /* intrinsic */
         case PRNC: {
             uint16_t src0 = proto.bytecode[++ptr];
-            printValue(proto.constants[src0]);
+            print_value(proto.constants[src0]);
             break;
         }
         case PRNR: {
             uint16_t src0 = proto.bytecode[++ptr];
-            printValue(call_stack.back().registers[src0]);
+            print_value(call_stack.back().registers[src0]);
             break;
         }
         }
@@ -675,7 +675,7 @@ std::expected<void, Error> VM::run(const Proto &proto) {
                                              "should not reach end of vm::run without exit"));
     case Mode::Repl:
         if (ptr >= 1) {
-            printValue(call_stack.back().registers[proto.bytecode[ptr - 1]]);
+            print_value(call_stack.back().registers[proto.bytecode[ptr - 1]]);
             std::cout << std::endl;
         }
         return {};
@@ -734,11 +734,11 @@ void VM::doctor() const {
     std::println("vm state:");
     for (const CallFrame &call : call_stack) {
         for (const Value &reg : call.registers) {
-            printValue(reg);
+            print_value(reg);
             std::print(" ");
         }
         std::print("\nreturned: ");
-        printValue(call.returns);
+        print_value(call.returns);
         std::println();
     }
 }

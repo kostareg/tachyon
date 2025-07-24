@@ -2,12 +2,10 @@
 
 #include "tachyon/runtime/value.h"
 
-#include <functional>
 #include <list>
 #include <unordered_map>
 
-namespace tachyon::runtime
-{
+namespace tachyon::runtime {
 // TODO: should sizeof(Value) be constexpr?
 
 /**
@@ -21,13 +19,11 @@ namespace tachyon::runtime
  * and there is a cache hit, the value is retrieved from the linked list and the list node is moved
  * to the front.
  */
-class Cache
-{
+class Cache {
     /**
      * @brief linked list node, stores function arguments and the return value
      */
-    struct Node
-    {
+    struct Node {
         /// function argument values
         Values key;
 
@@ -80,6 +76,6 @@ class Cache
      *   * some approximate node overhead
      *   * any heap space allocated by std::string
      */
-    static size_t getEntrySize(const Values &vs, const Value &v);
+    static size_t get_entry_size(const Values &vs, const Value &v);
 };
 } // namespace tachyon::runtime

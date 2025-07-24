@@ -7,6 +7,7 @@
 // TODO: support for data other than double?
 // TODO: support for 3d data? generalise to tensors!
 // TODO: look at std::mdspan for this
+
 /**
  * @brief 1-indexed matrix
  */
@@ -84,15 +85,15 @@ class Matrix {
 
     size_t size() const { return width * height; }
 
-    size_t getCurrent() const { return current; }
+    size_t get_current() const { return current; }
 
-    size_t getCapacity() const { return capacity; }
+    size_t get_capacity() const { return capacity; }
 
-    size_t getWidth() const { return width; }
+    size_t get_width() const { return width; }
 
-    size_t getHeight() const { return height; }
+    size_t get_height() const { return height; }
 
-    void pushBack(double elem) {
+    void push_back(double elem) {
         if (height <= 1) {
             // if row matrix (i.e. array), always increase current width
             ++current;
@@ -113,7 +114,7 @@ class Matrix {
         data[current - 1] = elem;
     }
 
-    double popBack() {
+    double pop_back() {
         TY_ALWAYS_ASSERT("for now, pop back only works on row matrices" && height <= 1);
         TY_ALWAYS_ASSERT("not empty" && size() != 0);
         return data[--width];

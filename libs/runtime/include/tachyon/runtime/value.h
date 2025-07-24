@@ -31,7 +31,7 @@ using Values = std::vector<Value>;
 /**
  * @brief small visitor for printing values
  */
-void printValue(const Value &reg);
+void print_value(const Value &reg);
 
 // TODO: research other hashing/hash combination functions
 
