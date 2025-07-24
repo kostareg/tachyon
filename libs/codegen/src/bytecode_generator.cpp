@@ -15,7 +15,6 @@ void BytecodeGenerator::operator()(const LiteralExpr &lit) {
 };
 
 void BytecodeGenerator::operator()(const FnExpr &fn) {
-    // TODO: see generateProtoWithArgs definition.
     std::expected<runtime::Proto, Error> maybe_proto;
     if (fn.arguments.empty()) maybe_proto = generate_proto(std::move(*fn.body));
     else {
@@ -23,7 +22,7 @@ void BytecodeGenerator::operator()(const FnExpr &fn) {
         arguments.reserve(fn.arguments.size());
         std::ranges::transform(fn.arguments, std::back_inserter(arguments),
                                [](const auto &p) { return p.first; });
-        maybe_proto = generate_proto_with_args(std::move(*fn.body), arguments);
+        maybe_proto = generate_proto(std::move(*fn.body), arguments);
     }
 
     // if there was an error, record it. if the function is impure, propagate to self.
@@ -140,8 +139,7 @@ void BytecodeGenerator::operator()(const BinaryOperatorExpr &binop) {
     curr = next_free_register++;
 };
 
-// TODO: does not check for duplicate variables, this should probably be a step
-//  before generation.
+// TODO: does not check for duplicate variables, this should maybe be a step before generation.
 void BytecodeGenerator::operator()(const LetExpr &vdecl) {
     std::visit(*this, vdecl.value->kind);
 

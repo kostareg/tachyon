@@ -90,6 +90,27 @@ inline std::expected<runtime::Proto, Error> generate_proto(parser::Expr e) {
 }
 
 /**
+ * @brief generate bytecode from abstract syntax tree, with preloaded variable names for arguments
+ * @param e abstract syntax tree
+ * @param args ordered list of argument names
+ * @return function prototype object or error
+ */
+inline std::expected<runtime::Proto, Error> generate_proto(parser::Expr e,
+                                                           std::vector<std::string> args) {
+    size_t size = args.size();
+    std::unordered_map<std::string, size_t> map;
+    for (size_t i = 1; i <= size; ++i) {
+        map[args[i - 1]] = i;
+    }
+
+    BytecodeGenerator generator(std::move(map));
+    std::visit(generator, e.kind);
+    if (!generator.errors.empty()) return std::unexpected(Error::createMultiple(generator.errors));
+    return runtime::Proto(generator.bc, std::move(generator.constants), size, generator.is_pure,
+                          "<main>", e.span);
+}
+
+/**
  * @brief generate main function bytecode from abstract syntax tree
  * @param e abstract syntax tree
  * @return function prototype object or error
@@ -102,26 +123,15 @@ inline std::expected<runtime::Proto, Error> generate_main_proto(parser::Expr e) 
     });
 }
 
-// TODO: I wanted to do this with function overloading or defaults but the
-//  and_then calls were not working. clean this up.
 /**
- * @brief generate bytecode from abstract syntax tree, with preloaded variable names for arguments
+ * @brief generate repl source bytecode from abstract syntax tree
  * @param e abstract syntax tree
- * @param args ordered list of argument names
  * @return function prototype object or error
  */
-inline std::expected<runtime::Proto, Error>
-generate_proto_with_args(parser::Expr e, std::vector<std::string> args) {
-    size_t size = args.size();
-    std::unordered_map<std::string, size_t> map;
-    for (size_t i = 1; i <= size; ++i) {
-        map[args[i - 1]] = i;
-    }
-
-    BytecodeGenerator generator(std::move(map));
-    std::visit(generator, e.kind);
-    if (!generator.errors.empty()) return std::unexpected(Error::createMultiple(generator.errors));
-    return runtime::Proto(generator.bc, std::move(generator.constants), size, generator.is_pure,
-                          "<main>", e.span);
+inline std::expected<runtime::Proto, Error> generate_repl_proto(parser::Expr e) {
+    return generate_proto(std::move(e)).transform([](runtime::Proto proto) {
+        proto.is_pure = false;
+        return proto;
+    });
 }
 } // namespace tachyon::codegen
