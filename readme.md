@@ -57,7 +57,7 @@ For release builds, with tests and benchmarks disabled:
 ```shell
 cmake -S . -B cmake-build-release -G Ninja -D TACHYON_BUILD_TESTS=OFF -D TACHYON_BUILD_BENCHMARKS=OFF
 cmake --build cmake-build-release
-./cmake-build-release/tachyon run examples/quadratic-formula.tachyon
+./cmake-build-release/tachyon run examples/01-quadratic-formula.tachyon
 ```
 
 For debug builds:
@@ -65,5 +65,5 @@ For debug builds:
 ```shell
 cmake -S . -B cmake-build-debug -G Ninja
 cmake --build cmake-build-debug
-./cmake-build-debug/tachyon run examples/memoization.tachyon
+./cmake-build-debug/tachyon run examples/02-taylor-trigonometry.tachyon
 ```
