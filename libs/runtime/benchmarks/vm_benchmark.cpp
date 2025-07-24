@@ -1,5 +1,5 @@
-#include "tachyon/runtime/bytecode.h"
-#include "tachyon/runtime/vm.h"
+#include "tachyon/runtime/bytecode.hpp"
+#include "tachyon/runtime/vm.hpp"
 
 #include <benchmark/benchmark.h>
 #include <fstream>

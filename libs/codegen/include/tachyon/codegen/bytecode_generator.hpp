@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tachyon/parser/ast.h"
-#include "tachyon/runtime/vm.h"
+#include "tachyon/parser/ast.hpp"
+#include "tachyon/runtime/vm.hpp"
 
 #include <unordered_map>
 #include <vector>

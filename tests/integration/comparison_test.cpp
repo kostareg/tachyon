@@ -1,6 +1,6 @@
-#include "tachyon/codegen/bytecode_generator.h"
-#include "tachyon/lexer/lexer.h"
-#include "tachyon/parser/parser.h"
+#include "tachyon/codegen/bytecode_generator.hpp"
+#include "tachyon/lexer/lexer.hpp"
+#include "tachyon/parser/parser.hpp"
 
 #include <gtest/gtest.h>
 

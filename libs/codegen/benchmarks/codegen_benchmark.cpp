@@ -1,7 +1,7 @@
-#include "tachyon/codegen/bytecode_generator.h"
-#include "tachyon/common/op.h"
-#include "tachyon/parser/ast.h"
-#include "tachyon/parser/print.h"
+#include "tachyon/codegen/bytecode_generator.hpp"
+#include "tachyon/common/op.hpp"
+#include "tachyon/parser/ast.hpp"
+#include "tachyon/parser/print.hpp"
 
 #include <benchmark/benchmark.h>
 #include <fstream>

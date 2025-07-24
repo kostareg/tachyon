@@ -1,8 +1,8 @@
-#include "tachyon/runtime/vm.h"
+#include "tachyon/runtime/vm.hpp"
 
-#include "tachyon/common/assert.h"
-#include "tachyon/common/log.h"
-#include "tachyon/runtime/bytecode.h"
+#include "tachyon/common/assert.hpp"
+#include "tachyon/common/log.hpp"
+#include "tachyon/runtime/bytecode.hpp"
 
 #include <expected>
 #include <iostream>

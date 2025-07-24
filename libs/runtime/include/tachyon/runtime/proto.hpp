@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cache.h"
-#include "tachyon/common/source_span.h"
-#include "tachyon/runtime/value.h"
+#include "cache.hpp"
+#include "tachyon/common/source_span.hpp"
+#include "tachyon/runtime/value.hpp"
 
 #include <utility>
 #include <vector>

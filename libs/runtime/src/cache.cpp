@@ -1,4 +1,4 @@
-#include "tachyon/runtime/cache.h"
+#include "tachyon/runtime/cache.hpp"
 
 namespace tachyon::runtime {
 void Cache::put(Values vs, Value v) {

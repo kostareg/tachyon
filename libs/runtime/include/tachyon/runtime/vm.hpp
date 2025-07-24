@@ -1,9 +1,9 @@
 #pragma once
 
-#include "tachyon/common/error.h"
-#include "tachyon/runtime/call_frame.h"
-#include "tachyon/runtime/proto.h"
-#include "tachyon/runtime/value.h"
+#include "tachyon/common/error.hpp"
+#include "tachyon/runtime/call_frame.hpp"
+#include "tachyon/runtime/proto.hpp"
+#include "tachyon/runtime/value.hpp"
 
 #include <cstdint>
 #include <expected>

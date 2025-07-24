@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tachyon/common/error.h"
-#include "tachyon/common/matrix.h"
-#include "tachyon/common/op.h"
+#include "tachyon/common/error.hpp"
+#include "tachyon/common/matrix.hpp"
+#include "tachyon/common/op.hpp"
 
 #include <memory>
 #include <string>

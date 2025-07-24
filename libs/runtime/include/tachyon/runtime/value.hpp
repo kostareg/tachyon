@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tachyon/common/matrix.h"
+#include "tachyon/common/matrix.hpp"
 
 #include <memory>
 #include <print>

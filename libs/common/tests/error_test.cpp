@@ -1,4 +1,4 @@
-#include "tachyon/common/error.h"
+#include "tachyon/common/error.hpp"
 
 #include <gtest/gtest.h>
 

@@ -1,4 +1,4 @@
-#include "tachyon/lexer/lexer.h"
+#include "tachyon/lexer/lexer.hpp"
 
 #include <gtest/gtest.h>
 

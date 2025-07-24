@@ -1,6 +1,6 @@
-#include "tachyon/lexer/lexer.h"
+#include "tachyon/lexer/lexer.hpp"
 
-#include "tachyon/lexer/keyword_hash.h"
+#include "tachyon/lexer/keyword_hash.hpp"
 
 #include "fast_float/fast_float.h"
 

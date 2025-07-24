@@ -1,5 +1,5 @@
-#include "tachyon/runtime/value.h"
-#include "tachyon/runtime/proto.h"
+#include "tachyon/runtime/value.hpp"
+#include "tachyon/runtime/proto.hpp"
 
 namespace tachyon::runtime {
 /**

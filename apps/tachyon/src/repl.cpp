@@ -1,9 +1,9 @@
-#include "repl.h"
+#include "repl.hpp"
 
-#include "tachyon/codegen/bytecode_generator.h"
-#include "tachyon/common/error.h"
-#include "tachyon/lexer/lexer.h"
-#include "tachyon/parser/parser.h"
+#include "tachyon/codegen/bytecode_generator.hpp"
+#include "tachyon/common/error.hpp"
+#include "tachyon/lexer/lexer.hpp"
+#include "tachyon/parser/parser.hpp"
 
 #include <iostream>
 #include <string>

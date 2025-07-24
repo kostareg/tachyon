@@ -1,5 +1,5 @@
-#include "repl.h"
-#include "run.h"
+#include "repl.hpp"
+#include "run.hpp"
 
 #include <iostream>
 #include <print>

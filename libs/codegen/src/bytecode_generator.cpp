@@ -1,8 +1,8 @@
-#include "tachyon/codegen/bytecode_generator.h"
+#include "tachyon/codegen/bytecode_generator.hpp"
 
-#include "tachyon/common/assert.h"
-#include "tachyon/parser/print.h"
-#include "tachyon/runtime/bytecode.h"
+#include "tachyon/common/assert.hpp"
+#include "tachyon/parser/print.hpp"
+#include "tachyon/runtime/bytecode.hpp"
 
 namespace tachyon::codegen
 {

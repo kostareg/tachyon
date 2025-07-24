@@ -1,8 +1,8 @@
-#include "tachyon/parser/parser.h"
+#include "tachyon/parser/parser.hpp"
 
-#include "tachyon/common/error.h"
-#include "tachyon/lexer/token.h"
-#include "tachyon/parser/ast.h"
+#include "tachyon/common/error.hpp"
+#include "tachyon/lexer/token.hpp"
+#include "tachyon/parser/ast.hpp"
 
 #include <expected>
 #include <format>

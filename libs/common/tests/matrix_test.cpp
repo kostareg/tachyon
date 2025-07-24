@@ -1,4 +1,4 @@
-#include "tachyon/common/matrix.h"
+#include "tachyon/common/matrix.hpp"
 
 #include <gtest/gtest.h>
 

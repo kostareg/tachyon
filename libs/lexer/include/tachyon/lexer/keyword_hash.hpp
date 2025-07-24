@@ -31,7 +31,7 @@
 
 #line 1 "keywords.gperf"
 
-#include "token.h"
+#include "token.hpp"
 
 namespace tachyon::lexer {
 #line 16 "keywords.gperf"

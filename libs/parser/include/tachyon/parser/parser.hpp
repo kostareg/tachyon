@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tachyon/lexer/lexer.h"
-#include "tachyon/parser/ast.h"
+#include "tachyon/lexer/lexer.hpp"
+#include "tachyon/parser/ast.hpp"
 
 #include <expected>
 #include <utility>

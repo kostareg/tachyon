@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tachyon/common/assert.h"
+#include "tachyon/common/assert.hpp"
 
 #include <vector>
 

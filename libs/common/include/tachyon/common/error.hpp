@@ -1,6 +1,6 @@
 #pragma once
 
-#include "source_span.h"
+#include "source_span.hpp"
 
 #include <algorithm>
 #include <iostream>

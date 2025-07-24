@@ -1,6 +1,6 @@
-#include "tachyon/lexer/token.h"
-#include "tachyon/parser/parser.h"
-#include "tachyon/parser/print.h"
+#include "tachyon/lexer/token.hpp"
+#include "tachyon/parser/parser.hpp"
+#include "tachyon/parser/print.hpp"
 
 #include <benchmark/benchmark.h>
 #include <fstream>

@@ -1,10 +1,10 @@
-#include "run.h"
+#include "run.hpp"
 
-#include "tachyon/codegen/bytecode_generator.h"
-#include "tachyon/lexer/lexer.h"
-#include "tachyon/parser/parser.h"
-#include "tachyon/parser/print.h"
-#include "tachyon/runtime/vm.h"
+#include "tachyon/codegen/bytecode_generator.hpp"
+#include "tachyon/lexer/lexer.hpp"
+#include "tachyon/parser/parser.hpp"
+#include "tachyon/parser/print.hpp"
+#include "tachyon/runtime/vm.hpp"
 
 #include <filesystem>
 #include <fstream>

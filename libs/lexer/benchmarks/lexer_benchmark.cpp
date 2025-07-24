@@ -1,4 +1,4 @@
-#include "tachyon/lexer/lexer.h"
+#include "tachyon/lexer/lexer.hpp"
 
 #include <benchmark/benchmark.h>
 #include <fstream>

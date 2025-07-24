@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tachyon/common/error.h"
-#include "tachyon/lexer/token.h"
+#include "tachyon/common/error.hpp"
+#include "tachyon/lexer/token.hpp"
 
 #include <variant>
 
