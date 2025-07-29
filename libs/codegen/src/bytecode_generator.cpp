@@ -441,17 +441,17 @@ void BytecodeGenerator::operator()(const IfExpr &iff) {
         // store the position that we need to fill in later with the address of the last instruction
         // in the body.
         size_t end_reference_position = bc.size() + 2;
-        if (std::holds_alternative<LetRefExpr>(iff.condition->kind) ||
-            std::holds_alternative<MatrixRefExpr>(iff.condition->kind) ||
-            std::holds_alternative<FnCallExpr>(iff.condition->kind) ||
-            std::holds_alternative<UnaryOperatorExpr>(iff.condition->kind) ||
-            std::holds_alternative<BinaryOperatorExpr>(iff.condition->kind)) {
+        if (std::holds_alternative<LetRefExpr>(iff.else_if_conditions[i].kind) ||
+            std::holds_alternative<MatrixRefExpr>(iff.else_if_conditions[i].kind) ||
+            std::holds_alternative<FnCallExpr>(iff.else_if_conditions[i].kind) ||
+            std::holds_alternative<UnaryOperatorExpr>(iff.else_if_conditions[i].kind) ||
+            std::holds_alternative<BinaryOperatorExpr>(iff.else_if_conditions[i].kind)) {
             // curr holds a register address, use JMRN
             bc.push_back(runtime::JMRN);
             bc.push_back(curr);
             bc.push_back(0); // to be filled in
-        } else if (std::holds_alternative<LiteralExpr>(iff.condition->kind) ||
-                   std::holds_alternative<FnExpr>(iff.condition->kind)) {
+        } else if (std::holds_alternative<LiteralExpr>(iff.else_if_conditions[i].kind) ||
+                   std::holds_alternative<FnExpr>(iff.else_if_conditions[i].kind)) {
             // curr holds a constant address, use JMCN
             bc.push_back(runtime::JMCN);
             bc.push_back(curr);
