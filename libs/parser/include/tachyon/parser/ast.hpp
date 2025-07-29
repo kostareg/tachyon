@@ -10,8 +10,7 @@
 #include <variant>
 #include <vector>
 
-namespace tachyon::parser
-{
+namespace tachyon::parser {
 // fwd-decl
 struct Expr;
 using ExprRef = std::unique_ptr<Expr>;
@@ -25,16 +24,14 @@ using LiteralValue = std::variant<std::monostate, double, std::string, bool, Mat
 /**
  * @brief a literal expression, or constant value
  */
-struct LiteralExpr
-{
+struct LiteralExpr {
     LiteralValue value;
 };
 
 /**
  * @brief four basic concrete types.
  */
-enum class BasicConcreteTypes
-{
+enum class BasicConcreteTypes {
     Number,
     String,
     Boolean,
@@ -58,8 +55,7 @@ using MaybeType = std::optional<Type>;
 /**
  * @brief function type, eg Fn(Num) -> Num
  */
-struct FunctionConcreteTypes
-{
+struct FunctionConcreteTypes {
     std::unordered_map<std::string, Type> arguments;
 };
 
@@ -71,8 +67,7 @@ struct FunctionConcreteTypes
  * type. Since this is the weak side of the AST, types can be left blank to be inferred
  * (std::nullopt).
  */
-struct FnExpr
-{
+struct FnExpr {
     std::vector<std::pair<std::string, MaybeType>> arguments;
     MaybeType returns;
     ExprRef body;
@@ -81,8 +76,7 @@ struct FnExpr
 /**
  * @brief <op> expr, eg !false
  */
-struct UnaryOperatorExpr
-{
+struct UnaryOperatorExpr {
     Op op;
     ExprRef right;
 };
@@ -90,8 +84,7 @@ struct UnaryOperatorExpr
 /**
  * @brief expr <op> expr, eg false || true
  */
-struct BinaryOperatorExpr
-{
+struct BinaryOperatorExpr {
     Op op;
     ExprRef left;
     ExprRef right;
@@ -100,8 +93,7 @@ struct BinaryOperatorExpr
 /**
  * @brief let binding (variable)
  */
-struct LetExpr
-{
+struct LetExpr {
     std::string name;
     ExprRef value;
 };
@@ -109,21 +101,18 @@ struct LetExpr
 /**
  * @brief let binding reference (variable reference)
  */
-struct LetRefExpr
-{
+struct LetRefExpr {
     std::string name;
 };
 
-struct MatrixAssignmentExpr
-{
+struct MatrixAssignmentExpr {
     LetRefExpr ref;
     ExprRef row;
     ExprRef col;
     ExprRef value;
 };
 
-struct MatrixRefExpr
-{
+struct MatrixRefExpr {
     LetRefExpr ref;
     ExprRef row;
     ExprRef col;
@@ -133,8 +122,7 @@ struct MatrixRefExpr
 /**
  * @brief function call
  */
-struct FnCallExpr
-{
+struct FnCallExpr {
     LetRefExpr ref;
     std::vector<Expr> args;
 };
@@ -142,8 +130,7 @@ struct FnCallExpr
 /**
  * @brief while loop
  */
-struct WhileLoopExpr
-{
+struct WhileLoopExpr {
     ExprRef condition;
     ExprRef body;
 };
@@ -151,23 +138,33 @@ struct WhileLoopExpr
 /**
  * @brief loop break
  */
-struct BreakExpr
-{
+struct BreakExpr {
     ExprRef returns;
 };
 
 /**
  * @brief loop continue
  */
-struct ContinueExpr
-{
+struct ContinueExpr {};
+
+/**
+ * @brief if/else-if/else
+ *
+ * else_if_conditions/else_if_bodies are blank vectors if there are no else-if statements.
+ * else_body is nullptr when there is no else statement.
+ */
+struct IfExpr {
+    ExprRef condition;
+    ExprRef body;
+    Exprs else_if_conditions;
+    Exprs else_if_bodies;
+    ExprRef else_body;
 };
 
 /**
  * @brief module import
  */
-struct ImportExpr
-{
+struct ImportExpr {
     std::string path;
 };
 
@@ -175,13 +172,11 @@ struct ImportExpr
 /**
  * @brief return value from function
  */
-struct ReturnExpr
-{
+struct ReturnExpr {
     ExprRef returns;
 };
 
-struct MatrixConstructExpr
-{
+struct MatrixConstructExpr {
     size_t height;
     std::vector<Expr> list;
 };
@@ -193,8 +188,7 @@ struct MatrixConstructExpr
  * far away from expressions. Any tree that needs a list of statements (e.g. function definition)
  * can keep a SequenceExpr that in turn keeps the list of expressions.
  */
-struct SequenceExpr
-{
+struct SequenceExpr {
     Exprs sequence;
 };
 
@@ -204,13 +198,12 @@ struct SequenceExpr
 using ExprKind =
     std::variant<LiteralExpr, FnExpr, UnaryOperatorExpr, BinaryOperatorExpr, LetExpr, LetRefExpr,
                  MatrixAssignmentExpr, MatrixRefExpr, FnCallExpr, WhileLoopExpr, BreakExpr,
-                 ContinueExpr, ImportExpr, ReturnExpr, MatrixConstructExpr, SequenceExpr>;
+                 ContinueExpr, IfExpr, ImportExpr, ReturnExpr, MatrixConstructExpr, SequenceExpr>;
 
 /**
  * @brief top-level expression type
  */
-struct Expr
-{
+struct Expr {
     /// kind
     ExprKind kind;
 

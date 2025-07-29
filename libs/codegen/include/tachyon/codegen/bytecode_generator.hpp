@@ -70,6 +70,7 @@ struct BytecodeGenerator {
     void operator()(const parser::WhileLoopExpr &wlop);
     void operator()(const parser::BreakExpr &brk);
     void operator()(const parser::ContinueExpr &cont);
+    void operator()(const parser::IfExpr &iff);
     void operator()(const parser::ImportExpr &);
     void operator()(const parser::ReturnExpr &ret);
     void operator()(const parser::MatrixConstructExpr &mc);

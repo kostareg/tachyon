@@ -5,11 +5,9 @@
 #include <string>
 #include <variant>
 
-namespace tachyon::parser
-{
+namespace tachyon::parser {
 // TODO: consider using just ostream <<.
-struct PrintLiteral
-{
+struct PrintLiteral {
     void operator()(std::monostate _) const;
     void operator()(double dbl) const;
     void operator()(const std::string &str) const;
@@ -17,15 +15,13 @@ struct PrintLiteral
     void operator()(const Matrix &m) const;
 };
 
-struct PrintType
-{
+struct PrintType {
     void operator()(const BasicConcreteTypes &btyp) const;
     void operator()(const FunctionConcreteTypes &ftyp) const;
     void operator()(const std::string &otyp) const;
 };
 
-struct PrintExpr
-{
+struct PrintExpr {
     void operator()(const LiteralExpr &literal) const;
     void operator()(const FnExpr &fn) const;
     void operator()(const UnaryOperatorExpr &unop) const;
@@ -38,6 +34,7 @@ struct PrintExpr
     void operator()(const WhileLoopExpr &wlop) const;
     void operator()(const BreakExpr &brk) const;
     void operator()(const ContinueExpr &) const;
+    void operator()(const IfExpr &iff) const;
     void operator()(const ImportExpr &imp) const;
     void operator()(const ReturnExpr &ret) const;
     void operator()(const MatrixConstructExpr &mc) const;
@@ -48,8 +45,7 @@ struct PrintExpr
  * @brief print an expression
  * @param e expression
  */
-inline void printExpr(Expr &e)
-{
+inline void printExpr(Expr &e) {
     PrintExpr printer{};
     std::visit(printer, e.kind);
 }

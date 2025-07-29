@@ -12,8 +12,7 @@ The next steps for this project are, in no particular order:
 
 * Complete grammar
     * High priority:
-        * Conditionals:
-            * If/else/else-if
+        * While loop and conditionals:
             * Continue/break
     * Medium priority:
         * Enums
