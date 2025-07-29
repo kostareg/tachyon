@@ -27,5 +27,7 @@ break,    TokenType::BREAK
 continue, TokenType::CONTINUE
 True,     TokenType::TRUE
 False,    TokenType::FALSE
+if,       TokenType::IF
+else,     TokenType::ELSE
 %%
 } // namespace tachyon::lexer

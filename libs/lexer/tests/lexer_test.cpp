@@ -6,7 +6,7 @@ using namespace tachyon::lexer;
 
 TEST(LexerTest, RecognizesAllTokens) {
     Lexer lexed = lex("\n = + - -> * / ^ == != < > <= >= ! && || () ( ) { } [ ] . : ; , "
-                      "\"hello, world!\" True False import "
+                      "\"hello, world!\" True False import while break continue if else "
                       "fn return someidentifier 12345");
     Tokens rhs_ts = lexed.tokens;
     std::vector<Value> rhs_cs = lexed.constants;
@@ -23,11 +23,11 @@ TEST(LexerTest, RecognizesAllTokens) {
     }
 
     // 2. assert all token types.
-    std::vector<TokenType> lhs_tts = {NLINE, EQ,     PLUS,   MINUS,  RARROW, STAR,   FSLASH, CARET,
-                                      ECOMP, NECOMP, LCOMP,  GCOMP,  LECOMP, GECOMP, NOT,    BAND,
-                                      BOR,   UNIT,   LPAREN, RPAREN, LBRACE, RBRACE, LBRACK, RBRACK,
-                                      DOT,   COLON,  SEMIC,  COMMA,  STRING, TRUE,   FALSE,  IMPORT,
-                                      FN,    RETURN, IDENT,  NUMBER, END};
+    std::vector<TokenType> lhs_tts = {
+        NLINE,  EQ,       PLUS,   MINUS, RARROW, STAR,   FSLASH, CARET,  ECOMP,  NECOMP, LCOMP,
+        GCOMP,  LECOMP,   GECOMP, NOT,   BAND,   BOR,    UNIT,   LPAREN, RPAREN, LBRACE, RBRACE,
+        LBRACK, RBRACK,   DOT,    COLON, SEMIC,  COMMA,  STRING, TRUE,   FALSE,  IMPORT, WHILE,
+        BREAK,  CONTINUE, IF,     ELSE,  FN,     RETURN, IDENT,  NUMBER, END};
 
     //   map vector<Token> to vector<TokenType>
     std::vector<TokenType> rhs_tts = {};

@@ -49,6 +49,8 @@ enum class TokenType {
     WHILE,
     BREAK,
     CONTINUE,
+    IF,
+    ELSE,
     NLINE,
     END
 };
@@ -101,6 +103,8 @@ inline std::string tok_to_str(TokenType tt) {
     else if (tt == WHILE) return "WHILE";
     else if (tt == BREAK) return "BREAK";
     else if (tt == CONTINUE) return "CONTINUE";
+    else if (tt == IF) return "IF";
+    else if (tt == ELSE) return "ELSE";
     else if (tt == NLINE) return "NLINE";
     else if (tt == END) return "END";
     else return "unrecognized token";
@@ -150,6 +154,8 @@ inline TokenType str_to_tok(std::string_view str) {
     else if (str == "WHILE") return WHILE;
     else if (str == "BREAK") return BREAK;
     else if (str == "CONTINUE") return CONTINUE;
+    else if (str == "IF") return IF;
+    else if (str == "ELSE") return ELSE;
     else if (str == "NLINE") return NLINE;
     else if (str == "END") return END;
     else throw std::runtime_error(std::format("failed to turn str into token type: {}", str));
@@ -199,6 +205,8 @@ inline std::string tok_to_str_pretty(TokenType tt) {
     else if (tt == WHILE) return "a while loop";
     else if (tt == BREAK) return "a break";
     else if (tt == CONTINUE) return "a continue";
+    else if (tt == IF) return "an if statement";
+    else if (tt == ELSE) return "an else statement";
     else if (tt == NLINE) return "a new line";
     else if (tt == END) return "the end of the code";
     else return "an unrecognized token";

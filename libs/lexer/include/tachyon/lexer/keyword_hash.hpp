@@ -40,7 +40,7 @@ struct Keyword {
   TokenType type;
 };
 
-#define TOTAL_KEYWORDS 8
+#define TOTAL_KEYWORDS 10
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 8
 #define MIN_HASH_VALUE 2
@@ -68,10 +68,10 @@ KeywordHash::hash (const char *str, size_t len)
       16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
       16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
       10, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-      16, 16, 16, 16,  0, 16, 16, 16, 16, 16,
+      16, 16, 16, 16,  5, 16, 16, 16, 16, 16,
       16, 16, 16, 16, 16, 16, 16, 16,  5,  0,
-      16, 16,  0, 16, 16,  5, 16, 16, 16, 16,
-      16, 16, 16, 16,  0, 16, 16, 16, 16,  0,
+      16,  0,  5, 16, 16,  0, 16, 16, 16, 16,
+      16, 16, 16, 16,  5, 16, 16, 16, 16,  0,
       16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
       16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
       16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
@@ -96,23 +96,25 @@ KeywordHash::in_word_set (const char *str, size_t len)
   static const struct Keyword wordlist[] =
     {
       {"",TokenType::RETURN}, {"",TokenType::RETURN},
-#line 23 "keywords.gperf"
-      {"fn",       TokenType::FN},
+#line 30 "keywords.gperf"
+      {"if",       TokenType::IF},
       {"",TokenType::RETURN},
-#line 28 "keywords.gperf"
-      {"True",     TokenType::TRUE},
+#line 31 "keywords.gperf"
+      {"else",     TokenType::ELSE},
 #line 25 "keywords.gperf"
       {"while",    TokenType::WHILE},
-#line 24 "keywords.gperf"
-      {"return",   TokenType::RETURN},
-      {"",TokenType::RETURN},
-#line 27 "keywords.gperf"
-      {"continue", TokenType::CONTINUE},
-      {"",TokenType::RETURN},
-#line 26 "keywords.gperf"
-      {"break",    TokenType::BREAK},
 #line 22 "keywords.gperf"
       {"import",   TokenType::IMPORT},
+#line 23 "keywords.gperf"
+      {"fn",       TokenType::FN},
+#line 27 "keywords.gperf"
+      {"continue", TokenType::CONTINUE},
+#line 28 "keywords.gperf"
+      {"True",     TokenType::TRUE},
+#line 26 "keywords.gperf"
+      {"break",    TokenType::BREAK},
+#line 24 "keywords.gperf"
+      {"return",   TokenType::RETURN},
       {"",TokenType::RETURN}, {"",TokenType::RETURN},
       {"",TokenType::RETURN},
 #line 29 "keywords.gperf"
@@ -133,6 +135,6 @@ KeywordHash::in_word_set (const char *str, size_t len)
     }
   return 0;
 }
-#line 30 "keywords.gperf"
+#line 32 "keywords.gperf"
 
 } // namespace tachyon::lexer
