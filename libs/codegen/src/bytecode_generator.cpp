@@ -389,13 +389,105 @@ void BytecodeGenerator::operator()(const WhileLoopExpr &wlop) {
     bc[end_reference_position] = bc.size();
 };
 
-void BytecodeGenerator::operator()(const parser::BreakExpr &) {
+void BytecodeGenerator::operator()(const BreakExpr &) {
     // TODO
 };
 
-void BytecodeGenerator::operator()(const parser::ContinueExpr &) {
+void BytecodeGenerator::operator()(const ContinueExpr &) {
     // TODO
 };
+
+void BytecodeGenerator::operator()(const IfExpr &iff) {
+    std::visit(*this, iff.condition->kind);
+
+    // store the position that we need to fill in later with the address of the last instruction
+    // in the body.
+    size_t end_reference_position = bc.size() + 2;
+    if (std::holds_alternative<LetRefExpr>(iff.condition->kind) ||
+        std::holds_alternative<MatrixRefExpr>(iff.condition->kind) ||
+        std::holds_alternative<FnCallExpr>(iff.condition->kind) ||
+        std::holds_alternative<UnaryOperatorExpr>(iff.condition->kind) ||
+        std::holds_alternative<BinaryOperatorExpr>(iff.condition->kind)) {
+        // curr holds a register address, use JMRN
+        bc.push_back(runtime::JMRN);
+        bc.push_back(curr);
+        bc.push_back(0); // to be filled in
+    } else if (std::holds_alternative<LiteralExpr>(iff.condition->kind) ||
+               std::holds_alternative<FnExpr>(iff.condition->kind)) {
+        // curr holds a constant address, use JMCN
+        bc.push_back(runtime::JMCN);
+        bc.push_back(curr);
+        bc.push_back(0); // to be filled in
+    }
+
+    // evaluate if body
+    std::visit(*this, iff.body->kind);
+
+    // if we are here, the condition is still true. so we should skip all the else-if and else
+    // statements.
+    bc.push_back(runtime::JMPU);
+    bc.push_back(0); // to be filled in
+    size_t success_reference_position = bc.size() - 1;
+
+    // don't forget to inform the start where the loop ends, so it can jump here when the condition
+    // is false. assumes that there is at the very least a return statement after this.
+    bc[end_reference_position] = bc.size();
+
+    // repeat for else-ifs
+    std::vector<size_t> success_reference_positions;
+    for (size_t i = 0; i < iff.else_if_conditions.size(); ++i) {
+        std::visit(*this, iff.else_if_conditions[i].kind);
+
+        // store the position that we need to fill in later with the address of the last instruction
+        // in the body.
+        size_t end_reference_position = bc.size() + 2;
+        if (std::holds_alternative<LetRefExpr>(iff.condition->kind) ||
+            std::holds_alternative<MatrixRefExpr>(iff.condition->kind) ||
+            std::holds_alternative<FnCallExpr>(iff.condition->kind) ||
+            std::holds_alternative<UnaryOperatorExpr>(iff.condition->kind) ||
+            std::holds_alternative<BinaryOperatorExpr>(iff.condition->kind)) {
+            // curr holds a register address, use JMRN
+            bc.push_back(runtime::JMRN);
+            bc.push_back(curr);
+            bc.push_back(0); // to be filled in
+        } else if (std::holds_alternative<LiteralExpr>(iff.condition->kind) ||
+                   std::holds_alternative<FnExpr>(iff.condition->kind)) {
+            // curr holds a constant address, use JMCN
+            bc.push_back(runtime::JMCN);
+            bc.push_back(curr);
+            bc.push_back(0); // to be filled in
+        }
+
+        // evaluate if body
+        std::visit(*this, iff.else_if_bodies[i].kind);
+
+        // if we are here, the condition is still true. so we should skip all the else-if and else
+        // statements.
+        bc.push_back(runtime::JMPU);
+        bc.push_back(0); // to be filled in
+        success_reference_positions.push_back(bc.size() - 1);
+
+        // don't forget to inform the start where the loop ends, so it can jump here when the
+        // condition is false. assumes that there is at the very least a return statement after
+        // this.
+        bc[end_reference_position] = bc.size();
+    }
+
+    // execute final else, if available
+    if (iff.else_body != nullptr) {
+        std::visit(*this, iff.else_body->kind);
+    }
+
+    // don't forget to tell the original if statement where we are ending, in case it is successful
+    // and wants to skip all the else-if/elses. again, assumes that there is at the very least a
+    // return statement after this.
+    bc[success_reference_position] = bc.size();
+    for (size_t success_reference_position : success_reference_positions) {
+        bc[success_reference_position] = bc.size();
+    }
+
+    // TODO: set curr here if you want to evaluate as an expression. do the same for while.
+}
 
 // TODO: should this be stripped already?
 void BytecodeGenerator::operator()(const ImportExpr &) {};
