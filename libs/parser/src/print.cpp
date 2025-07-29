@@ -128,6 +128,25 @@ void PrintExpr::operator()(const ContinueExpr &) const {
     std::print("continue");
 };
 
+void PrintExpr::operator()(const IfExpr &iff) const {
+    std::print("if (");
+    std::visit(*this, iff.condition->kind);
+    std::print(") then (");
+    std::visit(*this, iff.body->kind);
+    std::print(")");
+    for (size_t i = 0; i < iff.else_if_conditions.size(); ++i) {
+        std::print("else if (");
+        std::visit(*this, iff.else_if_conditions[i].kind);
+        std::print(") then (");
+        std::visit(*this, iff.else_if_bodies[i].kind);
+        std::print(")");
+    }
+    if (iff.else_body != nullptr) {
+        std::print("else ");
+        std::visit(*this, iff.else_body->kind);
+    }
+}
+
 void PrintExpr::operator()(const ImportExpr &imp) const {
     std::print("import {}", imp.path);
 };
