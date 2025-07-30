@@ -5,7 +5,7 @@ mathematical operations. It serves as a personal project, and includes a virtual
 machine, bytecode, high-level intermediate representation, and abstract syntax
 tree. It will employ various optimization techniques such
 as pure [function memoization](https://en.wikipedia.org/wiki/Memoization) and
-[tracing just-in-time compilation](https://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
+[just-in-time compilation](https://en.wikipedia.org/wiki/Just-in-time_compilation)
 to create fast and efficient programs during runtime.
 
 The next steps for this project are, in no particular order:
@@ -18,7 +18,7 @@ The next steps for this project are, in no particular order:
         * Enums
         * Structs
         * Imports
-        * return semantics (missing -> RETV, ending expr -> RETC/RETR)
+        * return semantics (ending expr -> RETC/RETR)
     * Low priority:
         * Pattern matching
         * Macros for sum, lim, systems/des, etc.
@@ -28,6 +28,7 @@ The next steps for this project are, in no particular order:
     * Research what algorithms you want to implement
     * Find efficient and pretty
 * Plotting library (eg `plot(sin, 1, 5)`) plots sin b/w x=1, x=5
+* Foreign function interface
 * Visual debug tool
     * Not necessarily for stepping through code (lldb is fine)
     * Used for viewing the generated AST, bytecode, JIT details in a friendly
@@ -39,7 +40,8 @@ The next steps for this project are, in no particular order:
 * Tracing just in time compilation
     * ~highest priority
 * Research implementation of matrices not as 2D arrays
-    * C++23 `std::mdspan`, `std::submdspan` not released.
+    * Consider C++23 `std::mdspan`, C++26 `std::submdspan`.
+* Tensors
 * Runtime profiling program
     * This will help massively with showing how performance gains are found.
 * Set up test data directory
@@ -48,6 +50,21 @@ The next steps for this project are, in no particular order:
 * gcovr markdown generation (waiting on gcovr version 8.4 release)
 * can strings be string_view?
 * research more cache structures, such as 2Q, ARC, GDSF
+* Support C++11?
+
+## System Requirements
+
+### Compilation
+
+* C++ standard: C++23[^1]
+* CMake version: 3.16
+
+[^1]: I'm looking to phase away usage of `std::expected`, in order to decrease the minimum C++ standard version.
+
+### Runtime
+
+* Operating System: Linux
+* Computer Architecture: x86_64
 
 ## Building
 
