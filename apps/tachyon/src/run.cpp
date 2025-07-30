@@ -34,7 +34,7 @@ int run(char *fileName) {
     }
     auto m = parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
                  .and_then(codegen::generate_main_proto)
-                 .and_then([](const runtime::Proto &proto) -> std::expected<void, Error> {
+                 .and_then([](runtime::Proto proto) -> std::expected<void, Error> {
                      runtime::VM vm;
                      return vm.run(proto);
                  });

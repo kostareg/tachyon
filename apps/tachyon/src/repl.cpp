@@ -38,7 +38,7 @@ int repl() {
         }
         auto m = parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
                      .and_then(codegen::generate_repl_proto)
-                     .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error> {
+                     .and_then([&vm](runtime::Proto proto) -> std::expected<void, Error> {
                          return vm.run(proto);
                      });
 

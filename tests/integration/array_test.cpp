@@ -20,7 +20,7 @@ TEST(ArrayTest, ConstructsWithlet) {
     }
     parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
         .and_then(codegen::generate_main_proto)
-        .and_then([](const runtime::Proto &proto) -> std::expected<void, Error> {
+        .and_then([](runtime::Proto proto) -> std::expected<void, Error> {
             return runtime::VM{}.run(proto);
         })
         .value();

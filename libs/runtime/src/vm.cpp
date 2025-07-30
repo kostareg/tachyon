@@ -11,7 +11,7 @@
 // TODO: consider moving from uint16_t to size_t
 
 namespace tachyon::runtime {
-std::expected<void, Error> VM::run(const Proto &proto) {
+std::expected<void, Error> VM::run(Proto &proto) {
     size_t ptr = 0;
     while (ptr < proto.bytecode.size()) {
         TY_TRACE_HEX(proto.bytecode[ptr], "[" << ptr << "]");

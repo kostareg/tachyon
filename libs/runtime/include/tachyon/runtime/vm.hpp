@@ -49,7 +49,7 @@ class VM {
      * @param proto function prototype
      * @return void or error
      */
-    std::expected<void, Error> run(const Proto &proto);
+    std::expected<void, Error> run(Proto &proto);
 
     /**
      * @brief print current state

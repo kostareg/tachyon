@@ -20,7 +20,7 @@ TEST(PipelineTest, BasicPipeline) {
     }
     parser::parse(lexer.tokens, lexer.constants)
         .and_then(codegen::generate_main_proto)
-        .and_then([](const runtime::Proto &proto) -> std::expected<void, Error> {
+        .and_then([](runtime::Proto proto) -> std::expected<void, Error> {
             return runtime::VM().run(proto);
         })
         .value();

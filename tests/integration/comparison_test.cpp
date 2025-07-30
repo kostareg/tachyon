@@ -23,7 +23,7 @@ TEST(ComparisonTest, AllOperators) {
     }
     parser::parse(std::move(lexer.tokens), std::move(lexer.constants))
         .and_then(codegen::generate_main_proto)
-        .and_then([&vm](const runtime::Proto &proto) -> std::expected<void, Error> {
+        .and_then([&vm](runtime::Proto proto) -> std::expected<void, Error> {
             return vm.run(proto);
         })
         .value();
