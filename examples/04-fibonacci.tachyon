@@ -1,0 +1,12 @@
+// hack: since we don't have variable capturing, I pass fib() as a first-class value to itself.
+fib = fn(x, fib) {
+  if x == 1 { return 0; }
+  if x == 2 { return 1; }
+  // hack: fib() + fib() doesn't work in return
+  lhs = fib(x-1, fib)
+  rhs = fib(x-2, fib)
+  return lhs + rhs
+}
+
+ans = fib(50, fib)
+print(ans)
