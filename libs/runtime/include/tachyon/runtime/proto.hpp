@@ -4,16 +4,15 @@
 #include "tachyon/common/source_span.hpp"
 #include "tachyon/runtime/value.hpp"
 
+#include <sys/mman.h>
 #include <utility>
 #include <vector>
 
-namespace tachyon::runtime
-{
+namespace tachyon::runtime {
 /**
  * @brief function prototype object
  */
-struct Proto
-{
+struct Proto {
     /// function bytecode instructions
     // TODO: uint16_t* + malloc
     std::vector<uint16_t> bytecode;
@@ -48,13 +47,51 @@ struct Proto
     /// debug info source span
     SourceSpan span;
 
-    Proto() : bytecode(), constants(), arguments(), is_pure(), cache(), name(), span(0, 0) {}
+    void *compiled;
+    size_t compiled_length;
+    uint16_t compilation_counter;
+
+    Proto()
+        : bytecode(), constants(), arguments(), is_pure(), cache(), name(), span(0, 0),
+          compiled(nullptr), compiled_length(0), compilation_counter(0) {}
 
     Proto(std::vector<uint16_t> bytecode, std::vector<Value> constants, size_t arguments,
           bool is_pure, std::string name, SourceSpan span)
         : bytecode(std::move(bytecode)), constants(std::move(constants)), arguments(arguments),
-          is_pure(is_pure), cache(), name(std::move(name)), span(span)
-    {
+          is_pure(is_pure), cache(), name(std::move(name)), span(span), compiled(nullptr),
+          compiled_length(0), compilation_counter(0) {}
+
+    Proto(const Proto &) = delete;
+    Proto &operator=(const Proto &) = delete;
+
+    Proto(Proto &&other)
+        : bytecode(std::move(other.bytecode)), constants(std::move(other.constants)),
+          arguments(std::move(other.arguments)), is_pure(std::move(other.is_pure)),
+          cache(std::move(other.cache)), name(std::move(other.name)), span(other.span),
+          compiled(other.compiled), compiled_length(other.compiled_length),
+          compilation_counter(other.compilation_counter) {
+        other.compiled = nullptr;
+    }
+    Proto &operator=(Proto &&other) {
+        bytecode = std::move(other.bytecode);
+        constants = std::move(other.constants);
+        arguments = std::move(other.arguments);
+        is_pure = std::move(other.is_pure);
+        cache = std::move(other.cache);
+        name = std::move(other.name);
+        span = std::move(other.span);
+        compiled = other.compiled;
+        compiled_length = other.compiled_length;
+        compilation_counter = other.compilation_counter;
+        other.compiled = nullptr;
+        return *this;
+    }
+
+    ~Proto() {
+        if (compiled) {
+            munmap(compiled, compiled_length);
+            compiled = nullptr;
+        }
     }
 
     // TODO: when capturing vars from outer scope, just store a lookup table,

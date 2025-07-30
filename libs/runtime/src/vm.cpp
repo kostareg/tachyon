@@ -1,5 +1,6 @@
 #include "tachyon/runtime/vm.hpp"
 
+#include "tachyon/codegen/machine_generator.hpp"
 #include "tachyon/common/assert.hpp"
 #include "tachyon/common/log.hpp"
 #include "tachyon/runtime/bytecode.hpp"
@@ -700,8 +701,20 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
         }
     }
 
-    // if we are here, we will have to run the function. begin by creating the next call frame and
-    // preparing it with the arguments:
+    // if we are here, we will have to run the function. first check whether we have a compiled
+    // version:
+    if (fn->compiled) [[unlikely]] {
+        TY_TRACE("running compiled machine code");
+        // int x = 1;
+        // void *y = &x;
+        // void **z = &y;
+        call_stack[call_stack.size() - 1].registers[0] =
+            reinterpret_cast<double (*)()>(fn->compiled)();
+        return {};
+    }
+
+    // if we are here, then we will have to interpret the function. begin by creating the next call
+    // frame and preparing it with the arguments:
     std::array<Value, 256> registers;
     for (size_t i = 0; i < fn->arguments; ++i) {
         // start at +1 + i index.
@@ -726,6 +739,13 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
 
     // remove call frame.
     call_stack.pop_back();
+
+    // if we hit the counter, generate machine code
+    // TODO: for now I'm using the is_pure indicator, but this should really have its own indicator.
+    if (fn->is_pure && ++fn->compilation_counter >= 10) {
+        auto codegen = codegen::generate_machine(fn);
+        if (!codegen) return std::unexpected(codegen.error());
+    }
 
     return {};
 }

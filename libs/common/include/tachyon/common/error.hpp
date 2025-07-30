@@ -18,6 +18,7 @@ enum class ErrorKind {
     ParseError,
     InferenceError,
     BytecodeGenerationError,
+    MachineGenerationError,
     InternalError,
 };
 
@@ -88,6 +89,7 @@ struct [[nodiscard]] Error final {
         case ErrorKind::ParseError: return "parsing";
         case ErrorKind::InferenceError: return "type inference";
         case ErrorKind::BytecodeGenerationError: return "bytecode generation";
+        case ErrorKind::MachineGenerationError: return "machine code generation";
         case ErrorKind::InternalError: return "internal";
         default: return "unknown";
         }
@@ -172,6 +174,11 @@ struct [[nodiscard]] Error final {
     /// add additional error to error
     Error &withAdditional(const Error &additional_error) {
         this->additional_errors.push_back(additional_error);
+        return *this;
+    }
+
+    Error &withKind(const ErrorKind &kind) {
+        this->kind = kind;
         return *this;
     }
 

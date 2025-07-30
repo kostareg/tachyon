@@ -25,6 +25,7 @@ target_link_libraries(tachyon_runtime
         PRIVATE
         tachyon::common
         tachyon::parser
+        tachyon::codegen
 )
 
 add_library(tachyon::runtime ALIAS tachyon_runtime)
