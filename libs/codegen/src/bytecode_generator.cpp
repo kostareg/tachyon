@@ -174,13 +174,12 @@ void BytecodeGenerator::operator()(const LetExpr &vdecl) {
     curr = index;
 };
 
-// TODO: bad failure for undefined variables, there should be a step before
-//  generation.
 void BytecodeGenerator::operator()(const LetRefExpr &vref) {
     if (auto it = vars.find(vref.name); it != vars.end()) {
         curr = it->second;
     } else {
-        curr = 255; // error
+        errors.emplace_back(Error::create(ErrorKind::BytecodeGenerationError, SourceSpan(0, 0), "reference to undefined variable " + vref.name));
+        curr = 0;
     }
 };
 
