@@ -19,7 +19,7 @@ b = False
 z = x * (x + 2) - 5 / (2 * 2 * 2)
 // l = 3x + (5)(3) // precede x by a number, or ()(), to multiply it
 
-// Anonymous functions, last line of function is return value
+// Functions, last line of function is return value
 // square = fn(x) { x * x }
 square' = fn(x) { return x * x; }
 square'' = fn(x: Num) -> Num { return x * x; }
@@ -44,19 +44,19 @@ square'' = fn(x: Num) -> Num { return x * x; }
 // m = 2
 
 // Control flow
-// if x > 0 {
-//   y = x
-// } else {
-//   y = -x
-// }
+if x <= 1 {
+    y = x
+} else {
+    y = x - 1
+}
 
-// while x > 0 {
-//   x = x - 1
-// }
+while x > 0 {
+    x = x - 1
+}
 
 // Data structures and array unpacking
-// a = [1 2 3]
-// mat = [5 5 5; 1 2 3]
+a = [1, 2, 3]
+mat = [5, 5, 5; 1, 2, 3]
 // [a b] = [3 4]
 
 // Modules

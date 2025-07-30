@@ -29,6 +29,11 @@ void BytecodeGenerator::operator()(const FnExpr &fn) {
     if (!maybe_proto) errors.push_back(maybe_proto.error());
     else if (!maybe_proto->is_pure) is_pure = false;
 
+    // if there is no return at the end of the function, RETV
+    if (maybe_proto && (*(maybe_proto->bytecode.end() - 1) != runtime::RETV && *(maybe_proto->bytecode.end() - 2) != runtime::RETC && *(maybe_proto->bytecode.end() - 3) != runtime::RETR )) {
+        maybe_proto->bytecode.push_back(runtime::RETV);
+    }
+
     constants.emplace_back<std::shared_ptr<runtime::Proto>>(
         std::make_shared<runtime::Proto>(std::move(maybe_proto.value())));
 
