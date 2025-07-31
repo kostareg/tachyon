@@ -53,13 +53,17 @@ struct Proto {
 
     Proto()
         : bytecode(), constants(), arguments(), is_pure(), cache(), name(), span(0, 0),
-          compiled(nullptr), compiled_length(0), compilation_counter(0) {}
+          compiled(nullptr), compiled_length(0), compilation_counter(0) {
+        constants.reserve(1000);
+    }
 
     Proto(std::vector<uint16_t> bytecode, std::vector<Value> constants, size_t arguments,
           bool is_pure, std::string name, SourceSpan span)
         : bytecode(std::move(bytecode)), constants(std::move(constants)), arguments(arguments),
           is_pure(is_pure), cache(), name(std::move(name)), span(span), compiled(nullptr),
-          compiled_length(0), compilation_counter(0) {}
+          compiled_length(0), compilation_counter(0) {
+        constants.reserve(1000);
+    }
 
     Proto(const Proto &) = delete;
     Proto &operator=(const Proto &) = delete;

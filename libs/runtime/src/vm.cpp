@@ -701,19 +701,7 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
         }
     }
 
-    // if we are here, we will have to run the function. first check whether we have a compiled
-    // version:
-    if (fn->compiled) [[unlikely]] {
-        TY_TRACE("running compiled machine code");
-        // int x = 1;
-        // void *y = &x;
-        // void **z = &y;
-        call_stack[call_stack.size() - 1].registers[0] =
-            reinterpret_cast<double (*)()>(fn->compiled)();
-        return {};
-    }
-
-    // if we are here, then we will have to interpret the function. begin by creating the next call
+    // if we are here, we will have to run the function. begin by creating the next call
     // frame and preparing it with the arguments:
     std::array<Value, 256> registers;
     for (size_t i = 0; i < fn->arguments; ++i) {
@@ -723,6 +711,17 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
     CallFrame frame{std::move(registers), 0.0};
     call_stack.push_back(frame);
 
+    // first check whether we have a compiled version and if we do, run that:
+    if (fn->compiled) [[unlikely]] {
+        TY_TRACE("running compiled machine code");
+        call_stack[call_stack.size() - 2].registers[0] =
+            reinterpret_cast<double (*)()>(fn->compiled)();
+        TY_TRACE(reinterpret_cast<double (*)()>(fn->compiled)());
+        call_stack.pop_back();
+        return {};
+    }
+
+    // if we are here, then we will have to interpret the function.
     if (auto post_fn = run(*fn); !post_fn) return std::unexpected(post_fn.error());
 
     // load the return value of the function to register 0 of this
@@ -737,15 +736,17 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
         fn->cache.put(vs, call_stack.back().returns);
     }
 
-    // remove call frame.
-    call_stack.pop_back();
-
     // if we hit the counter, generate machine code
     // TODO: for now I'm using the is_pure indicator, but this should really have its own indicator.
     if (fn->is_pure && ++fn->compilation_counter >= 10) {
-        auto codegen = codegen::generate_machine(fn);
+        auto arena = codegen::generate_ir(fn);
+        if (!arena) return std::unexpected(arena.error());
+        auto codegen = codegen::generate_machine(*arena, fn, call_stack.back().registers.data());
         if (!codegen) return std::unexpected(codegen.error());
     }
+
+    // remove call frame.
+    call_stack.pop_back();
 
     return {};
 }

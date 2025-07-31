@@ -1,5 +1,6 @@
 add_library(tachyon_codegen STATIC
         src/bytecode_generator.cpp
+        src/ir_generator.cpp
         src/machine_generator.cpp
 )
 

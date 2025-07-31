@@ -39,6 +39,7 @@ class VM {
   public:
     VM() {
         CallFrame initial_frame{};
+        call_stack.reserve(1000);
         call_stack.push_back(std::move(initial_frame));
     }
 
