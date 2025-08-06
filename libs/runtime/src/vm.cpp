@@ -740,9 +740,12 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
     // TODO: for now I'm using the is_pure indicator, but this should really have its own indicator.
     if (fn->is_pure && ++fn->compilation_counter >= 10) {
         auto arena = codegen::generate_ir(fn);
-        if (!arena) return std::unexpected(arena.error());
-        auto codegen = codegen::generate_machine(*arena, fn, call_stack.back().registers.data());
-        if (!codegen) return std::unexpected(codegen.error());
+        if (!arena) {
+            TY_TRACE("failed to generate intermediate representation");
+            call_stack.pop_back();
+            return {};
+        }
+        if (!codegen::generate_machine(*arena, fn, call_stack.back().registers.data())) TY_TRACE("failed to generate machine code");
     }
 
     // remove call frame.
