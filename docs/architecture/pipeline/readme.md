@@ -15,9 +15,9 @@ The overall architecture of Tachyon is split into two key pipelines:
 
 The compile-time pipeline consists of:
 
-* Lexer (done): turns the source text into a list of tokens
-* Parser (done): turns the list of tokens into an abstract syntax tree
-* Bytecode Generator (done): turns the abstract syntax tree into a list of bytecode instructions
+* Lexer: turns the source text into a list of tokens
+* Parser: turns the list of tokens into an abstract syntax tree
+* Bytecode Generator: turns the abstract syntax tree into a list of bytecode instructions
 
 By the end of this pipeline, Tachyon has a list of bytecode instructions that represent the code
 written by the user
@@ -26,10 +26,14 @@ written by the user
 
 The runtime pipeline consists of:
 
-* Tachyon Virtual Machine (incomplete): interprets the bytecode (done), executes machine code
-  (incomplete), tracks/marks instructions for optimization (incomplete)
-* Intermediate Representation Generator (incomplete): generates intermediate representation from
-  bytecode
+* Tachyon Virtual Machine: interprets the bytecode, executes machine code, tracks/marks functions
+  for optimization
+* Intermediate Representation Generator: generates intermediate representation from bytecode
+* Intermediate Representation Optimizer (incomplete): applies various optimizations to intermediate
+  representations
+* Machine Code Generator: generates machine code from the intermediate representation
+
+Once the machine code is ready, it is passed to the Tachyon Virtual Machine which executes it.
 
 ### Intermediate Representation
 

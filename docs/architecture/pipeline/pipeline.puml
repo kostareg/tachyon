@@ -21,15 +21,18 @@ state "Runtime Pipeline" as RuntimePipeline {
   state "Tachyon Virtual Machine"  as VM
   state "Intermediate Representation Generator" as IRGenerator
   state "Intermediate Representation Optimizer" as IROptimizer
+  state "Machine Code Generator" as MCGenerator
 
-  note right of VM : interprets bytecode or executes machine code.\nalso collects traces and marks bytecode for JIT compilation.
-  note top of IRGenerator : generates an intermediate representation of bytecode
-  note right of IROptimizer : applies various optimizations
+  note right of VM : interprets bytecode or executes machine code.\nalso marks functions for JIT compilation,\nwhich it sends to the IR generator
+  note bottom of IRGenerator : generates an intermediate representation of bytecode
+  note bottom of IROptimizer : applies various optimizations
+  note bottom of MCGenerator : generates x86_64 machine code
 
-  [*] -down-> VM
-  VM -down-> IRGenerator : bytecode
-  IRGenerator -down-> IROptimizer : intermediate representation
-  IROptimizer -up-> VM : optimized machine code
+  [*] -right-> VM
+  VM -down-> IRGenerator : bytecode (in need of optimization)
+  IRGenerator -right-> IROptimizer : intermediate representation
+  IROptimizer -right-> MCGenerator : optimized intermediate representation
+  MCGenerator -up-> VM : machine code
 }
 RuntimePipeline --> [*] : exit
 
