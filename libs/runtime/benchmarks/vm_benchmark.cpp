@@ -97,32 +97,27 @@ static const std::map<std::string, runtime::Bytecode> bytecode_map = {
     {"PRNR", runtime::PRNR},
 };
 
-class VMDataFixture : public benchmark::Fixture
-{
+class VMDataFixture : public benchmark::Fixture {
   public:
-    void SetUp(const ::benchmark::State &) override
-    {
+    void SetUp(const ::benchmark::State &) override {
         const std::string included_files[] = {
             "00-blank",
             "01-basic",
         };
 
-        for (const std::string &included_file : included_files)
-        {
+        for (const std::string &included_file : included_files) {
             const std::string included_file_path =
                 "benchmark-data/" + included_file + ".tachyon-bytes";
             std::ifstream file(included_file_path, std::ios::binary | std::ios::ate);
             std::streamsize size = file.tellg();
-            if (size == -1)
-                throw std::runtime_error("could not find file: " + included_file);
+            if (size == -1) throw std::runtime_error("could not find file: " + included_file);
             file.seekg(0, std::ios::beg);
             std::string content(size, '\0');
             file.read(content.data(), size);
 
             std::vector<uint16_t> instructions;
             // parse content as bytecode or numbers
-            for (size_t i = 0; i < content.size(); ++i)
-            {
+            for (size_t i = 0; i < content.size(); ++i) {
                 size_t start = i;
 
                 // continue reading until space or newline
@@ -131,14 +126,11 @@ class VMDataFixture : public benchmark::Fixture
 
                 std::string instruction = content.substr(start, i - start);
 
-                if (std::isdigit(instruction[0]))
-                {
+                if (std::isdigit(instruction[0])) {
                     // parse as number
                     uint16_t number = std::stoi(instruction);
                     instructions.push_back(number);
-                }
-                else
-                {
+                } else {
                     // parse as Bytecode
                     runtime::Bytecode number = bytecode_map.at(instruction);
                     instructions.push_back(number);
@@ -155,27 +147,23 @@ class VMDataFixture : public benchmark::Fixture
     std::unordered_map<std::string, std::vector<uint16_t>> vm_data;
 };
 
-BENCHMARK_F(VMDataFixture, RunBlank)(benchmark::State &state)
-{
+BENCHMARK_F(VMDataFixture, RunBlank)(benchmark::State &state) {
     std::vector<uint16_t> _00_blank = vm_data["00-blank"];
-    runtime::Proto proto(_00_blank, {}, 0, false, "<main>", SourceSpan(0, 0));
+    runtime::Proto proto(_00_blank, {}, 0, false, false, "<main>", SourceSpan(0, 0));
 
-    for (auto _ : state)
-    {
+    for (auto _ : state) {
         runtime::VM vm;
         vm.run(proto).value();
         benchmark::DoNotOptimize(vm);
     }
 };
 
-BENCHMARK_F(VMDataFixture, RunBasic)(benchmark::State &state)
-{
+BENCHMARK_F(VMDataFixture, RunBasic)(benchmark::State &state) {
     std::vector<uint16_t> _01_basic = vm_data["01-basic"];
-    runtime::Proto proto(_01_basic, {runtime::Value(1.), runtime::Value(2.)}, 0, false,
-                               "<main>", SourceSpan(0, 0));
+    runtime::Proto proto(_01_basic, {runtime::Value(1.), runtime::Value(2.)}, 0, false, false,
+                         "<main>", SourceSpan(0, 0));
 
-    for (auto _ : state)
-    {
+    for (auto _ : state) {
         runtime::VM vm;
         vm.run(proto).value();
         benchmark::DoNotOptimize(vm);

@@ -122,6 +122,7 @@ inline std::expected<runtime::Proto, Error> generate_proto(parser::Expr e,
 inline std::expected<runtime::Proto, Error> generate_main_proto(parser::Expr e) {
     return generate_proto(std::move(e)).transform([](runtime::Proto proto) {
         proto.is_pure = false;
+        proto.can_generate_irmc = false;
         proto.bytecode.push_back(runtime::RETV);
         return proto;
     });
@@ -135,6 +136,7 @@ inline std::expected<runtime::Proto, Error> generate_main_proto(parser::Expr e) 
 inline std::expected<runtime::Proto, Error> generate_repl_proto(parser::Expr e) {
     return generate_proto(std::move(e)).transform([](runtime::Proto proto) {
         proto.is_pure = false;
+        proto.can_generate_irmc = false;
         return proto;
     });
 }
