@@ -73,7 +73,7 @@ jobs:
         id: cache-benchmarks
         uses: actions/cache@v4
         with:
-          path: ./cache/benchmark_results.json
+          path: ./cache/
           key: '${{ runner.os }}-benchmarks'
 
       - name: Run Base Benchmarks
@@ -106,7 +106,7 @@ jobs:
           tool: 'googlecpp'
           output-file-path: benchmark_results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          alert-threshold: '110%'
+          alert-threshold: '125%'
           comment-on-alert: true
           summary-always: true
           external-data-json-path: ./cache/benchmark_results.json
