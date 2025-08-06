@@ -47,6 +47,9 @@ struct BytecodeGenerator {
     /// whether the function is pure (memoizable)
     bool is_pure = true;
 
+    /// whether we can generate intermediate representation or machine code
+    bool can_generate_irmc = true;
+
     BytecodeGenerator() = default;
 
     /**
@@ -87,7 +90,7 @@ inline std::expected<runtime::Proto, Error> generate_proto(parser::Expr e) {
     std::visit(generator, e.kind);
     if (!generator.errors.empty()) return std::unexpected(Error::createMultiple(generator.errors));
     return runtime::Proto(generator.bc, std::move(generator.constants), 0, generator.is_pure,
-                          "<main>", e.span);
+                          generator.can_generate_irmc, "<main>", e.span);
 }
 
 /**
@@ -108,7 +111,7 @@ inline std::expected<runtime::Proto, Error> generate_proto(parser::Expr e,
     std::visit(generator, e.kind);
     if (!generator.errors.empty()) return std::unexpected(Error::createMultiple(generator.errors));
     return runtime::Proto(generator.bc, std::move(generator.constants), size, generator.is_pure,
-                          "<main>", e.span);
+                          generator.can_generate_irmc, "<main>", e.span);
 }
 
 /**

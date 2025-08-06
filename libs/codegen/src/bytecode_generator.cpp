@@ -338,6 +338,9 @@ void BytecodeGenerator::operator()(const FnCallExpr &fnc) {
         }
     }
 
+    // function calls are not yet implemented
+    can_generate_irmc = false;
+
     if (fnc.ref.name == "print") {
         is_pure = false; // i/o is impure
         bc.push_back(runtime::PRNR);

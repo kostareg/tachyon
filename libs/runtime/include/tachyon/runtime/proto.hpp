@@ -36,6 +36,9 @@ struct Proto {
     /// whether the function is pure (memoizable)
     bool is_pure;
 
+    /// whether we can generate intermediate representation or machine code
+    bool can_generate_irmc = true;
+
     /// memoization cache
     Cache cache;
 
@@ -52,16 +55,16 @@ struct Proto {
     uint16_t compilation_counter;
 
     Proto()
-        : bytecode(), constants(), arguments(), is_pure(), cache(), name(), span(0, 0),
-          compiled(nullptr), compiled_length(0), compilation_counter(0) {
+        : bytecode(), constants(), arguments(), is_pure(), can_generate_irmc(), cache(), name(),
+          span(0, 0), compiled(nullptr), compiled_length(0), compilation_counter(0) {
         constants.reserve(1000);
     }
 
     Proto(std::vector<uint16_t> bytecode, std::vector<Value> constants, size_t arguments,
-          bool is_pure, std::string name, SourceSpan span)
+          bool is_pure, bool can_generate_irmc, std::string name, SourceSpan span)
         : bytecode(std::move(bytecode)), constants(std::move(constants)), arguments(arguments),
-          is_pure(is_pure), cache(), name(std::move(name)), span(span), compiled(nullptr),
-          compiled_length(0), compilation_counter(0) {
+          is_pure(is_pure), can_generate_irmc(can_generate_irmc), cache(), name(std::move(name)),
+          span(span), compiled(nullptr), compiled_length(0), compilation_counter(0) {
         constants.reserve(1000);
     }
 
@@ -70,17 +73,18 @@ struct Proto {
 
     Proto(Proto &&other)
         : bytecode(std::move(other.bytecode)), constants(std::move(other.constants)),
-          arguments(std::move(other.arguments)), is_pure(std::move(other.is_pure)),
-          cache(std::move(other.cache)), name(std::move(other.name)), span(other.span),
-          compiled(other.compiled), compiled_length(other.compiled_length),
-          compilation_counter(other.compilation_counter) {
+          arguments(std::move(other.arguments)), is_pure(other.is_pure),
+          can_generate_irmc(other.can_generate_irmc), cache(std::move(other.cache)),
+          name(std::move(other.name)), span(other.span), compiled(other.compiled),
+          compiled_length(other.compiled_length), compilation_counter(other.compilation_counter) {
         other.compiled = nullptr;
     }
     Proto &operator=(Proto &&other) {
         bytecode = std::move(other.bytecode);
         constants = std::move(other.constants);
         arguments = std::move(other.arguments);
-        is_pure = std::move(other.is_pure);
+        is_pure = other.is_pure;
+        can_generate_irmc = other.can_generate_irmc;
         cache = std::move(other.cache);
         name = std::move(other.name);
         span = std::move(other.span);
