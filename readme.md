@@ -10,6 +10,9 @@ to create fast and efficient programs during runtime.
 
 The next steps for this project are, in no particular order:
 
+* Support more just-in-time compilation constructs
+    * More mathematical operations
+    * Leaving/rejoining the call stack
 * Complete grammar
     * High priority:
         * While loop and conditionals:
@@ -37,10 +40,6 @@ The next steps for this project are, in no particular order:
 * Bytecode caching
     * Can hash file contents and store in `~/.tachyon/<hash>`?
     * Needs external hashing implementation?
-* Tracing just in time compilation
-    * ~highest priority
-* Research implementation of matrices not as 2D arrays
-    * Consider C++23 `std::mdspan`, C++26 `std::submdspan`.
 * Tensors
 * Runtime profiling program
     * This will help massively with showing how performance gains are found.
