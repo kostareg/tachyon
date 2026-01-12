@@ -3,6 +3,7 @@
 #include "tachyon/common/error.hpp"
 #include "tachyon/runtime/bytecode.hpp"
 
+#include <format>
 #include <expected>
 
 namespace tachyon::codegen {
@@ -38,6 +39,6 @@ std::expected<IRArena, Error> generate_ir(const std::shared_ptr<runtime::Proto> 
         }
     }
 
-    return std::move(arena);
+    return arena;
 }
 } // namespace tachyon::codegen

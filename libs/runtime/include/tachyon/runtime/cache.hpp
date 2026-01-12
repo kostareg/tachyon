@@ -4,6 +4,7 @@
 
 #include <list>
 #include <unordered_map>
+#include <optional> 
 
 namespace tachyon::runtime {
 // TODO: should sizeof(Value) be constexpr?

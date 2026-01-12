@@ -8,7 +8,6 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <print>
 #include <string>
 
 using namespace tachyon;
@@ -16,7 +15,7 @@ using namespace tachyon;
 int run(char *fileName) {
     // if bad file...
     if (!std::filesystem::exists(fileName) || !std::filesystem::is_regular_file(fileName)) {
-        std::println(std::cerr, "specified file ({}) does not exist or is a directory.", fileName);
+        std::cerr << "specified file (" << fileName << ") does not exist or is a directory." << std::endl;
         return 1;
     }
 

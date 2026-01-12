@@ -587,7 +587,7 @@ std::expected<Expr, Error> Parser::parse() {
     printExpr(sequence);
 #endif
 
-    return std::move(sequence);
+    return sequence;
 }
 
 } // namespace tachyon::parser

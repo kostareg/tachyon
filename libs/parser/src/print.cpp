@@ -3,33 +3,33 @@
 #include <ranges>
 
 namespace tachyon::parser {
-void PrintLiteral::operator()(const std::monostate _) const {
-    std::print("()");
+void PrintLiteral::operator()(const std::monostate) const {
+    std::cout << "()";
 };
 
 void PrintLiteral::operator()(const double dbl) const {
-    std::print("{}", dbl);
+    std::cout << dbl;
 };
 
 void PrintLiteral::operator()(const std::string &str) const {
-    std::print("{}", str);
+    std::cout << str;
 };
 
 void PrintLiteral::operator()(const bool bl) const {
-    std::print("{}", bl ? "true" : "false");
+    std::cout << std::boolalpha << bl << std::noboolalpha;
 };
 
 void PrintLiteral::operator()(const Matrix &m) const {
     for (size_t i = 0; i < m.size(); ++i) {
-        std::print("{}, ", m(i));
+        std::cout << m(i) << ", ";
     }
 }
 
 void PrintType::operator()(const BasicConcreteTypes &btyp) const {
-    if (btyp == BasicConcreteTypes::Number) std::print("Num");
-    else if (btyp == BasicConcreteTypes::String) std::print("Str");
-    else if (btyp == BasicConcreteTypes::Boolean) std::print("Bool");
-    else if (btyp == BasicConcreteTypes::Unit) std::print("()");
+    if (btyp == BasicConcreteTypes::Number) std::cout << "Num";
+    else if (btyp == BasicConcreteTypes::String) std::cout << "Str";
+    else if (btyp == BasicConcreteTypes::Boolean) std::cout << "Bool";
+    else if (btyp == BasicConcreteTypes::Unit) std::cout << "()";
 };
 
 void PrintType::operator()(const FunctionConcreteTypes &ftyp) const {
@@ -39,7 +39,7 @@ void PrintType::operator()(const FunctionConcreteTypes &ftyp) const {
 };
 
 void PrintType::operator()(const std::string &otyp) const {
-    std::print("{}", otyp);
+    std::cout << otyp;
 };
 
 void PrintExpr::operator()(const LiteralExpr &lit) const {
@@ -47,128 +47,128 @@ void PrintExpr::operator()(const LiteralExpr &lit) const {
 };
 
 void PrintExpr::operator()(const FnExpr &fn) const {
-    std::print("fn (");
+    std::cout << "fn (";
     for (auto [fst, snd] : fn.arguments) {
-        std::print("{}: ", fst);
+        std::cout << fst << ": ";
         if (snd) std::visit(PrintType{}, snd.value());
-        else std::print("<unknown type>");
+        else std::cout << "<unknown type>";
     }
-    std::print(") -> ");
+    std::cout << ") -> ";
     if (fn.returns) std::visit(PrintType{}, fn.returns.value());
-    else std::print("<unknown type>");
-    std::print(" {{\n");
+    else std::cout << "<unknown type>";
+    std::cout << "{" << std::endl;
     std::visit(*this, fn.body->kind);
-    std::print("}}");
+    std::cout << "}";
 };
 
 void PrintExpr::operator()(const UnaryOperatorExpr &unop) const {
-    std::print("({} ", op_to_str(unop.op));
+    std::cout << op_to_str(unop.op) << "(";
     std::visit(*this, unop.right->kind);
-    std::print(")");
+    std::cout << ")";
 }
 
 void PrintExpr::operator()(const BinaryOperatorExpr &binop) const {
-    std::print("{} (", op_to_str(binop.op));
+    std::cout << op_to_str(binop.op) << " (";
     std::visit(*this, binop.left->kind);
-    std::print(", ");
+    std::cout << ", ";
     std::visit(*this, binop.right->kind);
-    std::print(")");
+    std::cout << ")";
 };
 
 void PrintExpr::operator()(const LetExpr &vdecl) const {
-    std::print("variable {} = ", vdecl.name);
+    std::cout << "variable " << vdecl.name << " = ";
     std::visit(*this, vdecl.value->kind);
 }
 
 void PrintExpr::operator()(const LetRefExpr &vref) const {
-    std::print("{}", vref.name);
+    std::cout << vref.name;
 };
 
 void PrintExpr::operator()(const MatrixAssignmentExpr &mass) const {
-    std::print("matrix {}->(", mass.ref.name);
+    std::cout << "matrix " << mass.ref.name << "->(";
     std::visit(*this, mass.row->kind);
-    std::print(", ");
+    std::cout << ", ";
     std::visit(*this, mass.col->kind);
-    std::print(") = ");
+    std::cout << ") = ";
     std::visit(*this, mass.value->kind);
 }
 
 void PrintExpr::operator()(const MatrixRefExpr &mref) const {
-    std::print("matrix {}->(", mref.ref.name);
+    std::cout << "matrix " << mref.ref.name << "->(";
     std::visit(*this, mref.row->kind);
-    std::print(", ");
+    std::cout << ", ";
     std::visit(*this, mref.col->kind);
-    std::print(")");
+    std::cout << ")";
 }
 
 void PrintExpr::operator()(const FnCallExpr &fnc) const {
-    std::print("call {} with: ", fnc.ref.name);
-    if (fnc.args.empty()) std::print("<empty>");
+    std::cout << "call " << fnc.ref.name << " with: ";
+    if (fnc.args.empty()) std::cout << "<empty>";
     else
         for (const Expr &arg : fnc.args) {
             std::visit(*this, arg.kind);
-            std::print(", ");
+            std::cout << ", ";
         }
 };
 
 void PrintExpr::operator()(const WhileLoopExpr &wlop) const {
-    std::print("while (");
+    std::cout << "while (";
     std::visit(*this, wlop.condition->kind);
-    std::print(") {{ ");
+    std::cout << ") { ";
     std::visit(*this, wlop.body->kind);
-    std::print("}}");
+    std::cout << "}";
 };
 
 void PrintExpr::operator()(const BreakExpr &brk) const {
-    std::print("break ");
+    std::cout << "break ";
     std::visit(*this, brk.returns->kind);
 };
 
 void PrintExpr::operator()(const ContinueExpr &) const {
-    std::print("continue");
+    std::cout << "continue";
 };
 
 void PrintExpr::operator()(const IfExpr &iff) const {
-    std::print("if (");
+    std::cout << "if (";
     std::visit(*this, iff.condition->kind);
-    std::print(") then (");
+    std::cout << ") then (";
     std::visit(*this, iff.body->kind);
-    std::print(")");
+    std::cout << ")";
     for (size_t i = 0; i < iff.else_if_conditions.size(); ++i) {
-        std::print("else if (");
+        std::cout << "else if (";
         std::visit(*this, iff.else_if_conditions[i].kind);
-        std::print(") then (");
+        std::cout << ") then (";
         std::visit(*this, iff.else_if_bodies[i].kind);
-        std::print(")");
+        std::cout << ")";
     }
     if (iff.else_body != nullptr) {
-        std::print("else ");
+        std::cout << "else ";
         std::visit(*this, iff.else_body->kind);
     }
 }
 
 void PrintExpr::operator()(const ImportExpr &imp) const {
-    std::print("import {}", imp.path);
+    std::cout << "import " << imp.path;
 };
 
 void PrintExpr::operator()(const ReturnExpr &ret) const {
-    std::print("return ");
+    std::cout << "return ";
     std::visit(*this, ret.returns->kind);
 };
 
 void PrintExpr::operator()(const MatrixConstructExpr &mc) const {
-    std::print("make matrix h={} elems=", mc.height);
+    std::cout << "make matrix h=" << mc.height << " elems=";
     for (const Expr &e : mc.list) {
         std::visit(*this, e.kind);
-        std::print(", ");
+        std::cout << ", ";
     }
 }
 
 void PrintExpr::operator()(const SequenceExpr &seq) const {
     for (const Expr &e : seq.sequence) {
-        std::print("seq> ");
+        std::cout << "seq> ";
         std::visit(*this, e.kind);
-        std::println();
+        std::cout << std::endl;
     }
 };
 } // namespace tachyon::parser

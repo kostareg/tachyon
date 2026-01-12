@@ -3,7 +3,6 @@
 #include "tachyon/common/matrix.hpp"
 
 #include <memory>
-#include <print>
 #include <string>
 #include <variant>
 #include <vector>

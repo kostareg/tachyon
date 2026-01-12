@@ -75,15 +75,13 @@ void Lexer::lex(const std::string &source_code) {
             else consume_and_push(GCOMP);
             continue;
         case '&':
-            if (*(current + 1) == '&') {
-                consume_and_push(BAND, 2);
-                continue;
-            }
+            if (*(current + 1) == '&') consume_and_push(BAND, 2);
+            else errors.emplace_back(Error::create(ErrorKind::LexError, SourceSpan(0, 0), "incomplete &&"));
+            continue;
         case '|':
-            if (*(current + 1) == '|') {
-                consume_and_push(BOR, 2);
-                continue;
-            }
+            if (*(current + 1) == '|') consume_and_push(BOR, 2);
+            else errors.emplace_back(Error::create(ErrorKind::LexError, SourceSpan(0, 0), "incomplete ||"));
+            continue;
         case '(':
             if (*(current + 1) == ')') consume_and_push(UNIT, 2);
             else consume_and_push(LPAREN);
@@ -97,7 +95,6 @@ void Lexer::lex(const std::string &source_code) {
         case ':': consume_and_push(COLON); continue;
         case ';': consume_and_push(SEMIC); continue;
         case ',': consume_and_push(COMMA); continue;
-        default:
         }
 
         // numbers, identifiers/keywords, and strings
@@ -107,9 +104,11 @@ void Lexer::lex(const std::string &source_code) {
             }
             double value;
             auto answer = fast_float::from_chars(start, current, value);
-            if (answer.ec != std::errc())
+            if (answer.ec != std::errc()) {
                 errors.emplace_back(
                     Error::create(ErrorKind::LexError, SourceSpan(0, 0), "failed to read number"));
+                continue;
+            }
             constants.emplace_back(value);
             tokens.emplace_back(NUMBER, std::string_view(start, current), constants.size() - 1);
             continue;

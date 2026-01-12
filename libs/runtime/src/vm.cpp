@@ -8,6 +8,7 @@
 #include <expected>
 #include <iostream>
 #include <iterator>
+#include <math.h>
 
 // TODO: consider moving from uint16_t to size_t
 
@@ -133,7 +134,7 @@ std::expected<void, Error> VM::run(Proto &proto) {
 
         /* positional */
         case JMPU: {
-            ptr = proto.bytecode[++ptr];
+            ptr = proto.bytecode[ptr + 1];
             continue; // do not increment
         }
         case JMCI: {
@@ -758,15 +759,15 @@ std::expected<void, Error> VM::call(std::shared_ptr<Proto> fn, uint16_t offset) 
 }
 
 void VM::doctor() const {
-    std::println("vm state:");
+    std::cout << "vm state:" << std::endl;
     for (const CallFrame &call : call_stack) {
         for (const Value &reg : call.registers) {
             print_value(reg);
-            std::print(" ");
+            std::cout << " ";
         }
-        std::print("\nreturned: ");
+        std::cout << "returned: ";
         print_value(call.returns);
-        std::println();
+        std::cout << std::endl;
     }
 }
 } // namespace tachyon::runtime

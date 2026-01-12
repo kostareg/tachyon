@@ -3,6 +3,7 @@
 #include "tachyon/common/op.hpp"
 #include "tachyon/lexer/token.hpp"
 
+#include <format>
 #include <iostream>
 #include <stdexcept>
 

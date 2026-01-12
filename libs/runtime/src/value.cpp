@@ -10,20 +10,19 @@ void print_value(const Value &reg) {
         []<typename T0>(const T0 &val) {
             using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, std::monostate>) {
-                std::print("()");
+                std::cout << "()";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<Proto>>) {
-                std::print("function prototype '{}'",
-                           static_cast<std::shared_ptr<Proto>>(val)->name);
+                std::cout << "function prototype '" << static_cast<std::shared_ptr<Proto>>(val)->name << "'";
             } else if constexpr (std::is_same_v<T, Matrix>) {
-                std::print("[");
+                std::cout << "[";
                 for (size_t i = 1; i <= val.get_current(); ++i) {
-                    if (i > 1) std::print(", ");
-                    std::print("{}", val(i));
-                    if (i == val.get_width()) std::print(";");
+                    if (i > 1) std::cout << ", ";
+                    std::cout << val(i);
+                    if (i == val.get_width()) std::cout << ";";
                 }
-                std::print("]");
+                std::cout << "]";
             } else {
-                std::print("{}", val);
+                std::cout << val;
             }
         },
         reg);

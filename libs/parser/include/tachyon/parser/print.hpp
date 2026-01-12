@@ -8,7 +8,7 @@
 namespace tachyon::parser {
 // TODO: consider using just ostream <<.
 struct PrintLiteral {
-    void operator()(std::monostate _) const;
+    void operator()(std::monostate) const;
     void operator()(double dbl) const;
     void operator()(const std::string &str) const;
     void operator()(bool bl) const;
